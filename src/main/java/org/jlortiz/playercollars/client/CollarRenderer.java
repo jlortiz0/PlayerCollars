@@ -18,6 +18,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.FireworkRocketRecipe;
 import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.client.ICurioRenderer;
 
@@ -28,18 +29,14 @@ public class CollarRenderer implements ICurioRenderer {
         this.model = m;
     }
 
-    public static double y = 0.45;
-    public static float scale = 0.8f;
-
     @Override
     public <T extends LivingEntity, M extends EntityModel<T>> void render(ItemStack itemStack, SlotContext slotContext, PoseStack poseStack, RenderLayerParent<T, M> renderLayerParent, MultiBufferSource multiBufferSource, int i, float v, float v1, float v2, float v3, float v4, float v5) {
         poseStack.pushPose();
-        poseStack.mulPose(new Quaternion(0, 0, 180, true));
         ModelPart body = ((HumanoidModel<T>) renderLayerParent.getModel()).body;
-        poseStack.mulPose(new Quaternion(body.xRot, body.yRot, body.zRot, false));
-        poseStack.translate(0, y, 0);
-        poseStack.scale(scale, scale, scale);
-        poseStack.scale(body.xScale, body.yScale, body.zScale);
+        poseStack.translate(body.x * 0.0625f, body.y * 0.0625f, body.z * 0.0625f);
+        poseStack.mulPose(new Quaternion(body.xRot, body.yRot, body.zRot + (float) Math.PI, false));
+        poseStack.scale(0.8f * body.xScale, 0.8f * body.yScale, 0.8f * body.zScale);
+        poseStack.translate(0, 0.4, 0);
         Minecraft.getInstance().getItemRenderer().render(itemStack, ItemTransforms.TransformType.HEAD, false, poseStack, multiBufferSource, i, OverlayTexture.NO_OVERLAY, model);
         poseStack.popPose();
     }

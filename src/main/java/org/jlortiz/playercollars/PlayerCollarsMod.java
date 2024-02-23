@@ -31,6 +31,12 @@ public class PlayerCollarsMod {
 
 	@SubscribeEvent
 	public void registerItemColors(RegisterColorHandlersEvent.Item event) {
-		event.register(((itemStack, i) -> i == 0 ? COLLAR_ITEM.get().getColor(itemStack) : -1), COLLAR_ITEM.get());
+		event.register(((itemStack, i) -> switch (i) {
+                case 0 -> COLLAR_ITEM.get().getColor(itemStack);
+                case 1 -> COLLAR_ITEM.get().getTagColor(itemStack);
+                case 2 -> COLLAR_ITEM.get().getPawColor(itemStack);
+                default -> -1;
+            }
+		), COLLAR_ITEM.get());
 	}
 }

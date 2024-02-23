@@ -1,9 +1,9 @@
 {
 	"credit": "Made with Blockbench",
-	"texture_size": [8, 8],
 	"textures": {
 		"0": "playercollars:entity/collar",
-		"1": "playercollars:entity/tag_overlay"
+		"1": "playercollars:entity/tag_overlay",
+		"2": "playercollars:entity/paw_overlay"
 	},
 	"elements": [
 		{
@@ -66,8 +66,16 @@
 			"from": [6, 1, 4],
 			"to": [10, 1, 8],
 			"faces": {
-				"up": {"uv": [0, 1, 15, 16], "texture": "#1"},
-				"down": {"uv": [0, 16, 15, 1], "texture": "#1"}
+				"up": {"uv": [0, 1, 15, 16], "texture": "#1", "tintindex": 1},
+				"down": {"uv": [0, 16, 15, 1], "texture": "#1", "tintindex": 1}
+			}
+		},
+		{
+			"from": [6, 1, 4],
+			"to": [10, 1, 8],
+			"faces": {
+				"up": {"uv": [0, 1, 15, 16], "texture": "#2", "tintindex": 2},
+				"down": {"uv": [0, 16, 15, 1], "texture": "#2", "tintindex": 2}
 			}
 		}
 	],
@@ -120,7 +128,7 @@
 			"name": "Print",
 			"origin": [0, 0, 0],
 			"color": 0,
-			"children": [4, 5]
+			"children": [4, 5, 6]
 		}
 	]
 }
