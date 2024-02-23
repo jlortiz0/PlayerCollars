@@ -1,9 +1,23 @@
 package org.jlortiz.playercollars;
 
+import net.minecraft.data.tags.ItemTagsProvider;
+import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.material.MaterialColor;
+import net.minecraftforge.common.Tags;
+import net.minecraftforge.common.data.ForgeItemTagsProvider;
+
+import java.util.Arrays;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class PlayerCollarItem extends Item implements DyeableLeatherItem {
     public PlayerCollarItem() {
@@ -11,19 +25,26 @@ public class PlayerCollarItem extends Item implements DyeableLeatherItem {
     }
 
     public enum TagType {
-        GOLD(0xFDF55F),
-        IRON(0xD8D8D8),
-        COPPER(0xE77C56);
+        GOLD(0xFDF55F, Tags.Items.INGOTS_GOLD),
+        IRON(0xD8D8D8, Tags.Items.INGOTS_IRON),
+        COPPER(0xE77C56, Tags.Items.INGOTS_COPPER),
+        NETHERITE(0x5A575A, Tags.Items.INGOTS_NETHERITE);
         public final int color;
-        TagType(int color) {
+        public final TagKey<Item> item;
+        TagType(int color, TagKey<Item> item) {
             this.color = color;
+            this.item = item;
+        }
+
+        public static Ingredient getIngredient() {
+            return Ingredient.fromValues(Stream.of(Arrays.stream(TagType.values()).map((i) -> new Ingredient.TagValue(i.item))).flatMap(Function.identity()));
         }
     }
 
     @Override
     public int getColor(ItemStack itemStack) {
         CompoundTag $$1 = itemStack.getTagElement("display");
-        return $$1 != null && $$1.contains("color", 99) ? $$1.getInt("color") : 0xFF0000;
+        return $$1 != null && $$1.contains("color", 99) ? $$1.getInt("color") : MaterialColor.COLOR_RED.col;
     }
 
     public int getTagColor(ItemStack itemStack) {
@@ -37,7 +58,7 @@ public class PlayerCollarItem extends Item implements DyeableLeatherItem {
 
     public int getPawColor(ItemStack itemStack) {
         CompoundTag $$1 = itemStack.getTagElement("display");
-        return $$1 != null && $$1.contains("paw", 99) ? $$1.getInt("paw") : 0xFF0000;
+        return $$1 != null && $$1.contains("paw", 99) ? $$1.getInt("paw") : MaterialColor.COLOR_BROWN.col;
     }
 
     public static ItemStack getInstance(TagType tag, int paw) {
