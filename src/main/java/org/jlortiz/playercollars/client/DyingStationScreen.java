@@ -1,25 +1,38 @@
 package org.jlortiz.playercollars.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.LeadItem;
 import org.jetbrains.annotations.NotNull;
 import org.jlortiz.playercollars.PacketUpdateCollar;
 import org.jlortiz.playercollars.PlayerCollarItem;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 
+import java.util.UUID;
+
 public class DyingStationScreen extends Screen {
     private final ItemStack is;
     private final PlayerCollarItem item;
-    private int initColor, initPaw;
+    private final int initColor, initPaw;
+    private final UUID ownUUID;
+    private UUID ownerUUID;
+    private final String ownerName;
 
-    public DyingStationScreen(ItemStack is) {
+    public DyingStationScreen(ItemStack is, UUID plr) {
         super(is.getDisplayName());
         this.is = is;
         this.item = PlayerCollarsMod.COLLAR_ITEM.get();
+        this.ownUUID = plr;
+        initColor = item.getColor(is);
+        initPaw = item.getPawColor(is);
+        Pair<UUID, String> owner = item.getOwner(is);
+        ownerUUID = owner == null ? null : owner.getFirst();
+        ownerName = owner == null ? null : owner.getSecond();
     }
 
     @Override
@@ -38,7 +51,6 @@ public class DyingStationScreen extends Screen {
             }
             return true;
         });
-        initColor = item.getColor(is);
         dyeField.setValue(Integer.toHexString(initColor));
 
         EditBox pawField = new EditBox(this.font, x - 30, y + 25, 100, 20, Component.empty());
@@ -52,13 +64,13 @@ public class DyingStationScreen extends Screen {
             }
             return true;
         });
-        initPaw = item.getPawColor(is);
         pawField.setValue(Integer.toHexString(initPaw));
 
         this.addRenderableWidget(dyeField);
         this.addRenderableWidget(pawField);
         this.addRenderableWidget(new Button(x + 5, y + 50, 75, 20, Component.literal("Done"), (btn) -> {
-            PlayerCollarsMod.NETWORK.sendToServer(new PacketUpdateCollar(is));
+            PacketUpdateCollar.OwnerState os = ownerUUID == null ? PacketUpdateCollar.OwnerState.DEL : (ownerUUID.equals(ownUUID) ? PacketUpdateCollar.OwnerState.ADD : PacketUpdateCollar.OwnerState.NOP);
+            PlayerCollarsMod.NETWORK.sendToServer(new PacketUpdateCollar(is, os));
             this.minecraft.setScreen(null);
         }));
         this.addRenderableWidget(new Button(x - 80, y + 50, 75, 20, Component.literal("Cancel"), (btn) -> {
@@ -66,6 +78,27 @@ public class DyingStationScreen extends Screen {
             item.setPawColor(is, initPaw);
             this.minecraft.setScreen(null);
         }));
+
+        Button ownerButton = new Button(x - 80, y + 72, 160, 20, Component.empty(), this::updateOwner);
+        if (ownerUUID == null) {
+            ownerButton.setMessage(Component.translatable("item.playercollars.collar.become_owner"));
+        } else if (ownerUUID.equals(ownUUID)) {
+            ownerButton.setMessage(Component.translatable("item.playercollars.collar.remove_owner"));
+        } else {
+            ownerButton.setMessage(Component.translatable("item.playercollars.collar.owner", ownerName));
+            ownerButton.active = false;
+        }
+        this.addRenderableWidget(ownerButton);
+    }
+
+    private void updateOwner(Button btn) {
+        if (ownerUUID == null) {
+            ownerUUID = ownUUID;
+            btn.setMessage(Component.translatable("item.playercollars.collar.remove_owner"));
+        } else {
+            ownerUUID = null;
+            btn.setMessage(Component.translatable("item.playercollars.collar.become_owner"));
+        }
     }
 
     private void updateTextField(int i, String s) {
@@ -87,7 +120,7 @@ public class DyingStationScreen extends Screen {
         renderBackground(pPoseStack);
         super.render(pPoseStack, mouseX, mouseY, delta);
         font.draw(pPoseStack, Component.translatable("item.playercollars.collar"), this.width / 2 - 75, this.height / 2 - 25, -1);
-        font.draw(pPoseStack, Component.translatable("item.playercollars.collar_paw2"), this.width / 2 - 75, this.height / 2 + 1, -1);
+        font.draw(pPoseStack, Component.translatable("item.playercollars.collar.paw"), this.width / 2 - 75, this.height / 2 + 1, -1);
     }
 
     @Override

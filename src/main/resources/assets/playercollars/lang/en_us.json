@@ -1,8 +1,11 @@
 {
   "itemGroup.playercollars": "Player Collars",
   "item.playercollars.collar": "Collar",
-  "item.playercollars.collar_paw": "Paw: #%s",
-  "item.playercollars.collar_paw2": "Paw",
+  "item.playercollars.collar.paw_color": "Paw: #%s",
+  "item.playercollars.collar.paw": "Paw",
+  "item.playercollars.collar.owner": "Owner: %s",
+  "item.playercollars.collar.become_owner": "Become Owner",
+  "item.playercollars.collar.remove_owner": "Remove Owner",
   "item.playercollars.tag.GOLD": "Golden",
   "item.playercollars.tag.IRON": "Iron",
   "item.playercollars.tag.STONE": "Stone",

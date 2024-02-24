@@ -1,5 +1,6 @@
 package org.jlortiz.playercollars;
 
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.NonNullList;
@@ -21,6 +22,7 @@ import org.jlortiz.playercollars.client.DyingStationScreen;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -76,6 +78,22 @@ public class PlayerCollarItem extends Item implements DyeableLeatherItem {
         $$1.putInt("paw", col);
     }
 
+    public Pair<UUID, String> getOwner(ItemStack is) {
+        CompoundTag $$1 = is.getTagElement("owner");
+        if ($$1 == null || !$$1.contains("uuid") || !$$1.contains("name")) return null;
+        return new Pair<>($$1.getUUID("uuid"), $$1.getString("name"));
+    }
+
+    public void setOwner(ItemStack is, UUID uuid, String name) {
+        if (uuid == null) {
+            is.removeTagKey("owner");
+            return;
+        }
+        CompoundTag $$1 = is.getOrCreateTagElement("owner");
+        $$1.putUUID("uuid", uuid);
+        $$1.putString("name", name);
+    }
+
     public static ItemStack getInstance(TagType tag) {
         ItemStack is = new ItemStack(PlayerCollarsMod.COLLAR_ITEM.get());
         CompoundTag $$1 = is.getOrCreateTagElement("display");
@@ -95,7 +113,7 @@ public class PlayerCollarItem extends Item implements DyeableLeatherItem {
     public InteractionResultHolder<ItemStack> use(Level p_41432_, Player p_41433_, InteractionHand p_41434_) {
         InteractionResultHolder<ItemStack> ir = super.use(p_41432_, p_41433_, p_41434_);
         if (ir.getResult() == InteractionResult.PASS && p_41433_.isCrouching() && p_41432_.isClientSide) {
-            Minecraft.getInstance().setScreen(new DyingStationScreen(ir.getObject()));
+            Minecraft.getInstance().setScreen(new DyingStationScreen(ir.getObject(), p_41433_.getUUID()));
             return new InteractionResultHolder<>(InteractionResult.SUCCESS, ir.getObject());
         }
         return ir;
@@ -104,7 +122,11 @@ public class PlayerCollarItem extends Item implements DyeableLeatherItem {
     @Override
     public void appendHoverText(ItemStack p_41421_, @Nullable Level p_41422_, List<Component> p_41423_, TooltipFlag p_41424_) {
         super.appendHoverText(p_41421_, p_41422_, p_41423_, p_41424_);
-        p_41423_.add(Component.translatable("item.playercollars.collar_paw", Integer.toHexString(getPawColor(p_41421_))).withStyle(ChatFormatting.GRAY));
+        p_41423_.add(Component.translatable("item.playercollars.collar.paw_color", Integer.toHexString(getPawColor(p_41421_))).withStyle(ChatFormatting.GRAY));
+        Pair<UUID, String> owner = getOwner(p_41421_);
+        if (owner != null) {
+            p_41423_.add(Component.translatable("item.playercollars.collar.owner", owner.getSecond()).withStyle(ChatFormatting.GRAY));
+        }
     }
 
     @Override
