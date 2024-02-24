@@ -1,6 +1,9 @@
 package org.jlortiz.playercollars;
 
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
@@ -9,10 +12,16 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import org.jetbrains.annotations.NotNull;
 import top.theillusivec4.curios.api.SlotTypeMessage;
+
+import java.util.Optional;
 
 @Mod(PlayerCollarsMod.MOD_ID)
 public class PlayerCollarsMod {
@@ -26,6 +35,13 @@ public class PlayerCollarsMod {
 	public static final DeferredRegister<RecipeType<?>> RECIPE_TYPES = DeferredRegister.create(ForgeRegistries.RECIPE_TYPES, MOD_ID);
 	public static final RegistryObject<RecipeType<CollarRecipe>> COLLAR_TYPE =
 			RECIPE_TYPES.register(CollarRecipe.Type.ID, () -> CollarRecipe.Type.INSTANCE);
+	public static final CreativeModeTab TAB = new CreativeModeTab(MOD_ID) {
+		@Override
+		public @NotNull ItemStack makeIcon() {
+			return new ItemStack(COLLAR_ITEM.get());
+		}
+	};
+	public static SimpleChannel NETWORK = NetworkRegistry.newSimpleChannel(new ResourceLocation(MOD_ID, "collar_channel"), () -> "", String::isEmpty, String::isEmpty);
 
 	public PlayerCollarsMod() {
 		IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -34,6 +50,7 @@ public class PlayerCollarsMod {
 		RECIPE_TYPES.register(eventBus);
 		eventBus.register(this);
 		InterModComms.sendTo("curios", SlotTypeMessage.REGISTER_TYPE, () -> new SlotTypeMessage.Builder("necklace").cosmetic().build());
+		NETWORK.registerMessage(1, PacketUpdateCollar.class, PacketUpdateCollar::encode, PacketUpdateCollar::new, PacketUpdateCollar::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
 	}
 
 	@SubscribeEvent

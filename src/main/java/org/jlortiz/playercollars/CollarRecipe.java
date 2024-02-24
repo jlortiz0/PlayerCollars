@@ -52,9 +52,4 @@ public class CollarRecipe extends ShapedRecipe {
     public RecipeSerializer<CollarRecipe> getSerializer() {
         return Serializer;
     }
-
-    @Override
-    public boolean isSpecial() {
-        return true;
-    }
 }

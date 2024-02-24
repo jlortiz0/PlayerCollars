@@ -1,4 +1,15 @@
 {
-  "item_group.playercollars.name": "Player Collars",
-  "item.playercollars.collar": "Collar"
+  "itemGroup.playercollars": "Player Collars",
+  "item.playercollars.collar": "Collar",
+  "item.playercollars.collar_paw": "Paw: #%s",
+  "item.playercollars.collar_paw2": "Paw",
+  "item.playercollars.tag.GOLD": "Golden",
+  "item.playercollars.tag.IRON": "Iron",
+  "item.playercollars.tag.STONE": "Stone",
+  "item.playercollars.tag.WOOD": "Wood",
+  "item.playercollars.tag.DIAMOND": "Diamond",
+  "item.playercollars.tag.NETHERITE": "Netherite",
+  "item.playercollars.tag.COPPER": "Copper",
+  "item.playercollars.tag.AMETHYST": "Amethyst",
+  "item.playercollars.tag.EMERALD": "Emerald"
 }
