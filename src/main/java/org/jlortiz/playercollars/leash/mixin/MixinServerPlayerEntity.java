@@ -10,30 +10,34 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jlortiz.playercollars.PlayerCollarItem;
-import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.leash.LeashImpl;
 import org.jlortiz.playercollars.leash.LeashProxyEntity;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.theillusivec4.curios.api.CuriosApi;
-import top.theillusivec4.curios.api.SlotResult;
+import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mixin(ServerPlayer.class)
 public abstract class MixinServerPlayerEntity implements LeashImpl {
+    @Unique
     private final ServerPlayer leashplayers$self = (ServerPlayer) (Object) this;
 
+    @Unique
     private LeashProxyEntity leashplayers$proxy;
+    @Unique
     private Entity leashplayers$holder;
 
+    @Unique
     private int leashplayers$lastage;
 
 
+    @Unique
     private void leashplayers$update() {
         if (
                 leashplayers$holder != null && (
@@ -68,6 +72,7 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
         leashplayers$apply();
     }
 
+    @Unique
     private void leashplayers$apply() {
         ServerPlayer player = leashplayers$self;
         Entity holder = leashplayers$holder;
@@ -98,6 +103,7 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
         player.hasImpulse = false;
     }
 
+    @Unique
     private void leashplayers$attach(Entity entity) {
         leashplayers$holder = entity;
 
@@ -115,6 +121,7 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
         leashplayers$lastage = leashplayers$self.tickCount;
     }
 
+    @Unique
     private void leashplayers$detach() {
         leashplayers$holder = null;
 
@@ -126,6 +133,7 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
         }
     }
 
+    @Unique
     private void leashplayers$drop() {
         leashplayers$self.drop(new ItemStack(Items.LEAD), false, true);
     }
@@ -135,21 +143,34 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
         leashplayers$update();
     }
 
+    @Unique
+    private boolean playerCollars$filterStacksByOwner(IDynamicStackHandler stacks, UUID plr) {
+        for (int i = 0; i < stacks.getSlots(); i++) {
+            ItemStack is = stacks.getStackInSlot(i);
+            if (is.getItem() instanceof PlayerCollarItem item) {
+                Pair<UUID, String> owner = item.getOwner(is);
+                if (owner != null && owner.getFirst().equals(plr)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
     public InteractionResult leashplayers$interact(Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (stack.getItem() == Items.LEAD && leashplayers$holder == null) {
-            PlayerCollarItem item = PlayerCollarsMod.COLLAR_ITEM.get();
-            List<SlotResult> slots = CuriosApi.getCuriosHelper().findCurios(((Player) ((Object) this)), item);
-            boolean found = false;
-            for (SlotResult sr : slots) {
-                Pair<UUID, String> owner = item.getOwner(sr.stack());
-                if (owner != null && owner.getFirst().equals(player.getUUID())) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) return InteractionResult.PASS;
+            AtomicBoolean found = new AtomicBoolean(false);
+            CuriosApi.getCuriosHelper().getCuriosHandler((Player) (Object) this).ifPresent((handler) -> {
+                handler.getStacksHandler("necklace").ifPresent((slot) -> {
+                    found.set(playerCollars$filterStacksByOwner(slot.getStacks(), player.getUUID()));
+                    if (!found.get()) {
+                        found.set(playerCollars$filterStacksByOwner(slot.getCosmeticStacks(), player.getUUID()));
+                    }
+                });
+            });
+            if (!found.get()) return InteractionResult.PASS;
             if (!player.isCreative()) {
                 stack.shrink(1);
             }
