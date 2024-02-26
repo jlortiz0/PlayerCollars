@@ -1,6 +1,7 @@
 package org.jlortiz.playercollars;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -28,6 +29,7 @@ public class PlayerCollarsMod {
 	public static final String MOD_ID = "playercollars";
 	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
 	public static final RegistryObject<PlayerCollarItem> COLLAR_ITEM = ITEMS.register("collar", PlayerCollarItem::new);
+	public static final RegistryObject<ClickerItem> CLICKER_ITEM = ITEMS.register("clicker", ClickerItem::new);
 	public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS =
 			DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, MOD_ID);
 	public static final RegistryObject<RecipeSerializer<CollarRecipe>> COLLAR_SERIALIZER =
@@ -42,6 +44,8 @@ public class PlayerCollarsMod {
 		}
 	};
 	public static SimpleChannel NETWORK = NetworkRegistry.newSimpleChannel(new ResourceLocation(MOD_ID, "collar_channel"), () -> "", String::isEmpty, String::isEmpty);
+	public static final SoundEvent CLICKER_ON = new SoundEvent(new ResourceLocation(MOD_ID, "clicker_on"));
+	public static final SoundEvent CLICKER_OFF = new SoundEvent(new ResourceLocation(MOD_ID, "clicker_off"));
 
 	public PlayerCollarsMod() {
 		IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -62,5 +66,11 @@ public class PlayerCollarsMod {
                 default -> -1;
             }
 		), COLLAR_ITEM.get());
+
+		event.register(((itemStack, i) -> switch (i) {
+			case 0 -> CLICKER_ITEM.get().getColor(itemStack);
+			default -> -1;
+		}
+		), CLICKER_ITEM.get());
 	}
 }

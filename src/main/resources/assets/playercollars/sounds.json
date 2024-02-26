@@ -1,0 +1,12 @@
+{
+  "clicker_on": {
+    "category": "player",
+    "subtitle": "sound.playercollars.clicker_on",
+    "sounds": ["playercollars:clicker_on"]
+  },
+  "clicker_off": {
+    "category": "player",
+    "subtitle": "sound.playercollars.clicker_off",
+    "sounds": ["playercollars:clicker_off"]
+  }
+}
