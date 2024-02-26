@@ -47,9 +47,7 @@
 			"to": [13, -6, 3],
 			"faces": {
 				"north": {"uv": [0, 0, 1, 1], "texture": "#0", "tintindex": 0},
-				"east": {"uv": [0, 0, 1, 1], "texture": "#0", "tintindex": 0},
 				"south": {"uv": [0, 0, 1, 1], "texture": "#0", "tintindex": 0},
-				"west": {"uv": [0, 0, 1, 1], "texture": "#0", "tintindex": 0},
 				"up": {"uv": [1, 1, 0, 0], "texture": "#0", "tintindex": 0},
 				"down": {"uv": [1, 0, 0, 1], "texture": "#0", "tintindex": 0}
 			}
@@ -119,13 +117,13 @@
 	},
 	"groups": [
 		{
-			"name": "Neck Peice",
+			"name": "Neck",
 			"origin": [0, 0, 0],
 			"color": 0,
 			"children": [0, 1, 2, 3]
 		},
 		{
-			"name": "Print",
+			"name": "Tag",
 			"origin": [0, 0, 0],
 			"color": 0,
 			"children": [4, 5, 6]

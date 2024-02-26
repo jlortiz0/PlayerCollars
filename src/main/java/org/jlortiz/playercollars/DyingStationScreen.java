@@ -1,4 +1,4 @@
-package org.jlortiz.playercollars.client;
+package org.jlortiz.playercollars;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;

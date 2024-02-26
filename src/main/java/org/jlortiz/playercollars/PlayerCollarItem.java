@@ -18,7 +18,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraftforge.common.Tags;
 import org.jetbrains.annotations.Nullable;
-import org.jlortiz.playercollars.client.DyingStationScreen;
 
 import java.util.Arrays;
 import java.util.List;

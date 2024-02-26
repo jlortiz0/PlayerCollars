@@ -178,8 +178,13 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
     implementation fg.deobf("curse.maven:curios-309927:5066842")
-    runtimeOnly fg.deobf("curse.maven:blueprint-382216:4749000")
-    runtimeOnly fg.deobf("curse.maven:pet-cemetery-565160:4777497")
+    runtimeOnly fg.deobf("curse.maven:caelus-308989:3929284")
+    implementation fg.deobf("curse.maven:origins-forge-474438:4759023")
+}
+
+mixin {
+    add sourceSets.main, "playercollars.mixins.refmap.json"
+    config "playercollars.mixins.json"
 }
 
 // Example for how to get properties into the manifest for reading at runtime.
@@ -188,9 +193,9 @@ jar {
         attributes([
                 "Specification-Title"     : project.name,
                 "Specification-Vendor"    : "jlortiz",
-                "Specification-Version"   : project.jar.archiveVersion,
+                "Specification-Version"   : mod_version,
                 "Implementation-Title"    : project.name,
-                "Implementation-Version"  : project.jar.archiveVersion,
+                "Implementation-Version"  : mod_version,
                 "Implementation-Vendor"   : "jlortiz",
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
                 "Automatic-Module-Name": "playercollars"
