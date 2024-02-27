@@ -3,6 +3,7 @@ package org.jlortiz.playercollars.leash.mixin;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -45,7 +46,7 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
     private int leashplayers$lastage;
 
     @Unique
-    private boolean leashplayer$isLoyal;
+    private int leashplayer$loyalty;
 
 
     @Unique
@@ -91,10 +92,10 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
         if (holder.getLevel() != player.getLevel()) return;
 
         float distance = player.distanceTo(holder);
-        if (distance < (leashplayer$isLoyal ? 2 : 4)) {
+        if (distance < 4 - leashplayer$loyalty) {
             return;
         }
-        if (distance > (leashplayer$isLoyal ? 10f : 12f)) {
+        if (distance > 10f - leashplayer$loyalty) {
             leashplayers$detach();
             leashplayers$drop();
             return;
@@ -103,7 +104,7 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
         double dx = (holder.getX() - player.getX()) / (double) distance;
         double dy = (holder.getY() - player.getY()) / (double) distance;
         double dz = (holder.getZ() - player.getZ()) / (double) distance;
-        final double factor = leashplayer$isLoyal ? 0.5d : 0.4d;
+        final double factor = 0.4d + 0.1d * leashplayer$loyalty;
 
         player.push(
                 Math.copySign(dx * dx * factor, dx),
@@ -162,7 +163,7 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
             if (is.getItem() instanceof CollarItem item) {
                 Pair<UUID, String> owner = item.getOwner(is);
                 if (owner != null && owner.getFirst().equals(plr)) {
-                    leashplayer$isLoyal = item.getEnchantmentLevel(is, Enchantments.LOYALTY) > 0;
+                    leashplayer$loyalty = Mth.clamp(item.getEnchantmentLevel(is, Enchantments.LOYALTY), 0, 2);
                     return true;
                 }
             }
