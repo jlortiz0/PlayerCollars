@@ -1,4 +1,4 @@
-package org.jlortiz.playercollars;
+package org.jlortiz.playercollars.item;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundSource;
@@ -6,13 +6,15 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.DyeableLeatherItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.Tags;
+import org.jlortiz.playercollars.PlayerCollarsMod;
 
-public class ClickerItem extends TieredItem implements DyeableLeatherItem {
+public class ClickerItem extends Item implements DyeableLeatherItem {
     public ClickerItem() {
-        super(Tiers.IRON, new Item.Properties().tab(PlayerCollarsMod.TAB).stacksTo(1));
+        super(new Item.Properties().tab(PlayerCollarsMod.TAB).stacksTo(1));
     }
 
     @Override
@@ -34,10 +36,6 @@ public class ClickerItem extends TieredItem implements DyeableLeatherItem {
         if (!p_41413_.isClientSide) {
             p_41413_.playSound(null, p_41414_, PlayerCollarsMod.CLICKER_OFF, SoundSource.PLAYERS, 1, 1);
         }
-    }
-
-    public boolean isValidRepairItem(ItemStack p_43311_, ItemStack p_43312_) {
-        return p_43312_.is(Tags.Items.INGOTS_IRON);
     }
 
     @Override

@@ -4,15 +4,15 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkEvent;
+import org.jlortiz.playercollars.item.CollarItem;
 
-import java.util.UUID;
 import java.util.function.Supplier;
 
 public class PacketUpdateCollar {
     private final int pawColor, color;
     private final OwnerState os;
     public PacketUpdateCollar(ItemStack is, OwnerState os) {
-        PlayerCollarItem item = PlayerCollarsMod.COLLAR_ITEM.get();
+        CollarItem item = PlayerCollarsMod.COLLAR_ITEM.get();
         this.pawColor = item.getPawColor(is);
         this.color = item.getColor(is);
         this.os = os;
@@ -37,7 +37,7 @@ public class PacketUpdateCollar {
         context.get().enqueueWork(() -> {
             Player p = context.get().getSender();
             ItemStack is = p.getMainHandItem();
-            if (!is.isEmpty() && is.getItem() instanceof PlayerCollarItem item) {
+            if (!is.isEmpty() && is.getItem() instanceof CollarItem item) {
                 item.setColor(is, color);
                 item.setPawColor(is, pawColor);
                 if (os == OwnerState.DEL) {

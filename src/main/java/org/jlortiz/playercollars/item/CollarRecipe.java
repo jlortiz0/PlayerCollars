@@ -1,4 +1,4 @@
-package org.jlortiz.playercollars;
+package org.jlortiz.playercollars.item;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
@@ -9,10 +9,11 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.*;
 import net.minecraftforge.common.Tags;
 import org.jetbrains.annotations.NotNull;
+import org.jlortiz.playercollars.PlayerCollarsMod;
 
 public class CollarRecipe extends ShapedRecipe {
     private static final Ingredient ITEM_LEATHER = Ingredient.of(Items.LEATHER);
-    private static final Ingredient ITEM_INGOTS = PlayerCollarItem.TagType.getIngredient();
+    private static final Ingredient ITEM_INGOTS = CollarItem.TagType.getIngredient();
     private static final Ingredient ITEM_DYE = Ingredient.of(Tags.Items.DYES);
     public CollarRecipe(ResourceLocation rl) {
         super(rl, "collar", 3, 3, NonNullList.of(
@@ -31,8 +32,8 @@ public class CollarRecipe extends ShapedRecipe {
     @Override
     public @NotNull ItemStack assemble(CraftingContainer craftingContainer) {
         ItemStack ingot = craftingContainer.getItem(4);
-        PlayerCollarItem.TagType t = null;
-        for (PlayerCollarItem.TagType tag : PlayerCollarItem.TagType.values()) {
+        CollarItem.TagType t = null;
+        for (CollarItem.TagType tag : CollarItem.TagType.values()) {
             if (Ingredient.of(tag.item).test(ingot)) {
                 t = tag;
                 break;
@@ -40,7 +41,7 @@ public class CollarRecipe extends ShapedRecipe {
         }
         if (t == null) return ItemStack.EMPTY;
         DyeItem dye = (DyeItem) craftingContainer.getItem(7).getItem();
-        return PlayerCollarItem.getInstance(t, dye.getDyeColor().getMaterialColor().col);
+        return CollarItem.getInstance(t, dye.getDyeColor().getMaterialColor().col);
     }
 
     @Override

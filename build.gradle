@@ -178,13 +178,14 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
     implementation fg.deobf("curse.maven:curios-309927:5066842")
-    runtimeOnly fg.deobf("curse.maven:caelus-308989:3929284")
-    implementation fg.deobf("curse.maven:origins-forge-474438:4759023")
+    runtimeOnly fg.deobf("curse.maven:geckolib-388172:4407241")
+    implementation fg.deobf("curse.maven:kawaii-dishes-694309:4644365")
 }
 
 mixin {
     add sourceSets.main, "playercollars.mixins.refmap.json"
     config "playercollars.mixins.json"
+    config "playercollars.mixins.compat.json"
 }
 
 // Example for how to get properties into the manifest for reading at runtime.

@@ -20,6 +20,9 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;
+import org.jlortiz.playercollars.item.ClickerItem;
+import org.jlortiz.playercollars.item.CollarItem;
+import org.jlortiz.playercollars.item.CollarRecipe;
 import top.theillusivec4.curios.api.SlotTypeMessage;
 
 import java.util.Optional;
@@ -28,7 +31,7 @@ import java.util.Optional;
 public class PlayerCollarsMod {
 	public static final String MOD_ID = "playercollars";
 	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
-	public static final RegistryObject<PlayerCollarItem> COLLAR_ITEM = ITEMS.register("collar", PlayerCollarItem::new);
+	public static final RegistryObject<CollarItem> COLLAR_ITEM = ITEMS.register("collar", CollarItem::new);
 	public static final RegistryObject<ClickerItem> CLICKER_ITEM = ITEMS.register("clicker", ClickerItem::new);
 	public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS =
 			DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, MOD_ID);
@@ -67,10 +70,6 @@ public class PlayerCollarsMod {
             }
 		), COLLAR_ITEM.get());
 
-		event.register(((itemStack, i) -> switch (i) {
-			case 0 -> CLICKER_ITEM.get().getColor(itemStack);
-			default -> -1;
-		}
-		), CLICKER_ITEM.get());
+		event.register((itemStack, i) -> i == 0 ? CLICKER_ITEM.get().getColor(itemStack) : -1, CLICKER_ITEM.get());
 	}
 }

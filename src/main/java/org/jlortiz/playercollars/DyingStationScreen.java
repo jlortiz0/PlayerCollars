@@ -7,17 +7,14 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.LeadItem;
 import org.jetbrains.annotations.NotNull;
-import org.jlortiz.playercollars.PacketUpdateCollar;
-import org.jlortiz.playercollars.PlayerCollarItem;
-import org.jlortiz.playercollars.PlayerCollarsMod;
+import org.jlortiz.playercollars.item.CollarItem;
 
 import java.util.UUID;
 
 public class DyingStationScreen extends Screen {
     private final ItemStack is;
-    private final PlayerCollarItem item;
+    private final CollarItem item;
     private final int initColor, initPaw;
     private final UUID ownUUID;
     private UUID ownerUUID;

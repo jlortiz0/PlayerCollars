@@ -1,0 +1,13 @@
+{
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_17",
+  "package": "org.jlortiz.playercollars.compat",
+  "required": false,
+  "injectors": {
+    "defaultRequire": 0
+  },
+  "refmap": "playercollars.mixins.refmap.json",
+  "mixins": [
+    "KawaiiDishesMixin"
+  ]
+}

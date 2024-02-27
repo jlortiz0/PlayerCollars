@@ -1,8 +1,9 @@
-package org.jlortiz.playercollars;
+package org.jlortiz.playercollars.item;
 
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -11,23 +12,92 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraftforge.common.Tags;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.util.LazyOptional;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jlortiz.playercollars.DyingStationScreen;
+import org.jlortiz.playercollars.PlayerCollarsMod;
+import top.theillusivec4.curios.api.CuriosApi;
+import top.theillusivec4.curios.api.CuriosCapability;
+import top.theillusivec4.curios.api.SlotContext;
+import top.theillusivec4.curios.api.type.capability.ICurio;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-public class PlayerCollarItem extends Item implements DyeableLeatherItem {
-    public PlayerCollarItem() {
+public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICapabilityProvider {
+
+    private static final Set<Enchantment> ALLOWED_ENCHANTMENTS = new HashSet<>();
+    static {
+        ALLOWED_ENCHANTMENTS.add(Enchantments.LOYALTY);
+        ALLOWED_ENCHANTMENTS.add(Enchantments.BINDING_CURSE);
+        ALLOWED_ENCHANTMENTS.add(Enchantments.THORNS);
+        ALLOWED_ENCHANTMENTS.add(Enchantments.MENDING);
+    }
+    public CollarItem() {
         super(new Item.Properties().stacksTo(1).tab(PlayerCollarsMod.TAB));
+    }
+
+    @Override
+    public boolean isBookEnchantable(ItemStack stack, ItemStack book) {
+        Set<Enchantment> ks = Items.ENCHANTED_BOOK.getAllEnchantments(book).keySet();
+        return ALLOWED_ENCHANTMENTS.containsAll(ks);
+    }
+
+    @Override
+    public int getEnchantmentValue(ItemStack stack) {
+        return 40;
+    }
+
+    @Override
+    public boolean canApplyAtEnchantingTable(ItemStack stack, Enchantment enchantment) {
+        return ALLOWED_ENCHANTMENTS.contains(enchantment);
+    }
+
+    @Override
+    public @Nullable ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
+        return this;
+    }
+
+    @Override
+    public ItemStack getStack() {
+        return new ItemStack(this);
+    }
+
+    @Override
+    public void curioTick(SlotContext slotContext) {
+        LivingEntity ent = slotContext.entity();
+        if (ent.level.isClientSide) return;
+        ItemStack is = CuriosApi.getCuriosHelper().findCurio(ent, slotContext.identifier(), slotContext.index()).get().stack();
+        if (this.getEnchantmentLevel(is, Enchantments.MENDING) == 0) return;
+        Pair<UUID, String> owner = this.getOwner(is);
+        if (owner == null) return;
+        Player own = ent.level.getPlayerByUUID(owner.getFirst());
+        if (own != null && own.distanceTo(ent) < 16) {
+            ent.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 40, 1, false, false, false));
+        }
+    }
+
+    @Override
+    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability, @Nullable Direction direction) {
+        if (capability == CuriosCapability.ITEM) {
+            return LazyOptional.of(() -> (T) this);
+        }
+        return LazyOptional.empty();
     }
 
     public enum TagType {
@@ -121,7 +191,9 @@ public class PlayerCollarItem extends Item implements DyeableLeatherItem {
     @Override
     public void appendHoverText(ItemStack p_41421_, @Nullable Level p_41422_, List<Component> p_41423_, TooltipFlag p_41424_) {
         super.appendHoverText(p_41421_, p_41422_, p_41423_, p_41424_);
-        p_41423_.add(Component.translatable("item.playercollars.collar.paw_color", Integer.toHexString(getPawColor(p_41421_))).withStyle(ChatFormatting.GRAY));
+        if (p_41424_.isAdvanced()) {
+            p_41423_.add(Component.translatable("item.playercollars.collar.paw_color", Integer.toHexString(getPawColor(p_41421_))).withStyle(ChatFormatting.GRAY));
+        }
         Pair<UUID, String> owner = getOwner(p_41421_);
         if (owner != null) {
             p_41423_.add(Component.translatable("item.playercollars.collar.owner", owner.getSecond()).withStyle(ChatFormatting.GRAY));
@@ -139,6 +211,11 @@ public class PlayerCollarItem extends Item implements DyeableLeatherItem {
             return super.getName(p_41458_);
         }
         return Component.translatable("item.playercollars.tag." + TagType.values()[$$2].name()).append(" ").append(super.getName(p_41458_));
+    }
+
+    @Override
+    public boolean isEnchantable(ItemStack p_41456_) {
+        return true;
     }
 
     @Override
