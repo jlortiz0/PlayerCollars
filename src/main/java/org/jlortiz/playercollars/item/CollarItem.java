@@ -89,7 +89,7 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
         if (owner == null) return;
         Player own = ent.level.getPlayerByUUID(owner.getFirst());
         if (own != null && own.distanceTo(ent) < 16) {
-            ent.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 40, 1, false, false, false));
+            ent.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 40, 0, false, false, false));
         }
     }
 

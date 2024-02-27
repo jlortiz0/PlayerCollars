@@ -91,10 +91,10 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
         if (holder.getLevel() != player.getLevel()) return;
 
         float distance = player.distanceTo(holder);
-        if (distance < (leashplayer$isLoyal ? 4 : 2)) {
+        if (distance < (leashplayer$isLoyal ? 2 : 4)) {
             return;
         }
-        if (distance > (leashplayer$isLoyal ? 12f : 10f)) {
+        if (distance > (leashplayer$isLoyal ? 10f : 12f)) {
             leashplayers$detach();
             leashplayers$drop();
             return;

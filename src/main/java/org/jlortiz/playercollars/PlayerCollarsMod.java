@@ -33,11 +33,11 @@ public class PlayerCollarsMod {
 	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
 	public static final RegistryObject<CollarItem> COLLAR_ITEM = ITEMS.register("collar", CollarItem::new);
 	public static final RegistryObject<ClickerItem> CLICKER_ITEM = ITEMS.register("clicker", ClickerItem::new);
-	public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS =
+	private static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS =
 			DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, MOD_ID);
 	public static final RegistryObject<RecipeSerializer<CollarRecipe>> COLLAR_SERIALIZER =
-			RECIPE_SERIALIZERS.register(CollarRecipe.Type.ID,() -> CollarRecipe.Serializer);
-	public static final DeferredRegister<RecipeType<?>> RECIPE_TYPES = DeferredRegister.create(ForgeRegistries.RECIPE_TYPES, MOD_ID);
+			RECIPE_SERIALIZERS.register(CollarRecipe.Type.ID, () -> CollarRecipe.Serializer);
+	private static final DeferredRegister<RecipeType<?>> RECIPE_TYPES = DeferredRegister.create(ForgeRegistries.RECIPE_TYPES, MOD_ID);
 	public static final RegistryObject<RecipeType<CollarRecipe>> COLLAR_TYPE =
 			RECIPE_TYPES.register(CollarRecipe.Type.ID, () -> CollarRecipe.Type.INSTANCE);
 	public static final CreativeModeTab TAB = new CreativeModeTab(MOD_ID) {
@@ -47,14 +47,16 @@ public class PlayerCollarsMod {
 		}
 	};
 	public static final SimpleChannel NETWORK = NetworkRegistry.newSimpleChannel(new ResourceLocation(MOD_ID, "collar_channel"), () -> "", String::isEmpty, String::isEmpty);
-	public static final SoundEvent CLICKER_ON = new SoundEvent(new ResourceLocation(MOD_ID, "clicker_on"));
-	public static final SoundEvent CLICKER_OFF = new SoundEvent(new ResourceLocation(MOD_ID, "clicker_off"));
+	private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, MOD_ID);
+	public static final RegistryObject<SoundEvent> CLICKER_ON = SOUNDS.register("clicker_on", () -> new SoundEvent(new ResourceLocation(MOD_ID, "clicker_on")));
+	public static final RegistryObject<SoundEvent> CLICKER_OFF = SOUNDS.register("clicker_off", () -> new SoundEvent(new ResourceLocation(MOD_ID, "clicker_off")));
 
 	public PlayerCollarsMod() {
 		IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
 		ITEMS.register(eventBus);
 		RECIPE_SERIALIZERS.register(eventBus);
 		RECIPE_TYPES.register(eventBus);
+		SOUNDS.register(eventBus);
 		eventBus.register(this);
 		InterModComms.sendTo("curios", SlotTypeMessage.REGISTER_TYPE, () -> new SlotTypeMessage.Builder("necklace").cosmetic().build());
 		NETWORK.registerMessage(1, PacketUpdateCollar.class, PacketUpdateCollar::encode, PacketUpdateCollar::new, PacketUpdateCollar::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
@@ -63,11 +65,11 @@ public class PlayerCollarsMod {
 	@SubscribeEvent
 	public void registerItemColors(RegisterColorHandlersEvent.Item event) {
 		event.register(((itemStack, i) -> switch (i) {
-                case 0 -> COLLAR_ITEM.get().getColor(itemStack);
-                case 1 -> COLLAR_ITEM.get().getTagColor(itemStack);
-                case 2 -> COLLAR_ITEM.get().getPawColor(itemStack);
-                default -> -1;
-            }
+			case 0 -> COLLAR_ITEM.get().getColor(itemStack);
+			case 1 -> COLLAR_ITEM.get().getTagColor(itemStack);
+			case 2 -> COLLAR_ITEM.get().getPawColor(itemStack);
+			default -> -1;
+		}
 		), COLLAR_ITEM.get());
 
 		event.register((itemStack, i) -> i == 0 ? CLICKER_ITEM.get().getColor(itemStack) : -1, CLICKER_ITEM.get());
