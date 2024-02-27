@@ -1,5 +1,6 @@
 package org.jlortiz.playercollars.item;
 
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
@@ -8,9 +9,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.*;
 import net.minecraftforge.common.Tags;
-import org.jetbrains.annotations.NotNull;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 
+@MethodsReturnNonnullByDefault
 public class CollarRecipe extends ShapedRecipe {
     private static final Ingredient ITEM_LEATHER = Ingredient.of(Items.LEATHER);
     private static final Ingredient ITEM_INGOTS = CollarItem.TagType.getIngredient();
@@ -30,7 +31,7 @@ public class CollarRecipe extends ShapedRecipe {
     public static final RecipeSerializer<CollarRecipe> Serializer = new SimpleRecipeSerializer<>(CollarRecipe::new);
 
     @Override
-    public @NotNull ItemStack assemble(CraftingContainer craftingContainer) {
+    public ItemStack assemble(CraftingContainer craftingContainer) {
         ItemStack ingot = craftingContainer.getItem(4);
         CollarItem.TagType t = null;
         for (CollarItem.TagType tag : CollarItem.TagType.values()) {

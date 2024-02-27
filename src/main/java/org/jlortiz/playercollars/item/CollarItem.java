@@ -2,6 +2,7 @@ package org.jlortiz.playercollars.item;
 
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.ChatFormatting;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -33,12 +34,16 @@ import org.jlortiz.playercollars.PlayerCollarsMod;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.CuriosCapability;
 import top.theillusivec4.curios.api.SlotContext;
+import top.theillusivec4.curios.api.SlotResult;
 import top.theillusivec4.curios.api.type.capability.ICurio;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
 public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICapabilityProvider {
 
     private static final Set<Enchantment> ALLOWED_ENCHANTMENTS = new HashSet<>();
@@ -50,12 +55,6 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
     }
     public CollarItem() {
         super(new Item.Properties().stacksTo(1).tab(PlayerCollarsMod.TAB));
-    }
-
-    @Override
-    public boolean isBookEnchantable(ItemStack stack, ItemStack book) {
-        Set<Enchantment> ks = Items.ENCHANTED_BOOK.getAllEnchantments(book).keySet();
-        return ALLOWED_ENCHANTMENTS.containsAll(ks);
     }
 
     @Override
@@ -82,7 +81,9 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
     public void curioTick(SlotContext slotContext) {
         LivingEntity ent = slotContext.entity();
         if (ent.level.isClientSide) return;
-        ItemStack is = CuriosApi.getCuriosHelper().findCurio(ent, slotContext.identifier(), slotContext.index()).get().stack();
+        Optional<SlotResult> sr = CuriosApi.getCuriosHelper().findCurio(ent, slotContext.identifier(), slotContext.index());
+        if (sr.isEmpty()) return;
+        ItemStack is = sr.get().stack();
         if (this.getEnchantmentLevel(is, Enchantments.MENDING) == 0) return;
         Pair<UUID, String> owner = this.getOwner(is);
         if (owner == null) return;
@@ -93,7 +94,7 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
     }
 
     @Override
-    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability, @Nullable Direction direction) {
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction direction) {
         if (capability == CuriosCapability.ITEM) {
             return LazyOptional.of(() -> (T) this);
         }
@@ -147,14 +148,14 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
         $$1.putInt("paw", col);
     }
 
-    public Pair<UUID, String> getOwner(ItemStack is) {
+    public @Nullable Pair<UUID, String> getOwner(ItemStack is) {
         CompoundTag $$1 = is.getTagElement("owner");
         if ($$1 == null || !$$1.contains("uuid") || !$$1.contains("name")) return null;
         return new Pair<>($$1.getUUID("uuid"), $$1.getString("name"));
     }
 
-    public void setOwner(ItemStack is, UUID uuid, String name) {
-        if (uuid == null) {
+    public void setOwner(ItemStack is, @Nullable UUID uuid, @Nullable String name) {
+        if (uuid == null || name == null) {
             is.removeTagKey("owner");
             return;
         }
@@ -189,7 +190,7 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
     }
 
     @Override
-    public void appendHoverText(ItemStack p_41421_, @Nullable Level p_41422_, List<Component> p_41423_, TooltipFlag p_41424_) {
+    public void appendHoverText(ItemStack p_41421_, @Nullable Level p_41422_, List<Component> p_41423_, @NotNull TooltipFlag p_41424_) {
         super.appendHoverText(p_41421_, p_41422_, p_41423_, p_41424_);
         if (p_41424_.isAdvanced()) {
             p_41423_.add(Component.translatable("item.playercollars.collar.paw_color", Integer.toHexString(getPawColor(p_41421_))).withStyle(ChatFormatting.GRAY));

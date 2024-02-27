@@ -46,7 +46,7 @@ public class PlayerCollarsMod {
 			return new ItemStack(COLLAR_ITEM.get());
 		}
 	};
-	public static SimpleChannel NETWORK = NetworkRegistry.newSimpleChannel(new ResourceLocation(MOD_ID, "collar_channel"), () -> "", String::isEmpty, String::isEmpty);
+	public static final SimpleChannel NETWORK = NetworkRegistry.newSimpleChannel(new ResourceLocation(MOD_ID, "collar_channel"), () -> "", String::isEmpty, String::isEmpty);
 	public static final SoundEvent CLICKER_ON = new SoundEvent(new ResourceLocation(MOD_ID, "clicker_on"));
 	public static final SoundEvent CLICKER_OFF = new SoundEvent(new ResourceLocation(MOD_ID, "clicker_off"));
 

@@ -2,7 +2,6 @@ package org.jlortiz.playercollars.leash.mixin;
 
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -18,9 +17,7 @@ import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.item.CollarItem;
 import org.jlortiz.playercollars.leash.LeashImpl;
 import org.jlortiz.playercollars.leash.LeashProxyEntity;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -36,7 +33,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mixin(ServerPlayer.class)
 public abstract class MixinServerPlayerEntity implements LeashImpl {
-    @Shadow @Final public MinecraftServer server;
     @Unique
     private final ServerPlayer leashplayers$self = (ServerPlayer) (Object) this;
 
@@ -107,12 +103,12 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
         double dx = (holder.getX() - player.getX()) / (double) distance;
         double dy = (holder.getY() - player.getY()) / (double) distance;
         double dz = (holder.getZ() - player.getZ()) / (double) distance;
-        final double mult = leashplayer$isLoyal ? 0.5d : 0.4d;
+        final double factor = leashplayer$isLoyal ? 0.5d : 0.4d;
 
         player.push(
-                Math.copySign(dx * dx * mult, dx),
-                Math.copySign(dy * dy * mult, dy),
-                Math.copySign(dz * dz * mult, dz)
+                Math.copySign(dx * dx * factor, dx),
+                Math.copySign(dy * dy * factor, dy),
+                Math.copySign(dz * dz * factor, dz)
         );
 
         player.connection.send(new ClientboundSetEntityMotionPacket(player));
@@ -208,7 +204,7 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
 
     @Inject(at=@At("TAIL"), method="hurt")
     private void checkCollarThorns(DamageSource p_9037_, float p_9038_, CallbackInfoReturnable<Boolean> cir) {
-        if (p_9037_ instanceof EntityDamageSource eds) {
+        if (p_9037_ instanceof EntityDamageSource eds && eds.getEntity() != null) {
             LivingEntity self = ((LivingEntity) (Object) this);
             CollarItem item = PlayerCollarsMod.COLLAR_ITEM.get();
             List<SlotResult> curios = CuriosApi.getCuriosHelper().findCurios(self, item);

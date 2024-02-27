@@ -1,5 +1,6 @@
 package org.jlortiz.playercollars.item;
 
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -12,6 +13,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
 public class ClickerItem extends Item implements DyeableLeatherItem {
     public ClickerItem() {
         super(new Item.Properties().tab(PlayerCollarsMod.TAB).stacksTo(1));
