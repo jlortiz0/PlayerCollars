@@ -26,12 +26,14 @@ public class CollarRenderer implements ICurioRenderer {
     @Override
     public <T extends LivingEntity, M extends EntityModel<T>> void render(ItemStack itemStack, SlotContext slotContext, PoseStack poseStack, RenderLayerParent<T, M> renderLayerParent, MultiBufferSource multiBufferSource, int i, float v, float v1, float v2, float v3, float v4, float v5) {
         poseStack.pushPose();
-        ModelPart body = ((HumanoidModel<T>) renderLayerParent.getModel()).body;
-        poseStack.translate(body.x * 0.0625f, body.y * 0.0625f, body.z * 0.0625f);
-        poseStack.mulPose(new Quaternion(body.xRot, body.yRot, body.zRot + (float) Math.PI, false));
-        poseStack.scale(0.8f * body.xScale, 0.8f * body.yScale, 0.8f * body.zScale);
-        poseStack.translate(0, 0.4, 0);
-        Minecraft.getInstance().getItemRenderer().render(itemStack, ItemTransforms.TransformType.HEAD, false, poseStack, multiBufferSource, i, OverlayTexture.NO_OVERLAY, model);
+        try {
+            ModelPart body = ((HumanoidModel<T>) renderLayerParent.getModel()).body;
+            poseStack.translate(body.x * 0.0625f, body.y * 0.0625f, body.z * 0.0625f);
+            poseStack.mulPose(new Quaternion(body.xRot, body.yRot, body.zRot + (float) Math.PI, false));
+            poseStack.scale(0.8f * body.xScale, 0.8f * body.yScale, 0.8f * body.zScale);
+            poseStack.translate(0, 0.4, 0);
+            Minecraft.getInstance().getItemRenderer().render(itemStack, ItemTransforms.TransformType.HEAD, false, poseStack, multiBufferSource, i, OverlayTexture.NO_OVERLAY, model);
+        } catch (ClassCastException ignored) {}
         poseStack.popPose();
     }
 }

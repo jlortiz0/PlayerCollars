@@ -23,13 +23,15 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.MaterialColor;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jlortiz.playercollars.DyingStationScreen;
+import org.jlortiz.playercollars.client.DyingStationScreen;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.CuriosCapability;
@@ -180,6 +182,7 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
     }
 
     @Override
+    @OnlyIn(Dist.CLIENT)
     public InteractionResultHolder<ItemStack> use(Level p_41432_, Player p_41433_, InteractionHand p_41434_) {
         InteractionResultHolder<ItemStack> ir = super.use(p_41432_, p_41433_, p_41434_);
         if (ir.getResult() == InteractionResult.PASS && p_41433_.isCrouching() && p_41432_.isClientSide) {

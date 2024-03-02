@@ -7,9 +7,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -60,18 +58,5 @@ public class PlayerCollarsMod {
 		eventBus.register(this);
 		InterModComms.sendTo("curios", SlotTypeMessage.REGISTER_TYPE, () -> new SlotTypeMessage.Builder("necklace").cosmetic().build());
 		NETWORK.registerMessage(1, PacketUpdateCollar.class, PacketUpdateCollar::encode, PacketUpdateCollar::new, PacketUpdateCollar::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
-	}
-
-	@SubscribeEvent
-	public void registerItemColors(RegisterColorHandlersEvent.Item event) {
-		event.register(((itemStack, i) -> switch (i) {
-			case 0 -> COLLAR_ITEM.get().getColor(itemStack);
-			case 1 -> COLLAR_ITEM.get().getTagColor(itemStack);
-			case 2 -> COLLAR_ITEM.get().getPawColor(itemStack);
-			default -> -1;
-		}
-		), COLLAR_ITEM.get());
-
-		event.register((itemStack, i) -> i == 0 ? CLICKER_ITEM.get().getColor(itemStack) : -1, CLICKER_ITEM.get());
 	}
 }
