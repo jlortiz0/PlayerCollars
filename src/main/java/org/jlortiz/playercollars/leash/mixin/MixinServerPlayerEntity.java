@@ -1,6 +1,5 @@
 package org.jlortiz.playercollars.leash.mixin;
 
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -26,10 +25,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotResult;
-import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mixin(ServerPlayer.class)
@@ -156,21 +153,6 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
         leashplayers$update();
     }
 
-    @Unique
-    private boolean playerCollars$filterStacksByOwner(IDynamicStackHandler stacks, UUID plr) {
-        for (int i = 0; i < stacks.getSlots(); i++) {
-            ItemStack is = stacks.getStackInSlot(i);
-            if (is.getItem() instanceof CollarItem item) {
-                Pair<UUID, String> owner = item.getOwner(is);
-                if (owner != null && owner.getFirst().equals(plr)) {
-                    leashplayer$loyalty = Mth.clamp(item.getEnchantmentLevel(is, Enchantments.LOYALTY), 0, 2);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     @Override
     public InteractionResult leashplayers$interact(Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
@@ -178,9 +160,13 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
             AtomicBoolean found = new AtomicBoolean(false);
             CuriosApi.getCuriosHelper().getCuriosHandler((Player) (Object) this).ifPresent((handler) -> {
                 handler.getStacksHandler("necklace").ifPresent((slot) -> {
-                    found.set(playerCollars$filterStacksByOwner(slot.getStacks(), player.getUUID()));
-                    if (!found.get()) {
-                        found.set(playerCollars$filterStacksByOwner(slot.getCosmeticStacks(), player.getUUID()));
+                    ItemStack is = PlayerCollarsMod.filterStacksByOwner(slot.getStacks(), player.getUUID());
+                    if (is == null) {
+                        is = PlayerCollarsMod.filterStacksByOwner(slot.getCosmeticStacks(), player.getUUID());
+                    }
+                    if (is != null) {
+                        found.set(true);
+                        leashplayer$loyalty = Mth.clamp(PlayerCollarsMod.COLLAR_ITEM.get().getEnchantmentLevel(is, Enchantments.LOYALTY), 0, 2);
                     }
                 });
             });

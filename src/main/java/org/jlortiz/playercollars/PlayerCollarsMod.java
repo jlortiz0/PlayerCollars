@@ -1,5 +1,6 @@
 package org.jlortiz.playercollars;
 
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.CreativeModeTab;
@@ -22,8 +23,10 @@ import org.jlortiz.playercollars.item.ClickerItem;
 import org.jlortiz.playercollars.item.CollarItem;
 import org.jlortiz.playercollars.item.CollarRecipe;
 import top.theillusivec4.curios.api.SlotTypeMessage;
+import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Mod(PlayerCollarsMod.MOD_ID)
 public class PlayerCollarsMod {
@@ -58,5 +61,19 @@ public class PlayerCollarsMod {
 		eventBus.register(this);
 		InterModComms.sendTo("curios", SlotTypeMessage.REGISTER_TYPE, () -> new SlotTypeMessage.Builder("necklace").cosmetic().build());
 		NETWORK.registerMessage(1, PacketUpdateCollar.class, PacketUpdateCollar::encode, PacketUpdateCollar::new, PacketUpdateCollar::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+		NETWORK.registerMessage(2, PacketLookAtLerped.class, PacketLookAtLerped::write, PacketLookAtLerped::new, PacketLookAtLerped::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+	}
+
+	public static ItemStack filterStacksByOwner(IDynamicStackHandler stacks, UUID plr) {
+		for (int i = 0; i < stacks.getSlots(); i++) {
+			ItemStack is = stacks.getStackInSlot(i);
+			if (is.getItem() instanceof CollarItem item) {
+				Pair<UUID, String> owner = item.getOwner(is);
+				if (owner != null && owner.getFirst().equals(plr)) {
+					return is;
+				}
+			}
+		}
+		return null;
 	}
 }
