@@ -88,7 +88,7 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
         ItemStack is = sr.get().stack();
         if (this.getEnchantmentLevel(is, Enchantments.MENDING) == 0) return;
         Pair<UUID, String> owner = this.getOwner(is);
-        if (owner == null) return;
+        if (owner == null || owner.getFirst().equals(ent.getUUID())) return;
         Player own = ent.level.getPlayerByUUID(owner.getFirst());
         if (own != null && own.distanceTo(ent) < 16) {
             ent.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 40, 0, false, false, false));
