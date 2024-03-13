@@ -2,6 +2,8 @@
 
 Lets players wear pet collars. Only for 1.19.2 Forge at time of writing. I have no plans to port this to another version.
 
+This mod requires [Curios](https://www.curseforge.com/minecraft/mc-mods/curios).
+
 ## Usage
 
 Recipe is
