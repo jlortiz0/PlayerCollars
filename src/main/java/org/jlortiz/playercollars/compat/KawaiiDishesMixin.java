@@ -15,14 +15,16 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import top.theillusivec4.curios.api.CuriosApi;
+import top.theillusivec4.curios.api.SlotResult;
+import top.theillusivec4.curios.api.type.capability.ICuriosItemHandler;
 
 @Mixin(UnbindingCookie.class)
 public class KawaiiDishesMixin {
     @Inject(method = "onCraftedBy", at=@At("TAIL"))
     private void checkCuriosToo(ItemStack pStack, Level pLevel, Player pPlayer, CallbackInfo ci) {
-        CuriosApi.getCuriosHelper().getEquippedCurios(pPlayer).ifPresent((items) -> {
-            for (int i = 0; i < items.getSlots(); i++) {
-                if (items.getStackInSlot(i).getEnchantmentLevel(Enchantments.BINDING_CURSE) != 0) {
+        CuriosApi.getCuriosInventory(pPlayer).map(ICuriosItemHandler::findCurios).ifPresent((items) -> {
+            for (SlotResult sr : items) {
+                if (sr.stack().getEnchantmentLevel(Enchantments.BINDING_CURSE) != 0) {
                     pStack.getOrCreateTag().putBoolean("activated", true);
                     return;
                 }
@@ -32,12 +34,11 @@ public class KawaiiDishesMixin {
 
     @Inject(method="finishUsingItem", at=@At("HEAD"))
     private void dropCuriosToo(ItemStack pStack, Level pLevel, LivingEntity plr, CallbackInfoReturnable<ItemStack> cir) {
-        CuriosApi.getCuriosHelper().getEquippedCurios(plr).ifPresent((items) -> {
-            for (int i = 0; i < items.getSlots(); i++) {
-                ItemStack is = items.getStackInSlot(i);
-                if (is.getEnchantmentLevel(Enchantments.BINDING_CURSE) != 0) {
-                    pLevel.addFreshEntity(new ItemEntity(pLevel, plr.getX(), plr.getY(), plr.getZ(), is));
-                    items.setStackInSlot(i, ItemStack.EMPTY);
+        CuriosApi.getCuriosInventory(plr).ifPresent((handler) -> {
+            for (SlotResult sr : handler.findCurios()) {
+                if (sr.stack().getEnchantmentLevel(Enchantments.BINDING_CURSE) != 0) {
+                    pLevel.addFreshEntity(new ItemEntity(pLevel, plr.getX(), plr.getY(), plr.getZ(), sr.stack()));
+                    handler.setEquippedCurio(sr.slotContext().identifier(), sr.slotContext().index(), ItemStack.EMPTY);
                     plr.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 160, 1));
                     plr.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 100));
                 }

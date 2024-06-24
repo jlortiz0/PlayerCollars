@@ -25,7 +25,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotResult;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mixin(ServerPlayer.class)
@@ -157,18 +156,16 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
         ItemStack stack = player.getItemInHand(hand);
         if (stack.getItem() == Items.LEAD && leashplayers$holder == null) {
             AtomicBoolean found = new AtomicBoolean(false);
-            CuriosApi.getCuriosHelper().getCuriosHandler((Player) (Object) this).ifPresent((handler) -> {
-                handler.getStacksHandler("necklace").ifPresent((slot) -> {
-                    ItemStack is = PlayerCollarsMod.filterStacksByOwner(slot.getStacks(), player.getUUID());
-                    if (is == null) {
-                        is = PlayerCollarsMod.filterStacksByOwner(slot.getCosmeticStacks(), player.getUUID());
-                    }
-                    if (is != null) {
-                        found.set(true);
-                        leashplayer$loyalty = Mth.clamp(PlayerCollarsMod.COLLAR_ITEM.get().getEnchantmentLevel(is, Enchantments.LOYALTY), 0, 2);
-                    }
-                });
-            });
+            CuriosApi.getCuriosInventory((Player) (Object) this).ifPresent((handler) -> handler.getStacksHandler("necklace").ifPresent((slot) -> {
+                ItemStack is = PlayerCollarsMod.filterStacksByOwner(slot.getStacks(), player.getUUID());
+                if (is == null) {
+                    is = PlayerCollarsMod.filterStacksByOwner(slot.getCosmeticStacks(), player.getUUID());
+                }
+                if (is != null) {
+                    found.set(true);
+                    leashplayer$loyalty = Mth.clamp(PlayerCollarsMod.COLLAR_ITEM.get().getEnchantmentLevel(is, Enchantments.LOYALTY), 0, 2);
+                }
+            }));
             if (!found.get()) return InteractionResult.PASS;
             if (!player.isCreative()) {
                 stack.shrink(1);
@@ -193,13 +190,14 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
         if (p_9037_.getEntity() != null) {
             LivingEntity self = ((LivingEntity) (Object) this);
             CollarItem item = PlayerCollarsMod.COLLAR_ITEM.get();
-            List<SlotResult> curios = CuriosApi.getCuriosHelper().findCurios(self, item);
-            for (SlotResult sr : curios) {
-                int l = item.getEnchantmentLevel(sr.stack(), Enchantments.THORNS);
-                if (l > 0) {
-                    Enchantments.THORNS.doPostHurt(self, p_9037_.getEntity(), l);
+            CuriosApi.getCuriosInventory(self).ifPresent((handler) -> {
+                for (SlotResult sr : handler.findCurios("necklace")) {
+                    int l = item.getEnchantmentLevel(sr.stack(), Enchantments.THORNS);
+                    if (l > 0) {
+                        Enchantments.THORNS.doPostHurt(self, p_9037_.getEntity(), l);
+                    }
                 }
-            }
+            });
         }
     }
 }

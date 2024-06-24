@@ -38,7 +38,6 @@ import org.jlortiz.playercollars.client.DyingStationScreen;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.CuriosCapability;
 import top.theillusivec4.curios.api.SlotContext;
-import top.theillusivec4.curios.api.SlotResult;
 import top.theillusivec4.curios.api.type.capability.ICurio;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -77,24 +76,18 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
     }
 
     @Override
-    public ItemStack getStack() {
-        return new ItemStack(this);
-    }
-
-    @Override
     public void curioTick(SlotContext slotContext) {
         LivingEntity ent = slotContext.entity();
         if (ent.level().isClientSide) return;
-        Optional<SlotResult> sr = CuriosApi.getCuriosHelper().findCurio(ent, slotContext.identifier(), slotContext.index());
-        if (sr.isEmpty()) return;
-        ItemStack is = sr.get().stack();
-        if (this.getEnchantmentLevel(is, Enchantments.MENDING) == 0) return;
-        Pair<UUID, String> owner = this.getOwner(is);
-        if (owner == null || owner.getFirst().equals(ent.getUUID())) return;
-        Player own = ent.level().getPlayerByUUID(owner.getFirst());
-        if (own != null && own.distanceTo(ent) < 16) {
-            ent.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 40, 0, false, false, false));
-        }
+        CuriosApi.getCuriosInventory(ent).ifPresent((handler) -> handler.findCurio(slotContext.identifier(), slotContext.index()).ifPresent((sr) -> {
+            if (this.getEnchantmentLevel(sr.stack(), Enchantments.MENDING) == 0) return;
+            Pair<UUID, String> owner = this.getOwner(sr.stack());
+            if (owner == null || owner.getFirst().equals(ent.getUUID())) return;
+            Player own = ent.level().getPlayerByUUID(owner.getFirst());
+            if (own != null && own.distanceTo(ent) < 16) {
+                ent.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 40, 0, false, false, false));
+            }
+        }));
     }
 
     @Override
@@ -103,6 +96,11 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
             return LazyOptional.of(() -> (T) this);
         }
         return LazyOptional.empty();
+    }
+
+    @Override
+    public ItemStack getStack() {
+        return getInstance(TagType.GOLD);
     }
 
     public enum TagType {
