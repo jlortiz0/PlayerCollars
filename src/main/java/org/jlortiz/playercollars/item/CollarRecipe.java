@@ -2,6 +2,7 @@ package org.jlortiz.playercollars.item;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeItem;
@@ -16,8 +17,8 @@ public class CollarRecipe extends ShapedRecipe {
     private static final Ingredient ITEM_LEATHER = Ingredient.of(Items.LEATHER);
     private static final Ingredient ITEM_INGOTS = CollarItem.TagType.getIngredient();
     private static final Ingredient ITEM_DYE = Ingredient.of(Tags.Items.DYES);
-    public CollarRecipe(ResourceLocation rl) {
-        super(rl, "collar", 3, 3, NonNullList.of(
+    public CollarRecipe(ResourceLocation rl, CraftingBookCategory r2) {
+        super(rl, "collar", r2, 3, 3, NonNullList.of(
                 Ingredient.EMPTY, Ingredient.EMPTY, ITEM_LEATHER, Ingredient.EMPTY, ITEM_LEATHER, ITEM_INGOTS, ITEM_LEATHER, Ingredient.EMPTY, ITEM_DYE, Ingredient.EMPTY
         ), new ItemStack(PlayerCollarsMod.COLLAR_ITEM.get()));
     }
@@ -28,10 +29,10 @@ public class CollarRecipe extends ShapedRecipe {
         public static final String ID = "collar";
     }
 
-    public static final RecipeSerializer<CollarRecipe> Serializer = new SimpleRecipeSerializer<>(CollarRecipe::new);
+    public static final RecipeSerializer<CollarRecipe> Serializer = new SimpleCraftingRecipeSerializer<>(CollarRecipe::new);
 
     @Override
-    public ItemStack assemble(CraftingContainer craftingContainer) {
+    public ItemStack assemble(CraftingContainer craftingContainer, RegistryAccess p_266725_) {
         ItemStack ingot = craftingContainer.getItem(4);
         CollarItem.TagType t = null;
         for (CollarItem.TagType tag : CollarItem.TagType.values()) {
@@ -42,7 +43,7 @@ public class CollarRecipe extends ShapedRecipe {
         }
         if (t == null) return ItemStack.EMPTY;
         DyeItem dye = (DyeItem) craftingContainer.getItem(7).getItem();
-        return CollarItem.getInstance(t, dye.getDyeColor().getMaterialColor().col);
+        return CollarItem.getInstance(t, dye.getDyeColor().getMapColor().col);
     }
 
     @Override

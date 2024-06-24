@@ -40,7 +40,7 @@ minecraft {
     //
     // Use non-default mappings at your own risk. They may not always work.
     // Simply re-run your setup task after changing the mappings to update your workspace.
-    mappings channel: 'official', version: '1.19.2'
+    mappings channel: 'official', version: '1.20.1'
 
     // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg') // Currently, this location cannot be changed from the default.
 
@@ -156,13 +156,28 @@ repositories {
     	}
 	}
 	maven { url = "https://maven.terraformersmc.com/" }
+    maven {
+        // location of the maven that hosts JEI files before January 2023
+        name = "Progwml6's maven"
+        url = "https://dvs1.progwml6.com/files/maven/"
+    }
+    maven {
+        // location of the maven that hosts JEI files since January 2023
+        name = "Jared's maven"
+        url = "https://maven.blamejared.com/"
+    }
+    maven {
+        // location of a maven mirror for JEI files, as a fallback
+        name = "ModMaven"
+        url = "https://modmaven.dev"
+    }
 }
 
 dependencies {
     // Specify the version of Minecraft to use. If this is any group other than 'net.minecraft', it is assumed
     // that the dep is a ForgeGradle 'patcher' dependency, and its patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-    minecraft 'net.minecraftforge:forge:1.19.2-43.3.0'
+    minecraft 'net.minecraftforge:forge:1.20.1-47.3.0'
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
@@ -177,9 +192,14 @@ dependencies {
     // For more info...
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
-    implementation fg.deobf("curse.maven:curios-309927:5066842")
-    runtimeOnly fg.deobf("curse.maven:geckolib-388172:4407241")
-    implementation fg.deobf("curse.maven:kawaii-dishes-694309:4644365")
+    implementation fg.deobf("curse.maven:curios-309927:5367944")
+    runtimeOnly fg.deobf("curse.maven:geckolib-388172:5460309")
+    implementation fg.deobf("curse.maven:kawaii-dishes-694309:4701259")
+
+    compileOnly "mezz.jei:jei-1.20.1-common-api:15.3.0.8"
+    compileOnly "mezz.jei:jei-1.20.1-forge-api:15.3.0.8"
+    // at runtime, use the full JEI jar
+    runtimeOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.3.0.8")
 }
 
 mixin {

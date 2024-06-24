@@ -1,13 +1,12 @@
 package org.jlortiz.playercollars.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.NotNull;
 import org.jlortiz.playercollars.PacketUpdateCollar;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.item.CollarItem;
@@ -67,18 +66,18 @@ public class DyingStationScreen extends Screen {
 
         this.addRenderableWidget(dyeField);
         this.addRenderableWidget(pawField);
-        this.addRenderableWidget(new Button(x + 5, y + 50, 75, 20, Component.literal("Done"), (btn) -> {
+        this.addRenderableWidget(Button.builder(Component.literal("Done"), (btn) -> {
             PacketUpdateCollar.OwnerState os = ownerUUID == null ? PacketUpdateCollar.OwnerState.DEL : (ownerUUID.equals(ownUUID) ? PacketUpdateCollar.OwnerState.ADD : PacketUpdateCollar.OwnerState.NOP);
             PlayerCollarsMod.NETWORK.sendToServer(new PacketUpdateCollar(is, os));
             this.minecraft.setScreen(null);
-        }));
-        this.addRenderableWidget(new Button(x - 80, y + 50, 75, 20, Component.literal("Cancel"), (btn) -> {
+        }).bounds(x + 5, y + 50, 75, 20).build());
+        this.addRenderableWidget(Button.builder(Component.literal("Cancel"), (btn) -> {
             item.setColor(is, initColor);
             item.setPawColor(is, initPaw);
             this.minecraft.setScreen(null);
-        }));
+        }).bounds(x - 80, y + 50, 75, 20).build());
 
-        Button ownerButton = new Button(x - 80, y + 72, 160, 20, Component.empty(), this::updateOwner);
+        Button ownerButton = Button.builder(Component.empty(), this::updateOwner).bounds(x - 80, y + 72, 160, 20).build();
         if (ownerUUID == null) {
             ownerButton.setMessage(Component.translatable("item.playercollars.collar.become_owner"));
         } else if (ownerUUID.equals(ownUUID)) {
@@ -115,11 +114,11 @@ public class DyingStationScreen extends Screen {
     }
 
     @Override
-    public void render(@NotNull PoseStack pPoseStack, int mouseX, int mouseY, float delta) {
-        renderBackground(pPoseStack);
-        super.render(pPoseStack, mouseX, mouseY, delta);
-        font.draw(pPoseStack, Component.translatable("item.playercollars.collar"), this.width / 2 - 75, this.height / 2 - 25, -1);
-        font.draw(pPoseStack, Component.translatable("item.playercollars.collar.paw"), this.width / 2 - 75, this.height / 2 + 1, -1);
+    public void render(GuiGraphics p_281549_, int mouseX, int mouseY, float delta) {
+        renderBackground(p_281549_);
+        super.render(p_281549_, mouseX, mouseY, delta);
+        p_281549_.drawString(font, Component.translatable("item.playercollars.collar"), this.width / 2 - 75, this.height / 2 - 25, -1);
+        p_281549_.drawString(font, Component.translatable("item.playercollars.collar.paw"), this.width / 2 - 75, this.height / 2 + 1, -1);
     }
 
     @Override

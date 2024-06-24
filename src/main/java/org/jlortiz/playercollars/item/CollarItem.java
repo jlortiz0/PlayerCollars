@@ -5,7 +5,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.ItemTags;
@@ -17,12 +16,15 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.DyeableLeatherItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.material.MaterialColor;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.Tags;
@@ -56,7 +58,7 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
         ALLOWED_ENCHANTMENTS.add(Enchantments.MENDING);
     }
     public CollarItem() {
-        super(new Item.Properties().stacksTo(1).tab(PlayerCollarsMod.TAB));
+        super(new Item.Properties().stacksTo(1));
     }
 
     @Override
@@ -82,14 +84,14 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
     @Override
     public void curioTick(SlotContext slotContext) {
         LivingEntity ent = slotContext.entity();
-        if (ent.level.isClientSide) return;
+        if (ent.level().isClientSide) return;
         Optional<SlotResult> sr = CuriosApi.getCuriosHelper().findCurio(ent, slotContext.identifier(), slotContext.index());
         if (sr.isEmpty()) return;
         ItemStack is = sr.get().stack();
         if (this.getEnchantmentLevel(is, Enchantments.MENDING) == 0) return;
         Pair<UUID, String> owner = this.getOwner(is);
         if (owner == null || owner.getFirst().equals(ent.getUUID())) return;
-        Player own = ent.level.getPlayerByUUID(owner.getFirst());
+        Player own = ent.level().getPlayerByUUID(owner.getFirst());
         if (own != null && own.distanceTo(ent) < 16) {
             ent.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 40, 0, false, false, false));
         }
@@ -128,7 +130,7 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
     @Override
     public int getColor(ItemStack itemStack) {
         CompoundTag $$1 = itemStack.getTagElement("display");
-        return $$1 != null && $$1.contains("color", 99) ? $$1.getInt("color") : MaterialColor.COLOR_RED.col;
+        return $$1 != null && $$1.contains("color", 99) ? $$1.getInt("color") : MapColor.COLOR_RED.col;
     }
 
     public int getTagColor(ItemStack itemStack) {
@@ -142,7 +144,7 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
 
     public int getPawColor(ItemStack itemStack) {
         CompoundTag $$1 = itemStack.getTagElement("display");
-        return $$1 != null && $$1.contains("paw", 99) ? $$1.getInt("paw") : MaterialColor.COLOR_BLUE.col;
+        return $$1 != null && $$1.contains("paw", 99) ? $$1.getInt("paw") : MapColor.COLOR_BLUE.col;
     }
 
     public void setPawColor(ItemStack itemStack, int col) {
@@ -220,13 +222,5 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
     @Override
     public boolean isEnchantable(ItemStack p_41456_) {
         return true;
-    }
-
-    @Override
-    public void fillItemCategory(CreativeModeTab p_41391_, NonNullList<ItemStack> p_41392_) {
-        if (this.allowedIn(p_41391_)) {
-            for (TagType t : TagType.values())
-                p_41392_.add(getInstance(t));
-        }
     }
 }

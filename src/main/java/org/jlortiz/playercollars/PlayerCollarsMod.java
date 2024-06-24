@@ -3,7 +3,6 @@ package org.jlortiz.playercollars;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -18,7 +17,6 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
-import org.jetbrains.annotations.NotNull;
 import org.jlortiz.playercollars.item.ClickerItem;
 import org.jlortiz.playercollars.item.CollarItem;
 import org.jlortiz.playercollars.item.CollarRecipe;
@@ -41,16 +39,10 @@ public class PlayerCollarsMod {
 	private static final DeferredRegister<RecipeType<?>> RECIPE_TYPES = DeferredRegister.create(ForgeRegistries.RECIPE_TYPES, MOD_ID);
 	public static final RegistryObject<RecipeType<CollarRecipe>> COLLAR_TYPE =
 			RECIPE_TYPES.register(CollarRecipe.Type.ID, () -> CollarRecipe.Type.INSTANCE);
-	public static final CreativeModeTab TAB = new CreativeModeTab(MOD_ID) {
-		@Override
-		public @NotNull ItemStack makeIcon() {
-			return new ItemStack(COLLAR_ITEM.get());
-		}
-	};
 	public static final SimpleChannel NETWORK = NetworkRegistry.newSimpleChannel(new ResourceLocation(MOD_ID, "collar_channel"), () -> "", String::isEmpty, String::isEmpty);
 	private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, MOD_ID);
-	public static final RegistryObject<SoundEvent> CLICKER_ON = SOUNDS.register("clicker_on", () -> new SoundEvent(new ResourceLocation(MOD_ID, "clicker_on")));
-	public static final RegistryObject<SoundEvent> CLICKER_OFF = SOUNDS.register("clicker_off", () -> new SoundEvent(new ResourceLocation(MOD_ID, "clicker_off")));
+	public static final RegistryObject<SoundEvent> CLICKER_ON = SOUNDS.register("clicker_on", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "clicker_on")));
+	public static final RegistryObject<SoundEvent> CLICKER_OFF = SOUNDS.register("clicker_off", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "clicker_off")));
 
 	public PlayerCollarsMod() {
 		IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();

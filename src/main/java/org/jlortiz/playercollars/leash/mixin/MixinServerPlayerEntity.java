@@ -6,7 +6,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.EntityDamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -86,7 +85,7 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
         ServerPlayer player = leashplayers$self;
         Entity holder = leashplayers$holder;
         if (holder == null) return;
-        if (holder.getLevel() != player.getLevel()) return;
+        if (holder.level() != player.level()) return;
 
         float distance = player.distanceTo(holder);
         if (distance < 4 - leashplayer$loyalty) {
@@ -120,7 +119,7 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
         if (leashplayers$proxy == null) {
             leashplayers$proxy = new LeashProxyEntity(leashplayers$self);
             leashplayers$proxy.setPos(leashplayers$self.getX(), leashplayers$self.getY(), leashplayers$self.getZ());
-            leashplayers$self.getLevel().addFreshEntity(leashplayers$proxy);
+            leashplayers$self.level().addFreshEntity(leashplayers$proxy);
         }
         leashplayers$proxy.setLeashedTo(leashplayers$holder, true);
 
@@ -191,14 +190,14 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
 
     @Inject(at=@At("TAIL"), method="hurt")
     private void checkCollarThorns(DamageSource p_9037_, float p_9038_, CallbackInfoReturnable<Boolean> cir) {
-        if (p_9037_ instanceof EntityDamageSource eds && eds.getEntity() != null) {
+        if (p_9037_.getEntity() != null) {
             LivingEntity self = ((LivingEntity) (Object) this);
             CollarItem item = PlayerCollarsMod.COLLAR_ITEM.get();
             List<SlotResult> curios = CuriosApi.getCuriosHelper().findCurios(self, item);
             for (SlotResult sr : curios) {
                 int l = item.getEnchantmentLevel(sr.stack(), Enchantments.THORNS);
                 if (l > 0) {
-                    Enchantments.THORNS.doPostHurt(self, eds.getEntity(), l);
+                    Enchantments.THORNS.doPostHurt(self, p_9037_.getEntity(), l);
                 }
             }
         }

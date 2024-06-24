@@ -39,10 +39,10 @@ description="Lets players wear pet collars.\nLeashable players code from https:/
 modId="curios"
 mandatory=true
 ordering="AFTER"
-versionRange = "[1.19.2-5.1.1.0,)"
+versionRange = "[1.20.1-4.4.7,)"
 
 [[dependencies.playercollars]]
 modId="kawaiidishes"
 mandatory=false
 ordering="AFTER"
-versionRange = "[1.6,)"
+versionRange = "[1.10,)"
