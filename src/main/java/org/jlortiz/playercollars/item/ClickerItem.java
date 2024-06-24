@@ -2,12 +2,12 @@ package org.jlortiz.playercollars.item;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.Item;
@@ -15,7 +15,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
 import net.minecraftforge.network.PacketDistributor;
 import org.jlortiz.playercollars.PacketLookAtLerped;
 import org.jlortiz.playercollars.PlayerCollarsMod;
@@ -28,7 +27,7 @@ import java.util.List;
 @MethodsReturnNonnullByDefault
 public class ClickerItem extends Item implements DyeableLeatherItem {
     public ClickerItem() {
-        super(new Item.Properties().tab(PlayerCollarsMod.TAB).stacksTo(1));
+        super(new Item.Properties().stacksTo(1));
     }
 
     @Override
@@ -52,11 +51,9 @@ public class ClickerItem extends Item implements DyeableLeatherItem {
         if (!p_41432_.isClientSide) {
             int level = p_41433_.getItemInHand(p_41434_).getEnchantmentLevel(Enchantments.FISHING_SPEED);
             if (level > 0) {
-                level = 4 << level;
-                List<Player> plrs = p_41432_.getNearbyPlayers(TargetingConditions.forNonCombat().ignoreLineOfSight().ignoreInvisibilityTesting().range(level), p_41433_, AABB.ofSize(p_41433_.position(), level, level, level));
-                for (Player p : plrs) {
-                    // BUG: This should be filtered out by the TargetingCondition range, but isn't?
-                    if (p.is(p_41433_) || p.distanceTo(p_41433_) > level) continue;
+                final int trueLevel = 4 << level;
+                List<ServerPlayer> plrs = ((ServerLevel) p_41432_).getPlayers((p) -> !p.is(p_41433_) && p.closerThan(p_41433_, trueLevel));
+                for (ServerPlayer p : plrs) {
                     CuriosApi.getCuriosHelper().getCuriosHandler(p).ifPresent((handler) -> {
                         handler.getStacksHandler("necklace").ifPresent((slot) -> {
                             ItemStack is = PlayerCollarsMod.filterStacksByOwner(slot.getStacks(), p_41433_.getUUID());
@@ -65,7 +62,7 @@ public class ClickerItem extends Item implements DyeableLeatherItem {
                             }
                             if (is != null) {
                                 PacketLookAtLerped packet = new PacketLookAtLerped(p_41433_);
-                                PlayerCollarsMod.NETWORK.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) p), packet);
+                                PlayerCollarsMod.NETWORK.send(PacketDistributor.PLAYER.with(() -> p), packet);
                             }
                         });
                     });

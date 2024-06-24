@@ -1,9 +1,9 @@
 {
 	"credit": "Made with Blockbench",
 	"textures": {
-		"0": "playercollars:entity/collar",
-		"1": "playercollars:entity/tag_overlay",
-		"2": "playercollars:entity/paw_overlay"
+		"0": "playercollars:item/collar",
+		"1": "playercollars:item/tag_overlay",
+		"2": "playercollars:item/paw_overlay"
 	},
 	"elements": [
 		{
