@@ -1,22 +1,22 @@
 package org.jlortiz.playercollars.leash.mixin;
 
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 import org.jlortiz.playercollars.leash.LeashImpl;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(Player.class)
+@Mixin(PlayerEntity.class)
 public abstract class MixinPlayerEntity {
-    @Inject(method = "interactOn", at = @At("RETURN"), cancellable = true)
-    private void leashplayers$onInteract(Entity entity, InteractionHand hand, CallbackInfoReturnable<InteractionResult> info) {
-        if (info.getReturnValue() != InteractionResult.PASS) return;
-        if (((Object) this) instanceof ServerPlayer player && entity instanceof LeashImpl impl) {
+    @Inject(method = "interact", at = @At("RETURN"), cancellable = true)
+    private void leashplayers$onInteract(Entity entity, Hand hand, CallbackInfoReturnable<ActionResult> info) {
+        if (info.getReturnValue() != ActionResult.PASS) return;
+        if (((Object) this) instanceof ServerPlayerEntity player && entity instanceof LeashImpl impl) {
             info.setReturnValue(impl.leashplayers$interact(player, hand));
             info.cancel();
         }

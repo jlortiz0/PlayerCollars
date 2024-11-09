@@ -1,27 +1,24 @@
 package org.jlortiz.playercollars;
 
-import net.minecraft.commands.arguments.EntityAnchorArgument;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.game.ClientboundPlayerLookAtPacket;
-import net.minecraft.world.entity.Entity;
-import net.minecraftforge.network.NetworkEvent;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.command.argument.EntityAnchorArgumentType;
+import net.minecraft.entity.Entity;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.s2c.play.LookAtS2CPacket;
 import org.jlortiz.playercollars.client.RotationLerpHandler;
 
-import java.util.function.Supplier;
-
-public class PacketLookAtLerped extends ClientboundPlayerLookAtPacket {
+public class PacketLookAtLerped extends LookAtS2CPacket {
     public PacketLookAtLerped(Entity p_132783_) {
-        super(EntityAnchorArgument.Anchor.EYES, p_132783_.getX(), p_132783_.getEyeY(), p_132783_.getZ());
+        super(EntityAnchorArgumentType.EntityAnchor.EYES, p_132783_.getX(), p_132783_.getEyeY(), p_132783_.getZ());
     }
 
-    public PacketLookAtLerped(FriendlyByteBuf p_179146_) {
+    public PacketLookAtLerped(PacketByteBuf p_179146_) {
         super(p_179146_);
     }
 
-    public void handle(Supplier<NetworkEvent.Context> context) {
-        context.get().enqueueWork(() -> {
-            RotationLerpHandler.beginClickTurn(this.getPosition(null));
-        });
-        context.get().setPacketHandled(true);
+    public static void handle(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
+        RotationLerpHandler.beginClickTurn(new PacketLookAtLerped(buf).getTargetPosition(null));
     }
 }

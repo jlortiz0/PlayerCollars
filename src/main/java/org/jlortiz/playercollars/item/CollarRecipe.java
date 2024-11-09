@@ -1,26 +1,24 @@
 package org.jlortiz.playercollars.item;
 
-import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.*;
-import net.minecraftforge.common.Tags;
-import org.jlortiz.playercollars.PlayerCollarsMod;
+import net.minecraft.inventory.RecipeInputInventory;
+import net.minecraft.item.DyeItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.recipe.*;
+import net.minecraft.recipe.book.CraftingRecipeCategory;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 
-@MethodsReturnNonnullByDefault
-public class CollarRecipe extends ShapedRecipe {
-    private static final Ingredient ITEM_LEATHER = Ingredient.of(Items.LEATHER);
-    private static final Ingredient ITEM_INGOTS = CollarItem.TagType.getIngredient();
-    private static final Ingredient ITEM_DYE = Ingredient.of(Tags.Items.DYES);
-    public CollarRecipe(ResourceLocation rl, CraftingBookCategory r2) {
-        super(rl, "collar", r2, 3, 3, NonNullList.of(
-                Ingredient.EMPTY, Ingredient.EMPTY, ITEM_LEATHER, Ingredient.EMPTY, ITEM_LEATHER, ITEM_INGOTS, ITEM_LEATHER, Ingredient.EMPTY, ITEM_DYE, Ingredient.EMPTY
-        ), new ItemStack(PlayerCollarsMod.COLLAR_ITEM.get()));
+public class CollarRecipe extends SpecialCraftingRecipe {
+    private static final Ingredient ITEM_LEATHER = Ingredient.ofItems(Items.LEATHER);
+    // Use dummy placeholders since we can't do our silly Ingredient enum hack anymore
+    private static final Ingredient ITEM_INGOTS = Ingredient.fromTag(ItemTags.IRON_ORES);
+    private static final Ingredient ITEM_DYE = Ingredient.fromTag(ItemTags.TRIMMABLE_ARMOR);
+    private static final Ingredient[] ITEMS = {Ingredient.EMPTY, ITEM_LEATHER, Ingredient.EMPTY, ITEM_LEATHER, ITEM_INGOTS, ITEM_LEATHER, Ingredient.EMPTY, ITEM_DYE, Ingredient.EMPTY};
+    public CollarRecipe(Identifier rl, CraftingRecipeCategory r2) {
+        super(rl, CraftingRecipeCategory.EQUIPMENT);
     }
 
     public static class Type implements RecipeType<CollarRecipe> {
@@ -29,25 +27,48 @@ public class CollarRecipe extends ShapedRecipe {
         public static final String ID = "collar";
     }
 
-    public static final RecipeSerializer<CollarRecipe> Serializer = new SimpleCraftingRecipeSerializer<>(CollarRecipe::new);
+    public static final RecipeSerializer<CollarRecipe> Serializer = new SpecialRecipeSerializer<>(CollarRecipe::new);
 
     @Override
-    public ItemStack assemble(CraftingContainer craftingContainer, RegistryAccess p_266725_) {
-        ItemStack ingot = craftingContainer.getItem(4);
+    public ItemStack craft(RecipeInputInventory craftingContainer, DynamicRegistryManager p_266725_) {
+        ItemStack ingot = craftingContainer.getStack(4);
         CollarItem.TagType t = null;
         for (CollarItem.TagType tag : CollarItem.TagType.values()) {
-            if (Ingredient.of(tag.item).test(ingot)) {
+            if (tag.ingredient.test(ingot)) {
                 t = tag;
                 break;
             }
         }
         if (t == null) return ItemStack.EMPTY;
-        DyeItem dye = (DyeItem) craftingContainer.getItem(7).getItem();
-        return CollarItem.getInstance(t, dye.getDyeColor().getMapColor().col);
+        DyeItem dye = (DyeItem) craftingContainer.getStack(7).getItem();
+        return CollarItem.getInstance(t, dye.getColor().getMapColor().color);
     }
 
     @Override
-    public boolean canCraftInDimensions(int i, int i1) {
+    public boolean matches(RecipeInputInventory inventory, World world) {
+        for (int i = 0; i < 9; i++) {
+            ItemStack stack = inventory.getStack(i);
+            Ingredient ingredient = ITEMS[i];
+            if (ingredient == ITEM_INGOTS) {
+                boolean match = false;
+                for (CollarItem.TagType tag : CollarItem.TagType.values()) {
+                    if (tag.ingredient.test(stack)) {
+                        match = true;
+                        break;
+                    }
+                }
+                if (!match) return false;
+            } else if (ingredient == ITEM_DYE) {
+                if (!(stack.getItem() instanceof DyeItem)) return false;
+            } else if (!ingredient.test(stack)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean fits(int i, int i1) {
         return i == 3 && i1 == 3;
     }
 

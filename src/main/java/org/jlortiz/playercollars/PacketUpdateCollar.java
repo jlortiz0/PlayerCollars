@@ -1,52 +1,50 @@
 package org.jlortiz.playercollars;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkEvent;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import org.jlortiz.playercollars.item.CollarItem;
-
-import java.util.function.Supplier;
 
 public class PacketUpdateCollar {
     private final int pawColor, color;
     private final OwnerState os;
     public PacketUpdateCollar(ItemStack is, OwnerState os) {
-        CollarItem item = PlayerCollarsMod.COLLAR_ITEM.get();
+        CollarItem item = PlayerCollarsMod.COLLAR_ITEM;
         this.pawColor = item.getPawColor(is);
         this.color = item.getColor(is);
         this.os = os;
     }
 
-    public PacketUpdateCollar(FriendlyByteBuf buf) {
+    public PacketUpdateCollar(PacketByteBuf buf) {
         this.color = buf.readInt();
         this.pawColor = buf.readInt();
-        this.os = buf.readEnum(OwnerState.class);
+        this.os = buf.readEnumConstant(OwnerState.class);
     }
 
     public enum OwnerState {
         NOP, DEL, ADD
     }
 
-    public void encode(FriendlyByteBuf buf) {
+    public void encode(PacketByteBuf buf) {
         buf.writeInt(this.color);
         buf.writeInt(this.pawColor);
-        buf.writeEnum(this.os);
+        buf.writeEnumConstant(this.os);
     }
-    public void handle(Supplier<NetworkEvent.Context> context) {
-        context.get().enqueueWork(() -> {
-            Player p = context.get().getSender();
-            ItemStack is = p.getMainHandItem();
-            if (!is.isEmpty() && is.getItem() instanceof CollarItem item) {
-                item.setColor(is, color);
-                item.setPawColor(is, pawColor);
-                if (os == OwnerState.DEL) {
-                    item.setOwner(is, null, null);
-                } else if (os == OwnerState.ADD) {
-                    item.setOwner(is, p.getUUID(), p.getName().getString());
-                }
+
+    public static void handle(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
+        ItemStack is = player.getMainHandStack();
+        if (!is.isEmpty() && is.getItem() instanceof CollarItem item) {
+            PacketUpdateCollar packet = new PacketUpdateCollar(buf);
+            item.setColor(is, packet.color);
+            item.setPawColor(is, packet.pawColor);
+            if (packet.os == OwnerState.DEL) {
+                item.setOwner(is, null, null);
+            } else if (packet.os == OwnerState.ADD) {
+                item.setOwner(is, player.getUuid(), player.getName().getString());
             }
-        });
-        context.get().setPacketHandled(true);
+        }
     }
 }

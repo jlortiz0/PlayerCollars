@@ -1,22 +1,21 @@
 package org.jlortiz.playercollars.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.RenderLayerParent;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
+import dev.emi.trinkets.api.SlotReference;
+import dev.emi.trinkets.api.client.TrinketRenderer;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.render.OverlayTexture;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.entity.model.EntityModel;
+import net.minecraft.client.render.entity.model.PlayerEntityModel;
+import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.model.json.ModelTransformationMode;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
 import org.joml.Quaternionf;
-import top.theillusivec4.curios.api.SlotContext;
-import top.theillusivec4.curios.api.client.ICurioRenderer;
 
-public class CollarRenderer implements ICurioRenderer {
+public class CollarRenderer implements TrinketRenderer {
 
     private final BakedModel model;
     public CollarRenderer(BakedModel m) {
@@ -24,16 +23,14 @@ public class CollarRenderer implements ICurioRenderer {
     }
 
     @Override
-    public <T extends LivingEntity, M extends EntityModel<T>> void render(ItemStack itemStack, SlotContext slotContext, PoseStack poseStack, RenderLayerParent<T, M> renderLayerParent, MultiBufferSource multiBufferSource, int i, float v, float v1, float v2, float v3, float v4, float v5) {
-        poseStack.pushPose();
+    public void render(ItemStack itemStack, SlotReference slotReference, EntityModel<? extends LivingEntity> entityModel, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, LivingEntity livingEntity, float v, float v1, float v2, float v3, float v4, float v5) {
         try {
-            ModelPart body = ((HumanoidModel<T>) renderLayerParent.getModel()).body;
-            poseStack.translate(body.x * 0.0625f, body.y * 0.0625f, body.z * 0.0625f);
-            poseStack.mulPose(new Quaternionf().rotateXYZ(body.xRot, body.yRot, body.zRot + (float) Math.PI));
-            poseStack.scale(0.8f * body.xScale, 0.8f * body.yScale, 0.8f * body.zScale);
-            poseStack.translate(0, 0.4, 0);
-            Minecraft.getInstance().getItemRenderer().render(itemStack, ItemDisplayContext.HEAD, false, poseStack, multiBufferSource, i, OverlayTexture.NO_OVERLAY, model);
+            ModelPart body = ((PlayerEntityModel<?>) entityModel).body;
+            matrixStack.translate(body.pivotX * 0.0625f, body.pivotY * 0.0625f, body.pivotZ * 0.0625f);
+            matrixStack.multiply(new Quaternionf().rotateXYZ(body.pitch, body.yaw, body.roll + (float) Math.PI));
+            matrixStack.scale(0.8f * body.xScale, 0.8f * body.yScale, 0.8f * body.zScale);
+            matrixStack.translate(0, 0.4, 0);
+            MinecraftClient.getInstance().getItemRenderer().renderItem(itemStack, ModelTransformationMode.HEAD, false, matrixStack, vertexConsumerProvider, i, OverlayTexture.DEFAULT_UV, model);
         } catch (ClassCastException ignored) {}
-        poseStack.popPose();
     }
 }

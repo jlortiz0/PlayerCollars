@@ -1,46 +1,44 @@
 package org.jlortiz.playercollars.leash;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityPose;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.passive.TurtleEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.scoreboard.ServerScoreboard;
+import net.minecraft.scoreboard.Team;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.ServerScoreboard;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.animal.Turtle;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.util.math.Vec3d;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Objects;
 
-@ParametersAreNonnullByDefault
-public final class LeashProxyEntity extends Turtle {
+public final class LeashProxyEntity extends TurtleEntity {
     private final LivingEntity target;
 
     private boolean proxyUpdate() {
         if (proxyIsRemoved()) return false;
 
         if (target == null) return true;
-        if (target.level() != level() || !target.isAlive()) return true;
+        if (target.getWorld() != getWorld() || !target.isAlive()) return true;
 
-        Vec3 posActual = this.position();
-        Vec3 posTarget = target.position().add(0.0D, 1.3D, -0.15D);
+        Vec3d posActual = this.getPos();
+        Vec3d posTarget = target.getPos().add(0.0D, 1.3D, -0.15D);
 
         if (!Objects.equals(posActual, posTarget)) {
-            setRot(0.0F, 0.0F);
-            setPos(posTarget.x(), posTarget.y(), posTarget.z());
-            setBoundingBox(getDimensions(Pose.DYING).makeBoundingBox(posTarget));
+            setRotation(0.0F, 0.0F);
+            setPos(posTarget.x, posTarget.y, posTarget.z);
+            setBoundingBox(getDimensions(EntityPose.DYING).getBoxAt(posTarget));
         }
 
-        tickLeash();
+        updateLeash();
 
         return false;
     }
 
     @Override
     public void tick() {
-        if (this.level().isClientSide) return;
+        if (this.getWorld().isClient) return;
         if (proxyUpdate() && !proxyIsRemoved()) {
             proxyRemove();
         }
@@ -61,7 +59,7 @@ public final class LeashProxyEntity extends Turtle {
     public static final String TEAM_NAME = "leashplayersimpl";
 
     public LeashProxyEntity(LivingEntity target) {
-        super(EntityType.TURTLE, target.level());
+        super(EntityType.TURTLE, target.getWorld());
 
         this.target = target;
 
@@ -70,21 +68,21 @@ public final class LeashProxyEntity extends Turtle {
 
         setBaby(true);
         setInvisible(true);
-        noPhysics = true;
+        noClip = true;
 
         MinecraftServer server = getServer();
         if (server != null) {
             ServerScoreboard scoreboard = server.getScoreboard();
 
-            PlayerTeam team = scoreboard.getPlayerTeam(TEAM_NAME);
+            Team team = scoreboard.getPlayerTeam(TEAM_NAME);
             if (team == null) {
-                team = scoreboard.addPlayerTeam(TEAM_NAME);
+                team = scoreboard.addTeam(TEAM_NAME);
             }
-            if (team.getCollisionRule() != PlayerTeam.CollisionRule.NEVER) {
-                team.setCollisionRule(PlayerTeam.CollisionRule.NEVER);
+            if (team.getCollisionRule() != Team.CollisionRule.NEVER) {
+                team.setCollisionRule(Team.CollisionRule.NEVER);
             }
 
-            scoreboard.addPlayerToTeam(getScoreboardName(), team);
+            scoreboard.addPlayerToTeam(getEntityName(), team);
         }
     }
 
@@ -94,27 +92,27 @@ public final class LeashProxyEntity extends Turtle {
     }
 
     @Override
-    public void dropLeash(boolean sendPacket, boolean dropItem) {
+    public void detachLeash(boolean sendPacket, boolean dropItem) {
     }
 
     @Override
-    public boolean canBeLeashed(Player player) {
+    public boolean canBeLeashedBy(PlayerEntity player) {
         return false;
     }
 
     @Override
-    protected void registerGoals() {
+    protected void initGoals() {
     }
 
     @Override
-    protected void doPush(Entity entity) {
+    protected void pushAway(Entity entity) {
     }
 
     @Override
-    public void push(Entity entity) {
+    public void pushAwayFrom(Entity entity) {
     }
 
     @Override
-    public void playerTouch(Player player) {
+    public void onPlayerCollision(PlayerEntity player) {
     }
 }

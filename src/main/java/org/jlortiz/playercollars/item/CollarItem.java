@@ -1,138 +1,97 @@
 package org.jlortiz.playercollars.item;
 
-import com.mojang.datafixers.util.Pair;
-import net.minecraft.ChatFormatting;
-import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.client.Minecraft;
-import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.DyeableLeatherItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.material.MapColor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.LazyOptional;
+import dev.emi.trinkets.api.SlotReference;
+import dev.emi.trinkets.api.TrinketItem;
+import net.minecraft.block.MapColor;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.DyeableItem;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.recipe.Ingredient;
+import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.registry.tag.TagKey;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.util.*;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.client.DyingStationScreen;
-import top.theillusivec4.curios.api.CuriosApi;
-import top.theillusivec4.curios.api.CuriosCapability;
-import top.theillusivec4.curios.api.SlotContext;
-import top.theillusivec4.curios.api.type.capability.ICurio;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Stream;
+import java.util.List;
+import java.util.UUID;
 
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
-public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICapabilityProvider {
+public class CollarItem extends TrinketItem implements DyeableItem {
 
-    private static final Set<Enchantment> ALLOWED_ENCHANTMENTS = new HashSet<>();
-    static {
-        ALLOWED_ENCHANTMENTS.add(Enchantments.LOYALTY);
-        ALLOWED_ENCHANTMENTS.add(Enchantments.BINDING_CURSE);
-        ALLOWED_ENCHANTMENTS.add(Enchantments.THORNS);
-        ALLOWED_ENCHANTMENTS.add(Enchantments.MENDING);
-    }
     public CollarItem() {
-        super(new Item.Properties().stacksTo(1));
+        super(new Item.Settings().maxCount(1));
     }
 
+    // FIXME: the enchantmnet tags didn't work. figure out how to properly roll enchantments for non-armor items
     @Override
-    public int getEnchantmentValue(ItemStack stack) {
+    public int getEnchantability() {
         return 40;
     }
 
     @Override
-    public boolean canApplyAtEnchantingTable(ItemStack stack, Enchantment enchantment) {
-        return ALLOWED_ENCHANTMENTS.contains(enchantment);
-    }
-
-    @Override
-    public @Nullable ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
-        return this;
-    }
-
-    @Override
-    public void curioTick(SlotContext slotContext) {
-        LivingEntity ent = slotContext.entity();
-        if (ent.level().isClientSide) return;
-        CuriosApi.getCuriosInventory(ent).ifPresent((handler) -> handler.findCurio(slotContext.identifier(), slotContext.index()).ifPresent((sr) -> {
-            if (this.getEnchantmentLevel(sr.stack(), Enchantments.MENDING) == 0) return;
-            Pair<UUID, String> owner = this.getOwner(sr.stack());
-            if (owner == null || owner.getFirst().equals(ent.getUUID())) return;
-            Player own = ent.level().getPlayerByUUID(owner.getFirst());
-            if (own != null && own.distanceTo(ent) < 16) {
-                ent.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 40, 0, false, false, false));
+    public void tick(ItemStack stack, SlotReference slot, LivingEntity entity) {
+        if (entity.getWorld().isClient) return;
+        if (EnchantmentHelper.getLevel(Enchantments.MENDING, stack) > 0) {
+            Pair<UUID, String> owner = this.getOwner(stack);
+            if (owner == null || owner.getLeft().equals(entity.getUuid())) return;
+            PlayerEntity own = entity.getWorld().getPlayerByUuid(owner.getLeft());
+            if (own != null && own.distanceTo(entity) < 16) {
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 40, 0, false, false, false));
             }
-        }));
-    }
-
-    @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction direction) {
-        if (capability == CuriosCapability.ITEM) {
-            return LazyOptional.of(() -> (T) this);
         }
-        return LazyOptional.empty();
     }
 
     @Override
-    public ItemStack getStack() {
+    public ItemStack getDefaultStack() {
         return getInstance(TagType.GOLD);
     }
 
     public enum TagType {
-        GOLD(0xFDF55F, Tags.Items.INGOTS_GOLD),
-        IRON(0xD8D8D8, Tags.Items.INGOTS_IRON),
-        COPPER(0xE77C56, Tags.Items.INGOTS_COPPER),
-        NETHERITE(0x5A575A, Tags.Items.INGOTS_NETHERITE),
-        DIAMOND(0x4AEDD9, Tags.Items.GEMS_DIAMOND),
-        STONE(0x6B6B6B, Tags.Items.STONE),
+        GOLD(0xFDF55F, Items.GOLD_INGOT),
+        IRON(0xD8D8D8, Items.IRON_INGOT),
+        COPPER(0xE77C56, Items.COPPER_INGOT),
+        NETHERITE(0x5A575A, Items.NETHERITE_INGOT),
+        DIAMOND(0x4AEDD9, Items.DIAMOND),
+        STONE(0x6B6B6B, ItemTags.STONE_TOOL_MATERIALS),
         WOOD(0x907549, ItemTags.PLANKS),
-        AMETHYST(0xCFA0F3, Tags.Items.GEMS_AMETHYST),
-        EMERALD(0x17DD62, Tags.Items.GEMS_EMERALD);
+        AMETHYST(0xCFA0F3, Items.AMETHYST_SHARD),
+        EMERALD(0x17DD62, Items.EMERALD);
         public final int color;
-        public final TagKey<Item> item;
-        TagType(int color, TagKey<Item> item) {
+        public final Ingredient ingredient;
+        TagType(int color, TagKey<Item> tag) {
             this.color = color;
-            this.item = item;
+            this.ingredient = Ingredient.fromTag(tag);
         }
 
-        public static Ingredient getIngredient() {
-            return Ingredient.fromValues(Stream.of(Arrays.stream(TagType.values()).map((i) -> new Ingredient.TagValue(i.item))).flatMap(Function.identity()));
+        TagType(int color, Item item) {
+            this.color = color;
+            this.ingredient = Ingredient.ofItems(item);
         }
     }
 
     @Override
     public int getColor(ItemStack itemStack) {
-        CompoundTag $$1 = itemStack.getTagElement("display");
-        return $$1 != null && $$1.contains("color", 99) ? $$1.getInt("color") : MapColor.COLOR_RED.col;
+        NbtCompound $$1 = itemStack.getSubNbt("display");
+        return $$1 != null && $$1.contains("color", 99) ? $$1.getInt("color") : MapColor.RED.color;
     }
 
     public int getTagColor(ItemStack itemStack) {
-        CompoundTag $$1 = itemStack.getTagElement("display");
+        NbtCompound $$1 = itemStack.getSubNbt("display");
         if ($$1 == null || !$$1.contains("tagType")) {
             return TagType.GOLD.color;
         }
@@ -141,72 +100,71 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
     }
 
     public int getPawColor(ItemStack itemStack) {
-        CompoundTag $$1 = itemStack.getTagElement("display");
-        return $$1 != null && $$1.contains("paw", 99) ? $$1.getInt("paw") : MapColor.COLOR_BLUE.col;
+        NbtCompound $$1 = itemStack.getSubNbt("display");
+        return $$1 != null && $$1.contains("paw", 99) ? $$1.getInt("paw") : MapColor.BLUE.color;
     }
 
     public void setPawColor(ItemStack itemStack, int col) {
-        CompoundTag $$1 = itemStack.getOrCreateTagElement("display");
+        NbtCompound $$1 = itemStack.getOrCreateSubNbt("display");
         $$1.putInt("paw", col);
     }
 
     public @Nullable Pair<UUID, String> getOwner(ItemStack is) {
-        CompoundTag $$1 = is.getTagElement("owner");
+        NbtCompound $$1 = is.getSubNbt("owner");
         if ($$1 == null || !$$1.contains("uuid") || !$$1.contains("name")) return null;
-        return new Pair<>($$1.getUUID("uuid"), $$1.getString("name"));
+        return new Pair<>($$1.getUuid("uuid"), $$1.getString("name"));
     }
 
     public void setOwner(ItemStack is, @Nullable UUID uuid, @Nullable String name) {
         if (uuid == null || name == null) {
-            is.removeTagKey("owner");
+            is.removeSubNbt("owner");
             return;
         }
-        CompoundTag $$1 = is.getOrCreateTagElement("owner");
-        $$1.putUUID("uuid", uuid);
+        NbtCompound $$1 = is.getOrCreateSubNbt("owner");
+        $$1.putUuid("uuid", uuid);
         $$1.putString("name", name);
     }
 
     public static ItemStack getInstance(TagType tag) {
-        ItemStack is = new ItemStack(PlayerCollarsMod.COLLAR_ITEM.get());
-        CompoundTag $$1 = is.getOrCreateTagElement("display");
+        ItemStack is = new ItemStack(PlayerCollarsMod.COLLAR_ITEM);
+        NbtCompound $$1 = is.getOrCreateSubNbt("display");
         $$1.putInt("tagType", tag.ordinal());
         return is;
     }
 
     public static ItemStack getInstance(TagType tag, int paw) {
-        ItemStack is = new ItemStack(PlayerCollarsMod.COLLAR_ITEM.get());
-        CompoundTag $$1 = is.getOrCreateTagElement("display");
+        ItemStack is = new ItemStack(PlayerCollarsMod.COLLAR_ITEM);
+        NbtCompound $$1 = is.getOrCreateSubNbt("display");
         $$1.putInt("paw", paw);
         $$1.putInt("tagType", tag.ordinal());
         return is;
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public InteractionResultHolder<ItemStack> use(Level p_41432_, Player p_41433_, InteractionHand p_41434_) {
-        InteractionResultHolder<ItemStack> ir = super.use(p_41432_, p_41433_, p_41434_);
-        if (ir.getResult() == InteractionResult.PASS && p_41433_.isCrouching() && p_41432_.isClientSide) {
-            Minecraft.getInstance().setScreen(new DyingStationScreen(ir.getObject(), p_41433_.getUUID()));
-            return new InteractionResultHolder<>(InteractionResult.SUCCESS, ir.getObject());
+    public TypedActionResult<ItemStack> use(World p_41432_, PlayerEntity p_41433_, Hand p_41434_) {
+        TypedActionResult<ItemStack> ir = super.use(p_41432_, p_41433_, p_41434_);
+        if (ir.getResult() == ActionResult.PASS && p_41433_.isSneaking() && p_41432_.isClient) {
+            MinecraftClient.getInstance().setScreen(new DyingStationScreen(ir.getValue(), p_41433_.getUuid()));
+            return new TypedActionResult<>(ActionResult.SUCCESS, ir.getValue());
         }
         return ir;
     }
 
     @Override
-    public void appendHoverText(ItemStack p_41421_, @Nullable Level p_41422_, List<Component> p_41423_, @NotNull TooltipFlag p_41424_) {
-        super.appendHoverText(p_41421_, p_41422_, p_41423_, p_41424_);
+    public void appendTooltip(ItemStack p_41421_, @Nullable World p_41422_, List<Text> p_41423_, @NotNull TooltipContext p_41424_) {
+        super.appendTooltip(p_41421_, p_41422_, p_41423_, p_41424_);
         if (p_41424_.isAdvanced()) {
-            p_41423_.add(Component.translatable("item.playercollars.collar.paw_color", Integer.toHexString(getPawColor(p_41421_))).withStyle(ChatFormatting.GRAY));
+            p_41423_.add(Text.translatable("item.playercollars.collar.paw_color", Integer.toHexString(getPawColor(p_41421_))).setStyle(Style.EMPTY.withColor(Colors.GRAY)));
         }
         Pair<UUID, String> owner = getOwner(p_41421_);
         if (owner != null) {
-            p_41423_.add(Component.translatable("item.playercollars.collar.owner", owner.getSecond()).withStyle(ChatFormatting.GRAY));
+            p_41423_.add(Text.translatable("item.playercollars.collar.owner", owner.getRight()).setStyle(Style.EMPTY.withColor(Colors.GRAY)));
         }
     }
 
     @Override
-    public Component getName(ItemStack p_41458_) {
-        CompoundTag $$1 = p_41458_.getTagElement("display");
+    public Text getName(ItemStack p_41458_) {
+        NbtCompound $$1 = p_41458_.getSubNbt("display");
         if ($$1 == null || !$$1.contains("tagType")) {
             return super.getName(p_41458_);
         }
@@ -214,7 +172,7 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
         if ($$2 >= TagType.values().length) {
             return super.getName(p_41458_);
         }
-        return Component.translatable("item.playercollars.tag." + TagType.values()[$$2].name()).append(" ").append(super.getName(p_41458_));
+        return Text.translatable("item.playercollars.tag." + TagType.values()[$$2].name()).append(" ").append(super.getName(p_41458_));
     }
 
     @Override

@@ -1,38 +1,33 @@
 package org.jlortiz.playercollars.item;
 
-import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.DyeableLeatherItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.network.PacketDistributor;
+import dev.emi.trinkets.api.TrinketsApi;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.DyeableItem;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.UseAction;
+import net.minecraft.world.World;
 import org.jlortiz.playercollars.PacketLookAtLerped;
 import org.jlortiz.playercollars.PlayerCollarsMod;
-import top.theillusivec4.curios.api.CuriosApi;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
-public class ClickerItem extends Item implements DyeableLeatherItem {
+public class ClickerItem extends Item implements DyeableItem {
     public ClickerItem() {
-        super(new Item.Properties().stacksTo(1));
-    }
-
-    @Override
-    public boolean canApplyAtEnchantingTable(ItemStack stack, Enchantment enchantment) {
-        return enchantment == Enchantments.FISHING_SPEED;
+        super(new Item.Settings().maxCount(1));
     }
 
     @Override
@@ -41,51 +36,49 @@ public class ClickerItem extends Item implements DyeableLeatherItem {
     }
 
     @Override
-    public int getEnchantmentValue(ItemStack stack) {
+    public int getEnchantability() {
         return 40;
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level p_41432_, Player p_41433_, InteractionHand p_41434_) {
-        p_41433_.startUsingItem(p_41434_);
-        if (!p_41432_.isClientSide) {
-            int level = p_41433_.getItemInHand(p_41434_).getEnchantmentLevel(Enchantments.FISHING_SPEED);
+    public TypedActionResult<ItemStack> use(World p_41432_, PlayerEntity p_41433_, Hand p_41434_) {
+        p_41433_.setCurrentHand(p_41434_);
+        if (!p_41432_.isClient) {
+            int level = EnchantmentHelper.getLevel(Enchantments.LURE, p_41433_.getStackInHand(p_41434_));
             if (level > 0) {
                 final int trueLevel = 4 << level;
-                List<ServerPlayer> plrs = ((ServerLevel) p_41432_).getPlayers((p) -> !p.is(p_41433_) && p.closerThan(p_41433_, trueLevel));
-                for (ServerPlayer p : plrs) {
-                    CuriosApi.getCuriosInventory(p).ifPresent((handler) -> handler.getStacksHandler("necklace").ifPresent((slot) -> {
-                        ItemStack is = PlayerCollarsMod.filterStacksByOwner(slot.getStacks(), p_41433_.getUUID());
-                        if (is == null) {
-                            is = PlayerCollarsMod.filterStacksByOwner(slot.getCosmeticStacks(), p_41433_.getUUID());
-                        }
-                        if (is != null) {
-                            PacketLookAtLerped packet = new PacketLookAtLerped(p_41433_);
-                            PlayerCollarsMod.NETWORK.send(PacketDistributor.PLAYER.with(() -> p), packet);
-                        }
-                    }));
+                List<ServerPlayerEntity> plrs = ((ServerWorld) p_41432_).getPlayers((p) -> !p.isPartOf(p_41433_) && p.isInRange(p_41433_, trueLevel));
+                for (ServerPlayerEntity p : plrs) {
+                    TrinketsApi.getTrinketComponent(p).map((x) -> x.getEquipped(PlayerCollarsMod.COLLAR_ITEM))
+                            .map((x) -> PlayerCollarsMod.filterStacksByOwner(x, p_41433_.getUuid()))
+                            .ifPresent((x) -> {
+                                PacketLookAtLerped packet = new PacketLookAtLerped(p_41433_);
+                                PacketByteBuf buffer = PacketByteBufs.create();
+                                packet.write(buffer);
+                                ServerPlayNetworking.send(p, new Identifier(PlayerCollarsMod.MOD_ID, "look_at"), buffer);
+                            });
                 }
             }
-            p_41432_.playSound(null, p_41433_, PlayerCollarsMod.CLICKER_ON.get(), SoundSource.PLAYERS, 1, 1);
+            p_41432_.playSoundFromEntity(null, p_41433_, PlayerCollarsMod.CLICKER_ON, SoundCategory.PLAYERS, 1, 1);
         }
-        return InteractionResultHolder.fail(p_41433_.getItemInHand(p_41434_));
+        return TypedActionResult.fail(p_41433_.getStackInHand(p_41434_));
     }
 
     @Override
-    public int getUseDuration(ItemStack p_41454_) {
+    public int getMaxUseTime(ItemStack p_41454_) {
         return Integer.MAX_VALUE;
     }
 
     @Override
-    public void releaseUsing(ItemStack p_41412_, Level p_41413_, LivingEntity p_41414_, int p_41415_) {
-        if (!p_41413_.isClientSide) {
-            p_41413_.playSound(null, p_41414_, PlayerCollarsMod.CLICKER_OFF.get(), SoundSource.PLAYERS, 1, 1);
+    public void onStoppedUsing(ItemStack p_41412_, World p_41413_, LivingEntity p_41414_, int p_41415_) {
+        if (!p_41413_.isClient) {
+            p_41413_.playSoundFromEntity(null, p_41414_, PlayerCollarsMod.CLICKER_OFF, SoundCategory.PLAYERS, 1, 1);
         }
     }
 
     @Override
     public int getColor(ItemStack itemStack) {
-        CompoundTag $$1 = itemStack.getTagElement("display");
+        NbtCompound $$1 = itemStack.getSubNbt("display");
         return $$1 != null && $$1.contains("color", 99) ? $$1.getInt("color") : 0xFFFFFF;
     }
 }

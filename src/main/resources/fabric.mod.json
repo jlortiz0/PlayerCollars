@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "playercollars",
+  "version": "${version}",
+  "name": "Player Collars",
+  "description": "Lets players wear pet collars.\\nLeashable players code from https://modrinth.com/mod/leashable-players\\nCollar model derived from https://www.curseforge.com/minecraft/mc-mods/player-collars",
+  "authors": [
+    "jlortiz0"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+  "license": "CC0-1.0",
+  "icon": "assets/playercollars/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "org.jlortiz.playercollars.PlayerCollarsMod"
+    ],
+    "client": [
+      "org.jlortiz.playercollars.client.RegisterClient"
+    ]
+  },
+  "mixins": [
+    "playercollars.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.10",
+    "minecraft": "=1.20.x",
+    "java": ">=17",
+    "fabric-api": "*",
+    "trinkets": "=3.7.x"
+  }
+}

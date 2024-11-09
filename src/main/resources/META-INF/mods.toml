@@ -27,7 +27,7 @@ displayName="Player Collars" #mandatory
 # A URL for the "homepage" for this mod, displayed in the mod UI
 # displayURL="" #optional
 # A file name (in the root of the mod JAR) containing a logo for display
-logoFile="icon.png" #optional
+logoFile= "../assets/playercollars/icon.png" #optional
 # A text field displayed in the mod UI
 credits="raide, nightly" #optional
 # A text field displayed in the mod UI
