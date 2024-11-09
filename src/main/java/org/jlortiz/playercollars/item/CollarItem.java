@@ -37,10 +37,9 @@ public class CollarItem extends TrinketItem implements DyeableItem {
         super(new Item.Settings().maxCount(1));
     }
 
-    // FIXME: the enchantmnet tags didn't work. figure out how to properly roll enchantments for non-armor items
     @Override
     public int getEnchantability() {
-        return 40;
+        return 60;
     }
 
     @Override
