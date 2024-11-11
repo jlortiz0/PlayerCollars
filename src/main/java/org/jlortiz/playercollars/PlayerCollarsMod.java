@@ -1,6 +1,7 @@
 package org.jlortiz.playercollars;
 
 import dev.emi.trinkets.api.SlotReference;
+import dev.emi.trinkets.api.TrinketsApi;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.item.ItemStack;
@@ -43,5 +44,6 @@ public class PlayerCollarsMod implements ModInitializer {
 		Registry.register(Registries.RECIPE_SERIALIZER, new Identifier(MOD_ID, CollarRecipe.Type.ID), CollarRecipe.Serializer);
 		Registry.register(Registries.RECIPE_TYPE, new Identifier(MOD_ID, CollarRecipe.Type.ID), CollarRecipe.Type.INSTANCE);
 		ServerPlayNetworking.registerGlobalReceiver(new Identifier(MOD_ID, "update_collar"), PacketUpdateCollar::handle);
+		TrinketsApi.registerTrinket(PlayerCollarsMod.COLLAR_ITEM, PlayerCollarsMod.COLLAR_ITEM);
 	}
 }

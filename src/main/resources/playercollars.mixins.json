@@ -6,7 +6,7 @@
   "injectors": {
     "defaultRequire": 1
   },
-  "refmap": "playercollars.mixins.refmap.json",
+  "refmap": "PlayerCollars-refmap.json",
   "mixins": [
     "MixinEnchantmentTarget",
     "MixinPlayerEntity",
