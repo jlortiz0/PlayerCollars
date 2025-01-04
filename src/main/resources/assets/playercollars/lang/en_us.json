@@ -6,14 +6,5 @@
   "item.playercollars.collar.owner": "Owner: %s",
   "item.playercollars.collar.become_owner": "Become Owner",
   "item.playercollars.collar.remove_owner": "Remove Owner",
-  "item.playercollars.tag.GOLD": "Golden",
-  "item.playercollars.tag.IRON": "Iron",
-  "item.playercollars.tag.STONE": "Stone",
-  "item.playercollars.tag.WOOD": "Wood",
-  "item.playercollars.tag.DIAMOND": "Diamond",
-  "item.playercollars.tag.NETHERITE": "Netherite",
-  "item.playercollars.tag.COPPER": "Copper",
-  "item.playercollars.tag.AMETHYST": "Amethyst",
-  "item.playercollars.tag.EMERALD": "Emerald",
   "item.playercollars.clicker": "Clicker"
 }

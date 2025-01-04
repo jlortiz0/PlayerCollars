@@ -12,7 +12,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import org.jlortiz.playercollars.item.ClickerItem;
 import org.jlortiz.playercollars.item.CollarItem;
-import org.jlortiz.playercollars.item.CollarRecipe;
 
 import java.util.List;
 import java.util.UUID;
@@ -41,8 +40,6 @@ public class PlayerCollarsMod implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		Registry.register(Registries.RECIPE_SERIALIZER, new Identifier(MOD_ID, CollarRecipe.Type.ID), CollarRecipe.Serializer);
-		Registry.register(Registries.RECIPE_TYPE, new Identifier(MOD_ID, CollarRecipe.Type.ID), CollarRecipe.Type.INSTANCE);
 		ServerPlayNetworking.registerGlobalReceiver(new Identifier(MOD_ID, "update_collar"), PacketUpdateCollar::handle);
 		TrinketsApi.registerTrinket(PlayerCollarsMod.COLLAR_ITEM, PlayerCollarsMod.COLLAR_ITEM);
 	}
