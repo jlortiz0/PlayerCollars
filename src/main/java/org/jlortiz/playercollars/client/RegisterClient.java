@@ -36,8 +36,7 @@ public class RegisterClient {
         final CollarItem item = PlayerCollarsMod.COLLAR_ITEM.get();
         event.register(((itemStack, i) -> switch (i) {
             case 0 -> item.getColor(itemStack);
-            case 1 -> item.getTagColor(itemStack);
-            case 2 -> item.getPawColor(itemStack);
+            case 1 -> item.getPawColor(itemStack);
             default -> -1;
         }
         ), item);

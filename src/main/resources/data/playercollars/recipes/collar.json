@@ -1,3 +1,23 @@
 {
-  "type": "playercollars:collar"
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " L ",
+    "LiL",
+    " D "
+  ],
+  "key": {
+    "L": {
+      "item": "minecraft:leather"
+    },
+    "D": {
+      "tag": "forge:dyes"
+    },
+    "i": {
+      "tag": "forge:ingots/gold"
+    }
+  },
+  "result": {
+    "item": "playercollars:collar",
+    "count": 1
+  }
 }

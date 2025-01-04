@@ -13,7 +13,7 @@ import org.jlortiz.playercollars.item.CollarItem;
 
 import java.util.UUID;
 
-public class DyingStationScreen extends Screen {
+public class CollarDyeScreen extends Screen {
     private final ItemStack is;
     private final CollarItem item;
     private final int initColor, initPaw;
@@ -21,7 +21,7 @@ public class DyingStationScreen extends Screen {
     private UUID ownerUUID;
     private final String ownerName;
 
-    public DyingStationScreen(ItemStack is, UUID plr) {
+    public CollarDyeScreen(ItemStack is, UUID plr) {
         super(is.getDisplayName());
         this.is = is;
         this.item = PlayerCollarsMod.COLLAR_ITEM.get();
