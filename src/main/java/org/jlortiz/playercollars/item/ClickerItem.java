@@ -27,7 +27,7 @@ import java.util.List;
 @MethodsReturnNonnullByDefault
 public class ClickerItem extends Item implements DyeableLeatherItem {
     public ClickerItem() {
-        super(new Item.Properties().stacksTo(1));
+        super(new Item.Properties().stacksTo(1).tab(PlayerCollarsMod.TAB));
     }
 
     @Override
@@ -54,7 +54,7 @@ public class ClickerItem extends Item implements DyeableLeatherItem {
                 final int trueLevel = 4 << level;
                 List<ServerPlayer> plrs = ((ServerLevel) p_41432_).getPlayers((p) -> !p.is(p_41433_) && p.closerThan(p_41433_, trueLevel));
                 for (ServerPlayer p : plrs) {
-                    CuriosApi.getCuriosHelper().getCuriosHandler(p).ifPresent((handler) -> {
+                    CuriosApi.getCuriosHelper().getCuriosHandler(p).ifPresent((handler) ->
                         handler.getStacksHandler("necklace").ifPresent((slot) -> {
                             ItemStack is = PlayerCollarsMod.filterStacksByOwner(slot.getStacks(), p_41433_.getUUID());
                             if (is == null) {
@@ -64,8 +64,7 @@ public class ClickerItem extends Item implements DyeableLeatherItem {
                                 PacketLookAtLerped packet = new PacketLookAtLerped(p_41433_);
                                 PlayerCollarsMod.NETWORK.send(PacketDistributor.PLAYER.with(() -> p), packet);
                             }
-                        });
-                    });
+                    }));
                 }
             }
             p_41432_.playSound(null, p_41433_, PlayerCollarsMod.CLICKER_ON.get(), SoundSource.PLAYERS, 1, 1);

@@ -5,11 +5,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -18,21 +15,19 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jlortiz.playercollars.PlayerCollarsMod;
-import org.jlortiz.playercollars.client.DyingStationScreen;
+import org.jlortiz.playercollars.client.CollarDyeScreen;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.CuriosCapability;
 import top.theillusivec4.curios.api.SlotContext;
@@ -41,8 +36,6 @@ import top.theillusivec4.curios.api.type.capability.ICurio;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -103,41 +96,10 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
         return LazyOptional.empty();
     }
 
-    public enum TagType {
-        GOLD(0xFDF55F, Tags.Items.INGOTS_GOLD),
-        IRON(0xD8D8D8, Tags.Items.INGOTS_IRON),
-        COPPER(0xE77C56, Tags.Items.INGOTS_COPPER),
-        NETHERITE(0x5A575A, Tags.Items.INGOTS_NETHERITE),
-        DIAMOND(0x4AEDD9, Tags.Items.GEMS_DIAMOND),
-        STONE(0x6B6B6B, Tags.Items.STONE),
-        WOOD(0x907549, ItemTags.PLANKS),
-        AMETHYST(0xCFA0F3, Tags.Items.GEMS_AMETHYST),
-        EMERALD(0x17DD62, Tags.Items.GEMS_EMERALD);
-        public final int color;
-        public final TagKey<Item> item;
-        TagType(int color, TagKey<Item> item) {
-            this.color = color;
-            this.item = item;
-        }
-
-        public static Ingredient getIngredient() {
-            return Ingredient.fromValues(Stream.of(Arrays.stream(TagType.values()).map((i) -> new Ingredient.TagValue(i.item))).flatMap(Function.identity()));
-        }
-    }
-
     @Override
     public int getColor(ItemStack itemStack) {
         CompoundTag $$1 = itemStack.getTagElement("display");
         return $$1 != null && $$1.contains("color", 99) ? $$1.getInt("color") : MaterialColor.COLOR_RED.col;
-    }
-
-    public int getTagColor(ItemStack itemStack) {
-        CompoundTag $$1 = itemStack.getTagElement("display");
-        if ($$1 == null || !$$1.contains("tagType")) {
-            return TagType.GOLD.color;
-        }
-        int $$2 = $$1.getInt("tagType");
-        return $$2 >= TagType.values().length ? 0 : TagType.values()[$$2].color;
     }
 
     public int getPawColor(ItemStack itemStack) {
@@ -166,27 +128,12 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
         $$1.putString("name", name);
     }
 
-    public static ItemStack getInstance(TagType tag) {
-        ItemStack is = new ItemStack(PlayerCollarsMod.COLLAR_ITEM.get());
-        CompoundTag $$1 = is.getOrCreateTagElement("display");
-        $$1.putInt("tagType", tag.ordinal());
-        return is;
-    }
-
-    public static ItemStack getInstance(TagType tag, int paw) {
-        ItemStack is = new ItemStack(PlayerCollarsMod.COLLAR_ITEM.get());
-        CompoundTag $$1 = is.getOrCreateTagElement("display");
-        $$1.putInt("paw", paw);
-        $$1.putInt("tagType", tag.ordinal());
-        return is;
-    }
-
     @Override
     @OnlyIn(Dist.CLIENT)
     public InteractionResultHolder<ItemStack> use(Level p_41432_, Player p_41433_, InteractionHand p_41434_) {
         InteractionResultHolder<ItemStack> ir = super.use(p_41432_, p_41433_, p_41434_);
         if (ir.getResult() == InteractionResult.PASS && p_41433_.isCrouching() && p_41432_.isClientSide) {
-            Minecraft.getInstance().setScreen(new DyingStationScreen(ir.getObject(), p_41433_.getUUID()));
+            Minecraft.getInstance().setScreen(new CollarDyeScreen(ir.getObject(), p_41433_.getUUID()));
             return new InteractionResultHolder<>(InteractionResult.SUCCESS, ir.getObject());
         }
         return ir;
@@ -205,28 +152,7 @@ public class CollarItem extends Item implements DyeableLeatherItem, ICurio, ICap
     }
 
     @Override
-    public Component getName(ItemStack p_41458_) {
-        CompoundTag $$1 = p_41458_.getTagElement("display");
-        if ($$1 == null || !$$1.contains("tagType")) {
-            return super.getName(p_41458_);
-        }
-        int $$2 = $$1.getInt("tagType");
-        if ($$2 >= TagType.values().length) {
-            return super.getName(p_41458_);
-        }
-        return Component.translatable("item.playercollars.tag." + TagType.values()[$$2].name()).append(" ").append(super.getName(p_41458_));
-    }
-
-    @Override
     public boolean isEnchantable(ItemStack p_41456_) {
         return true;
-    }
-
-    @Override
-    public void fillItemCategory(CreativeModeTab p_41391_, NonNullList<ItemStack> p_41392_) {
-        if (this.allowedIn(p_41391_)) {
-            for (TagType t : TagType.values())
-                p_41392_.add(getInstance(t));
-        }
     }
 }

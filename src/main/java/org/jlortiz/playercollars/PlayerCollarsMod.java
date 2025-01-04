@@ -6,8 +6,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.common.Mod;
@@ -21,7 +19,6 @@ import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;
 import org.jlortiz.playercollars.item.ClickerItem;
 import org.jlortiz.playercollars.item.CollarItem;
-import org.jlortiz.playercollars.item.CollarRecipe;
 import top.theillusivec4.curios.api.SlotTypeMessage;
 import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
 
@@ -34,13 +31,6 @@ public class PlayerCollarsMod {
 	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
 	public static final RegistryObject<CollarItem> COLLAR_ITEM = ITEMS.register("collar", CollarItem::new);
 	public static final RegistryObject<ClickerItem> CLICKER_ITEM = ITEMS.register("clicker", ClickerItem::new);
-	private static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS =
-			DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, MOD_ID);
-	public static final RegistryObject<RecipeSerializer<CollarRecipe>> COLLAR_SERIALIZER =
-			RECIPE_SERIALIZERS.register(CollarRecipe.Type.ID, () -> CollarRecipe.Serializer);
-	private static final DeferredRegister<RecipeType<?>> RECIPE_TYPES = DeferredRegister.create(ForgeRegistries.RECIPE_TYPES, MOD_ID);
-	public static final RegistryObject<RecipeType<CollarRecipe>> COLLAR_TYPE =
-			RECIPE_TYPES.register(CollarRecipe.Type.ID, () -> CollarRecipe.Type.INSTANCE);
 	public static final CreativeModeTab TAB = new CreativeModeTab(MOD_ID) {
 		@Override
 		public @NotNull ItemStack makeIcon() {
@@ -55,8 +45,6 @@ public class PlayerCollarsMod {
 	public PlayerCollarsMod() {
 		IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
 		ITEMS.register(eventBus);
-		RECIPE_SERIALIZERS.register(eventBus);
-		RECIPE_TYPES.register(eventBus);
 		SOUNDS.register(eventBus);
 		eventBus.register(this);
 		InterModComms.sendTo("curios", SlotTypeMessage.REGISTER_TYPE, () -> new SlotTypeMessage.Builder("necklace").cosmetic().build());
