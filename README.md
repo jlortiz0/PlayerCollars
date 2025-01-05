@@ -1,8 +1,8 @@
 # Player Collars
 
-Lets players wear pet collars. Only for 1.19.2 Forge at time of writing. I have no plans to port this to another version.
+Lets players wear pet collars. See branches for possible versions.
 
-This mod requires [Curios](https://www.curseforge.com/minecraft/mc-mods/curios).
+This mod requires [Curios](https://www.curseforge.com/minecraft/mc-mods/curios) under Forge and [Trinkets](https://modrinth.com/mod/trinkets) under Fabric.
 
 ## Usage
 
@@ -13,9 +13,9 @@ LIL
  D 
 ```
 
-where L is leather, I is a vanilla ingot or gem, and D is a dye.
+where L is leather, I is a gold ingot, and D is a dye.
 
-When crafted, collars are red. They can be dyed similar to leather armor. Alternatively, shift right click to edit the colors manually. This menu also allows editing of the paw color (which is intially based on the dye used) and setting the collar's owner.
+When crafted, collars are red. They can be dyed similar to leather armor. Alternatively, shift right click to edit the colors manually. This menu also allows editing of the paw color (blue by default) and setting the collar's owner.
 
 ### Owner mechanics
 
@@ -23,10 +23,9 @@ Collars can have an "owner", the presence of which will affect the wearer of the
 
 ### Enchantments
 
-- Mending: Wearer will recieve Regeneration I when within 16 blocks of the owner.
-- Loyalty: Wearer will be pulled closer to the owner when a lead is used. Default follow distance is 4 blocks, each level of Loyalty reduces this by 1 to a minimum of 2 blocks.
-- Thorns: Works the same as it does on armor with no durability penalty.
-- Curse of Binding: Works exactly like you think it does. I suggest using this mod with [Kawaii Dishes](https://www.curseforge.com/minecraft/mc-mods/kawaii-dishes) so that there is a way to remove bound items; this mod contains a Mixin that patches KawaiiDishes to also remove bound Curios.
+- Healing: Wearer will recieve Regeneration when within 16 blocks of the owner.
+- Tight Leash: Wearer will be pulled closer to the owner when a lead is used. Default follow distance is 4 blocks, each level of Loyalty reduces this by 1 to a minimum of 2 blocks.
+- Spiked: Works like Thorns, but with no durability penalty.
 
 ### Clickers
 
@@ -39,13 +38,13 @@ OIO
 
 where `#` is a button, `O` is planks, and `I` is an iron ingot.
 
-If an owner uses a clicker, nearby owned players will be forced to look at the owner. The radius is determined by the level of Lure the clicker is enchanted with.
+If an owner uses a clicker, nearby owned players will be forced to look at the owner. The radius is determined by the level of Audible the clicker is enchanted with.
 
 Clickers can be dyed in the same manner as leather armor.
 
 ## Attribution
 
-The player leashing code was derived from Fabric mod [Leashable Players](https://modrinth.com/mod/leashable-players). Additionally, the original collar model was derived from [Player Collars](https://www.curseforge.com/minecraft/mc-mods/player-collars), although it has been reworked.
+The player leashing code was derived from [Leashable Players](https://modrinth.com/mod/leashable-players).
 
 This mod is licensed under the MIT license. Please try not to bully your players/partner(s) too hard with this mod. That's for me only.
 
