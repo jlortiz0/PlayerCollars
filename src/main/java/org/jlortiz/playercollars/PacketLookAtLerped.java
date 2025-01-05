@@ -1,24 +1,31 @@
 package org.jlortiz.playercollars;
 
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.Entity;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.s2c.play.LookAtS2CPacket;
-import org.jlortiz.playercollars.client.RotationLerpHandler;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
 
-public class PacketLookAtLerped extends LookAtS2CPacket {
+public record PacketLookAtLerped(double x, double y, double z) implements CustomPayload {
+    public static final CustomPayload.Id<PacketLookAtLerped> ID = new CustomPayload.Id<>(Identifier.of(PlayerCollarsMod.MOD_ID, "look_at"));
+    public static final PacketCodec<RegistryByteBuf, PacketLookAtLerped> CODEC = PacketCodec.tuple(
+            PacketCodecs.DOUBLE, PacketLookAtLerped::x,
+            PacketCodecs.DOUBLE, PacketLookAtLerped::y,
+            PacketCodecs.DOUBLE, PacketLookAtLerped::z,
+            PacketLookAtLerped::new);
+
     public PacketLookAtLerped(Entity p_132783_) {
-        super(EntityAnchorArgumentType.EntityAnchor.EYES, p_132783_.getX(), p_132783_.getEyeY(), p_132783_.getZ());
+        this(p_132783_.getX(), p_132783_.getEyeY(), p_132783_.getZ());
     }
 
-    public PacketLookAtLerped(PacketByteBuf p_179146_) {
-        super(p_179146_);
+    public Vec3d vec() {
+        return new Vec3d(x, y, z);
     }
 
-    public static void handle(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
-        RotationLerpHandler.beginClickTurn(new PacketLookAtLerped(buf).getTargetPosition(null));
+    @Override
+    public Id<? extends CustomPayload> getId() {
+        return ID;
     }
 }

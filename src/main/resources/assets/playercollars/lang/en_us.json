@@ -6,5 +6,12 @@
   "item.playercollars.collar.owner": "Owner: %s",
   "item.playercollars.collar.become_owner": "Become Owner",
   "item.playercollars.collar.remove_owner": "Remove Owner",
-  "item.playercollars.clicker": "Clicker"
+  "item.playercollars.clicker": "Clicker",
+  "enchantment.playercollars.short_leash": "Tight Leash",
+  "enchantment.playercollars.regeneration": "Healing",
+  "enchantment.playercollars.thorns": "Spiked",
+  "enchantment.playercollars.clicker": "Audible",
+  "attribute.playercollars.clicker_distance": "Clicker Distance",
+  "attribute.playercollars.leash_distance": "Leash Distance",
+  "tag.item.trinkets.chest.necklace": "Necklace"
 }

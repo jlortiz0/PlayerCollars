@@ -8,7 +8,6 @@
   },
   "refmap": "PlayerCollars-refmap.json",
   "mixins": [
-    "MixinEnchantmentTarget",
     "MixinPlayerEntity",
     "MixinServerPlayerEntity",
     "MixinServerWorld",

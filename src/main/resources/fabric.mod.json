@@ -27,9 +27,9 @@
   ],
   "depends": {
     "fabricloader": ">=0.15.10",
-    "minecraft": "=1.20.x",
+    "minecraft": "=1.21.x",
     "java": ">=17",
     "fabric-api": "*",
-    "trinkets": "=3.7.x"
+    "trinkets": "=3.10.x"
   }
 }

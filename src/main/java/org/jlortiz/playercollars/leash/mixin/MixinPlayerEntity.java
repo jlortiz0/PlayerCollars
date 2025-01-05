@@ -1,10 +1,12 @@
 package org.jlortiz.playercollars.leash.mixin;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.leash.LeashImpl;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,5 +22,10 @@ public abstract class MixinPlayerEntity {
             info.setReturnValue(impl.leashplayers$interact(player, hand));
             info.cancel();
         }
+    }
+
+    @Inject(method = "createPlayerAttributes", at = @At("RETURN"))
+    private static void playercollars$addAttributes(CallbackInfoReturnable<DefaultAttributeContainer.Builder> cir) {
+        cir.getReturnValue().add(PlayerCollarsMod.ATTR_LEASH_DISTANCE).add(PlayerCollarsMod.ATTR_CLICKER_DISTANCE);
     }
 }

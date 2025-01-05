@@ -31,7 +31,7 @@ public final class LeashProxyEntity extends TurtleEntity {
             setBoundingBox(getDimensions(EntityPose.DYING).getBoxAt(posTarget));
         }
 
-        updateLeash();
+        // updateLeash();
 
         return false;
     }
@@ -74,7 +74,7 @@ public final class LeashProxyEntity extends TurtleEntity {
         if (server != null) {
             ServerScoreboard scoreboard = server.getScoreboard();
 
-            Team team = scoreboard.getPlayerTeam(TEAM_NAME);
+            Team team = scoreboard.getTeam(TEAM_NAME);
             if (team == null) {
                 team = scoreboard.addTeam(TEAM_NAME);
             }
@@ -82,7 +82,7 @@ public final class LeashProxyEntity extends TurtleEntity {
                 team.setCollisionRule(Team.CollisionRule.NEVER);
             }
 
-            scoreboard.addPlayerToTeam(getEntityName(), team);
+            scoreboard.addScoreHolderToTeam(getNameForScoreboard(), team);
         }
     }
 
@@ -96,7 +96,7 @@ public final class LeashProxyEntity extends TurtleEntity {
     }
 
     @Override
-    public boolean canBeLeashedBy(PlayerEntity player) {
+    public boolean canBeLeashed() {
         return false;
     }
 

@@ -1,16 +1,17 @@
 package org.jlortiz.playercollars.client;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.DyedColorComponent;
+import net.minecraft.component.type.MapColorComponent;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
+import org.jlortiz.playercollars.OwnerComponent;
 import org.jlortiz.playercollars.PacketUpdateCollar;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.item.CollarItem;
@@ -22,8 +23,7 @@ public class CollarDyeScreen extends Screen {
     private static final CollarItem item = PlayerCollarsMod.COLLAR_ITEM;
     private final int initColor, initPaw;
     private final UUID ownUUID;
-    private UUID ownerUUID;
-    private final String ownerName;
+    private OwnerComponent owner;
 
     public CollarDyeScreen(ItemStack is, UUID plr) {
         super(is.getName());
@@ -31,9 +31,7 @@ public class CollarDyeScreen extends Screen {
         this.ownUUID = plr;
         initColor = item.getColor(is);
         initPaw = item.getPawColor(is);
-        Pair<UUID, String> owner = item.getOwner(is);
-        ownerUUID = owner == null ? null : owner.getLeft();
-        ownerName = owner == null ? null : owner.getRight();
+        owner = item.getOwner(is);
     }
 
     @Override
@@ -70,36 +68,34 @@ public class CollarDyeScreen extends Screen {
         this.addDrawableChild(dyeField);
         this.addDrawableChild(pawField);
         this.addDrawableChild(ButtonWidget.builder(Text.literal("Done"), (btn) -> {
-            PacketUpdateCollar.OwnerState os = ownerUUID == null ? PacketUpdateCollar.OwnerState.DEL : (ownerUUID.equals(ownUUID) ? PacketUpdateCollar.OwnerState.ADD : PacketUpdateCollar.OwnerState.NOP);
-            PacketByteBuf buffer = PacketByteBufs.create();
-            new PacketUpdateCollar(is, os).encode(buffer);
-            ClientPlayNetworking.send(new Identifier(PlayerCollarsMod.MOD_ID, "look_at"), buffer);
+            PacketUpdateCollar.OwnerState os = owner == null ? PacketUpdateCollar.OwnerState.DEL : (owner.uuid().equals(ownUUID) ? PacketUpdateCollar.OwnerState.ADD : PacketUpdateCollar.OwnerState.NOP);
+            ClientPlayNetworking.send(new PacketUpdateCollar(is, os));
             this.client.setScreen(null);
         }).dimensions(x + 5, y + 50, 75, 20).build());
         this.addDrawableChild(ButtonWidget.builder(Text.literal("Cancel"), (btn) -> {
-            item.setColor(is, initColor);
-            item.setPawColor(is, initPaw);
+            is.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(initColor, true));
+            is.set(DataComponentTypes.MAP_COLOR, new MapColorComponent(initPaw));
             this.client.setScreen(null);
         }).dimensions(x - 80, y + 50, 75, 20).build());
 
         ButtonWidget ownerButton = ButtonWidget.builder(Text.empty(), this::updateOwner).dimensions(x - 80, y + 72, 160, 20).build();
-        if (ownerUUID == null) {
+        if (owner == null) {
             ownerButton.setMessage(Text.translatable("item.playercollars.collar.become_owner"));
-        } else if (ownerUUID.equals(ownUUID)) {
+        } else if (owner.uuid().equals(ownUUID)) {
             ownerButton.setMessage(Text.translatable("item.playercollars.collar.remove_owner"));
         } else {
-            ownerButton.setMessage(Text.translatable("item.playercollars.collar.owner", ownerName));
+            ownerButton.setMessage(Text.translatable("item.playercollars.collar.owner", owner.name()));
             ownerButton.active = false;
         }
         this.addDrawableChild(ownerButton);
     }
 
     private void updateOwner(ButtonWidget btn) {
-        if (ownerUUID == null) {
-            ownerUUID = ownUUID;
+        if (owner == null) {
+            owner = new OwnerComponent(ownUUID, MinecraftClient.getInstance().getGameProfile().getName());
             btn.setMessage(Text.translatable("item.playercollars.collar.remove_owner"));
         } else {
-            ownerUUID = null;
+            owner = null;
             btn.setMessage(Text.translatable("item.playercollars.collar.become_owner"));
         }
     }
@@ -112,15 +108,15 @@ public class CollarDyeScreen extends Screen {
             return;
         }
         if (i == 0) {
-            item.setColor(is, col);
+            is.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(col, true));
         } else {
-            item.setPawColor(is, col);
+            is.set(DataComponentTypes.MAP_COLOR, new MapColorComponent(col));
         }
     }
 
     @Override
     public void render(DrawContext p_281549_, int mouseX, int mouseY, float delta) {
-        renderBackground(p_281549_);
+        renderBackground(p_281549_, mouseX, mouseY, delta);
         super.render(p_281549_, mouseX, mouseY, delta);
         p_281549_.drawText(textRenderer, Text.translatable("item.playercollars.collar"), this.width / 2 - 75, this.height / 2 - 25, -1, true);
         p_281549_.drawText(textRenderer, Text.translatable("item.playercollars.collar.paw"), this.width / 2 - 75, this.height / 2 + 1, -1, true);

@@ -1,0 +1,34 @@
+{
+  "anvil_cost": 2,
+  "description": {
+    "translate": "enchantment.playercollars.short_leash"
+  },
+  "effects": {
+    "minecraft:attributes": [
+      {
+        "amount": {
+          "type": "minecraft:linear",
+          "base": -1,
+          "per_level_above_first": -1
+        },
+        "attribute": "playercollars:leash_distance",
+        "id": "playercollars:enchantment.short_leash",
+        "operation": "add_value"
+      }
+    ]
+  },
+  "max_cost": {
+    "base": 25,
+    "per_level_above_first": 0
+  },
+  "max_level": 2,
+  "min_cost": {
+    "base": 12,
+    "per_level_above_first": 7
+  },
+  "slots": [
+    "any"
+  ],
+  "supported_items": "playercollars:collar",
+  "weight": 5
+}

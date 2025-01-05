@@ -3,7 +3,6 @@ package org.jlortiz.playercollars.leash.mixin;
 import dev.emi.trinkets.api.SlotReference;
 import dev.emi.trinkets.api.TrinketsApi;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
@@ -12,6 +11,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
@@ -41,7 +41,7 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
     private int leashplayers$lastage;
 
     @Unique
-    private int leashplayer$loyalty;
+    private double leashplayer$loyalty;
 
 
     @Unique
@@ -64,7 +64,7 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
             }
             else {
                 Entity holderActual = leashplayers$holder;
-                Entity holderTarget = leashplayers$proxy.getHoldingEntity();
+                Entity holderTarget = leashplayers$proxy.getLeashHolder();
 
                 if (holderTarget == null && holderActual != null) {
                     leashplayers$detach();
@@ -87,10 +87,10 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
         if (holder.getWorld() != player.getWorld()) return;
 
         float distance = player.distanceTo(holder);
-        if (distance < 4 - leashplayer$loyalty) {
+        if (distance < leashplayer$loyalty) {
             return;
         }
-        if (distance > 10f - leashplayer$loyalty) {
+        if (distance > 6 + leashplayer$loyalty) {
             leashplayers$detach();
             leashplayers$drop();
             return;
@@ -160,7 +160,7 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
                     .map((x) -> PlayerCollarsMod.filterStacksByOwner(x, player.getUuid()))
                     .ifPresent((stack1) -> {
                         found.set(true);
-                        leashplayer$loyalty = EnchantmentHelper.getLoyalty(stack1);
+                        leashplayer$loyalty = player.getAttributeValue(PlayerCollarsMod.ATTR_LEASH_DISTANCE);
                     });
             if (!found.get()) return ActionResult.PASS;
             if (!player.isCreative()) {
@@ -186,14 +186,11 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
         if (p_9037_.getAttacker() != null) {
             LivingEntity self = ((LivingEntity) (Object) this);
             TrinketsApi.getTrinketComponent(self).map((x) -> x.getEquipped(PlayerCollarsMod.COLLAR_ITEM))
-                    .ifPresent((ls) -> {
-                        for (Pair<SlotReference, ItemStack> p : ls) {
-                            int l = EnchantmentHelper.getLevel(Enchantments.THORNS, p.getRight());
-                            if (l > 0) {
-                                Enchantments.THORNS.onUserDamaged(self, p_9037_.getAttacker(), l);
-                            }
-                        }
-                    });
+                .ifPresent((ls) -> {
+                    for (Pair<SlotReference, ItemStack> p : ls) {
+                        EnchantmentHelper.onTargetDamaged((ServerWorld) self.getWorld(), p_9037_.getAttacker(), p_9037_, p.getRight());
+                    }
+                });
         }
     }
 }

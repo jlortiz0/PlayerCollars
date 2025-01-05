@@ -17,15 +17,15 @@ public class RegisterClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ColorProviderRegistry.ITEM.register((stack, tintIndex) -> switch (tintIndex) {
-            case 0 -> PlayerCollarsMod.COLLAR_ITEM.getColor(stack);
-            case 1 -> PlayerCollarsMod.COLLAR_ITEM.getPawColor(stack);
+            case 0 -> PlayerCollarsMod.COLLAR_ITEM.getColor(stack) | 0xff000000;
+            case 1 -> PlayerCollarsMod.COLLAR_ITEM.getPawColor(stack) | 0xff000000;
             default -> -1;
         }, PlayerCollarsMod.COLLAR_ITEM);
-        ColorProviderRegistry.ITEM.register((stack, tintIndex) -> tintIndex == 0 ? PlayerCollarsMod.CLICKER_ITEM.getColor(stack) : -1, PlayerCollarsMod.CLICKER_ITEM);
-        ModelPredicateProviderRegistry.register(PlayerCollarsMod.CLICKER_ITEM, new Identifier("cast"), (itemStack, clientWorld, livingEntity, seed) -> livingEntity != null && livingEntity.isUsingItem() && livingEntity.getActiveItem() == itemStack ? 1 : 0);
+        ColorProviderRegistry.ITEM.register((stack, tintIndex) -> tintIndex == 0 ? PlayerCollarsMod.CLICKER_ITEM.getColor(stack) | 0xff000000 : -1, PlayerCollarsMod.CLICKER_ITEM);
+        ModelPredicateProviderRegistry.register(PlayerCollarsMod.CLICKER_ITEM, Identifier.ofVanilla("cast"), (itemStack, clientWorld, livingEntity, seed) -> livingEntity != null && livingEntity.isUsingItem() && livingEntity.getActiveItem() == itemStack ? 1 : 0);
 
         ModelLoadingPlugin.register(new CollarModelLoadingPlugin());
-        ClientPlayNetworking.registerGlobalReceiver(new Identifier(PlayerCollarsMod.MOD_ID, "look_at"), PacketLookAtLerped::handle);
+        ClientPlayNetworking.registerGlobalReceiver(PacketLookAtLerped.ID, (payload, context) -> context.client().execute(() -> RotationLerpHandler.beginClickTurn(payload.vec())));
         ClientTickEvents.END_CLIENT_TICK.register(RotationLerpHandler::turnTowardsClick);
     }
 }
