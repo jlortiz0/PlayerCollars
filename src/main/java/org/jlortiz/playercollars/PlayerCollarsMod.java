@@ -18,9 +18,9 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.Uuids;
-import org.jlortiz.playercollars.item.RegenerationEnchantmentEffect;
 import org.jlortiz.playercollars.item.ClickerItem;
 import org.jlortiz.playercollars.item.CollarItem;
+import org.jlortiz.playercollars.item.RegenerationEnchantmentEffect;
 
 import java.util.List;
 import java.util.UUID;
