@@ -2,6 +2,7 @@ package org.jlortiz.playercollars.item;
 
 import com.google.common.collect.Multimap;
 import dev.emi.trinkets.api.SlotReference;
+import dev.emi.trinkets.api.TrinketEnums;
 import dev.emi.trinkets.api.TrinketItem;
 import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
@@ -85,6 +86,11 @@ public class CollarItem extends TrinketItem {
     @Override
     public boolean isEnchantable(ItemStack p_41456_) {
         return true;
+    }
+
+    @Override
+    public TrinketEnums.DropRule getDropRule(ItemStack stack, SlotReference slot, LivingEntity entity) {
+        return TrinketEnums.DropRule.KEEP;
     }
 
     @Override
