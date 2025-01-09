@@ -1,15 +1,20 @@
 package org.jlortiz.playercollars;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.emi.trinkets.api.SlotReference;
 import dev.emi.trinkets.api.TrinketsApi;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.component.DataComponentType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
+import net.minecraft.util.Uuids;
 import org.jlortiz.playercollars.item.ClickerItem;
 import org.jlortiz.playercollars.item.CollarItem;
 
@@ -25,12 +30,21 @@ public class PlayerCollarsMod implements ModInitializer {
 	public static final SoundEvent CLICKER_OFF = Registry.register(Registries.SOUND_EVENT, new Identifier(MOD_ID, "clicker_off"),
 			SoundEvent.of(new Identifier(MOD_ID, "clicker_off")));
 
+	private static final Codec<OwnerComponent> OWNER_COMPONENT_CODEC = RecordCodecBuilder.create(builder -> builder.group(
+			Uuids.CODEC.fieldOf("uuid").forGetter(OwnerComponent::uuid),
+			Codec.STRING.fieldOf("name").forGetter(OwnerComponent::name)
+	).apply(builder, OwnerComponent::new));
+	public static final DataComponentType<OwnerComponent> OWNER_COMPONENT_TYPE = Registry.register(
+			Registries.DATA_COMPONENT_TYPE,
+			Identifier.of(MOD_ID, "owner_component"),
+			DataComponentType.<OwnerComponent>builder().codec(OWNER_COMPONENT_CODEC).build());
+
 	public static ItemStack filterStacksByOwner(List<Pair<SlotReference, ItemStack>> stacks, UUID plr) {
 		for (Pair<SlotReference, ItemStack> p : stacks) {
 			ItemStack is = p.getRight();
 			if (is.getItem() instanceof CollarItem item) {
-				Pair<UUID, String> owner = item.getOwner(is);
-				if (owner != null && owner.getLeft().equals(plr)) {
+				OwnerComponent owner = item.getOwner(is);
+				if (owner != null && owner.uuid().equals(plr)) {
 					return is;
 				}
 			}
@@ -40,7 +54,9 @@ public class PlayerCollarsMod implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		ServerPlayNetworking.registerGlobalReceiver(new Identifier(MOD_ID, "update_collar"), PacketUpdateCollar::handle);
+		PayloadTypeRegistry.playC2S().register(PacketUpdateCollar.ID, PacketUpdateCollar.CODEC);
+		ServerPlayNetworking.registerGlobalReceiver(PacketUpdateCollar.ID, PacketUpdateCollar::handle);
+		PayloadTypeRegistry.playS2C().register(PacketLookAtLerped.ID, PacketLookAtLerped.CODEC);
 		TrinketsApi.registerTrinket(PlayerCollarsMod.COLLAR_ITEM, PlayerCollarsMod.COLLAR_ITEM);
 	}
 }

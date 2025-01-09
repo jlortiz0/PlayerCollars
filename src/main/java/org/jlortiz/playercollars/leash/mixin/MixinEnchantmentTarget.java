@@ -5,6 +5,7 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.ItemStack;
+import net.minecraft.resource.featuretoggle.FeatureSet;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,8 +16,8 @@ import java.util.List;
 
 @Mixin(EnchantmentHelper.class)
 public abstract class MixinEnchantmentTarget {
-    @Redirect(method="generateEnchantments", at= @At(value = "INVOKE", target = "Lnet/minecraft/enchantment/EnchantmentHelper;getPossibleEntries(ILnet/minecraft/item/ItemStack;Z)Ljava/util/List;"))
-    private static List<EnchantmentLevelEntry> allowEnchantingOurItems(int power, ItemStack stack, boolean treasureAllowed) {
+    @Redirect(method="generateEnchantments", at= @At(value = "INVOKE", target = "Lnet/minecraft/enchantment/EnchantmentHelper;getPossibleEntries(Lnet/minecraft/resource/featuretoggle/FeatureSet;ILnet/minecraft/item/ItemStack;Z)Ljava/util/List;"))
+    private static List<EnchantmentLevelEntry> allowEnchantingOurItems(FeatureSet enabledFeatures, int power, ItemStack stack, boolean treasureAllowed) {
         if (stack.getItem() == PlayerCollarsMod.COLLAR_ITEM) {
             List<EnchantmentLevelEntry> ls = new ArrayList<>();
             ls.add(new EnchantmentLevelEntry(Enchantments.MENDING, 1));
@@ -44,6 +45,6 @@ public abstract class MixinEnchantmentTarget {
                 }
             }
         }
-        return EnchantmentHelper.getPossibleEntries(power, stack, treasureAllowed);
+        return EnchantmentHelper.getPossibleEntries(enabledFeatures, power, stack, treasureAllowed);
     }
 }

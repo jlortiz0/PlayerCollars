@@ -1,50 +1,53 @@
 package org.jlortiz.playercollars;
 
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.DyedColorComponent;
+import net.minecraft.component.type.MapColorComponent;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.util.Identifier;
 import org.jlortiz.playercollars.item.CollarItem;
 
-public class PacketUpdateCollar {
-    private final int pawColor, color;
-    private final OwnerState os;
+public record PacketUpdateCollar(OwnerState os, int pawColor, int color) implements CustomPayload {
+    public static final CustomPayload.Id<PacketUpdateCollar> ID = new CustomPayload.Id<>(Identifier.of(PlayerCollarsMod.MOD_ID, "update_collar"));
+    public static final PacketCodec<RegistryByteBuf, PacketUpdateCollar> CODEC = PacketCodec.tuple(
+            PacketCodecs.indexed(OwnerState::fromInt, OwnerState::ordinal), PacketUpdateCollar::os,
+            PacketCodecs.INTEGER, PacketUpdateCollar::pawColor,
+            PacketCodecs.INTEGER, PacketUpdateCollar::color,
+            PacketUpdateCollar::new);
     public PacketUpdateCollar(ItemStack is, OwnerState os) {
-        CollarItem item = PlayerCollarsMod.COLLAR_ITEM;
-        this.pawColor = item.getPawColor(is);
-        this.color = item.getColor(is);
-        this.os = os;
+        this(os, PlayerCollarsMod.COLLAR_ITEM.getPawColor(is), PlayerCollarsMod.COLLAR_ITEM.getColor(is));
     }
 
-    public PacketUpdateCollar(PacketByteBuf buf) {
-        this.color = buf.readInt();
-        this.pawColor = buf.readInt();
-        this.os = buf.readEnumConstant(OwnerState.class);
+    @Override
+    public Id<? extends CustomPayload> getId() {
+        return ID;
     }
 
     public enum OwnerState {
-        NOP, DEL, ADD
-    }
+        NOP, DEL, ADD;
 
-    public void encode(PacketByteBuf buf) {
-        buf.writeInt(this.color);
-        buf.writeInt(this.pawColor);
-        buf.writeEnumConstant(this.os);
-    }
-
-    public static void handle(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
-        ItemStack is = player.getMainHandStack();
-        if (!is.isEmpty() && is.getItem() instanceof CollarItem item) {
-            PacketUpdateCollar packet = new PacketUpdateCollar(buf);
-            item.setColor(is, packet.color);
-            item.setPawColor(is, packet.pawColor);
-            if (packet.os == OwnerState.DEL) {
-                item.setOwner(is, null, null);
-            } else if (packet.os == OwnerState.ADD) {
-                item.setOwner(is, player.getUuid(), player.getName().getString());
-            }
+        public static OwnerState fromInt(int ind) {
+            return OwnerState.values()[ind];
         }
+    }
+
+    public void handle(ServerPlayNetworking.Context context) {
+        context.server().execute(() -> {
+            ItemStack is = context.player().getMainHandStack();
+            if (!is.isEmpty() && is.getItem() instanceof CollarItem) {
+                is.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color, true));
+                is.set(DataComponentTypes.MAP_COLOR, new MapColorComponent(pawColor));
+                if (os == OwnerState.DEL) {
+                    is.remove(PlayerCollarsMod.OWNER_COMPONENT_TYPE);
+                } else if (os == OwnerState.ADD) {
+                    is.set(PlayerCollarsMod.OWNER_COMPONENT_TYPE, new OwnerComponent(context.player().getUuid(), context.player().getName().getString()));
+                }
+            }
+        });
     }
 }
