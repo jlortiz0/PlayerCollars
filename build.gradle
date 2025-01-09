@@ -37,9 +37,9 @@ dependencies {
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-base:5.2.2"
-    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:5.2.2"
-    modImplementation "curse.maven:trinkets-341284:4573009"
+    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-base:5.3.0"
+    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:5.3.0"
+    modImplementation "curse.maven:trinkets-341284:4762647"
 }
 
 processResources {

@@ -120,7 +120,6 @@ public class CollarDyeScreen extends Screen {
 
     @Override
     public void render(DrawContext p_281549_, int mouseX, int mouseY, float delta) {
-        renderBackground(p_281549_);
         super.render(p_281549_, mouseX, mouseY, delta);
         p_281549_.drawText(textRenderer, Text.translatable("item.playercollars.collar"), this.width / 2 - 75, this.height / 2 - 25, -1, true);
         p_281549_.drawText(textRenderer, Text.translatable("item.playercollars.collar.paw"), this.width / 2 - 75, this.height / 2 + 1, -1, true);
