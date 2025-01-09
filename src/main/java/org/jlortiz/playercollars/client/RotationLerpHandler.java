@@ -1,5 +1,6 @@
 package org.jlortiz.playercollars.client;
 
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
@@ -15,9 +16,9 @@ public class RotationLerpHandler {
     private static float rotY;
     private static long millis;
 
-    public static void turnTowardsClick(MinecraftClient client) {
+    public static void turnTowardsClick(WorldRenderContext ctx) {
         if (turnTimer < timeToTurn) {
-            ClientPlayerEntity p = client.player;
+            ClientPlayerEntity p = MinecraftClient.getInstance().player;
             if (p == null) {
                 turnTimer = timeToTurn + 1;
                 return;

@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.util.Identifier;
 import org.jlortiz.playercollars.PacketLookAtLerped;
@@ -26,6 +27,6 @@ public class RegisterClient implements ClientModInitializer {
 
         ModelLoadingPlugin.register(new CollarModelLoadingPlugin());
         ClientPlayNetworking.registerGlobalReceiver(new Identifier(PlayerCollarsMod.MOD_ID, "look_at"), PacketLookAtLerped::handle);
-        ClientTickEvents.END_CLIENT_TICK.register(RotationLerpHandler::turnTowardsClick);
+        WorldRenderEvents.END.register(RotationLerpHandler::turnTowardsClick);
     }
 }

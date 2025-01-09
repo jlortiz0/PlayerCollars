@@ -84,12 +84,12 @@ public class CollarItem extends TrinketItem implements DyeableItem {
 
     @Override
     public TypedActionResult<ItemStack> use(World p_41432_, PlayerEntity p_41433_, Hand p_41434_) {
-        TypedActionResult<ItemStack> ir = super.use(p_41432_, p_41433_, p_41434_);
-        if (ir.getResult() == ActionResult.PASS && p_41433_.isSneaking() && p_41432_.isClient) {
-            MinecraftClient.getInstance().setScreen(new CollarDyeScreen(ir.getValue(), p_41433_.getUuid()));
-            return new TypedActionResult<>(ActionResult.SUCCESS, ir.getValue());
+        ItemStack is = p_41433_.getStackInHand(p_41434_);
+        if (p_41433_.isSneaking() && p_41432_.isClient) {
+            MinecraftClient.getInstance().setScreen(new CollarDyeScreen(is, p_41433_.getUuid()));
+            return TypedActionResult.success(is, false);
         }
-        return ir;
+        return TypedActionResult.pass(is);
     }
 
     @Override

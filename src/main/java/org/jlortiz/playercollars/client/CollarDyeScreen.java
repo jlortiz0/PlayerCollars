@@ -73,7 +73,7 @@ public class CollarDyeScreen extends Screen {
             PacketUpdateCollar.OwnerState os = ownerUUID == null ? PacketUpdateCollar.OwnerState.DEL : (ownerUUID.equals(ownUUID) ? PacketUpdateCollar.OwnerState.ADD : PacketUpdateCollar.OwnerState.NOP);
             PacketByteBuf buffer = PacketByteBufs.create();
             new PacketUpdateCollar(is, os).encode(buffer);
-            ClientPlayNetworking.send(new Identifier(PlayerCollarsMod.MOD_ID, "look_at"), buffer);
+            ClientPlayNetworking.send(new Identifier(PlayerCollarsMod.MOD_ID, "update_collar"), buffer);
             this.client.setScreen(null);
         }).dimensions(x + 5, y + 50, 75, 20).build());
         this.addDrawableChild(ButtonWidget.builder(Text.literal("Cancel"), (btn) -> {
