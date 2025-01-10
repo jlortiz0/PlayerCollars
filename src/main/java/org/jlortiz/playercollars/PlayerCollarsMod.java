@@ -3,7 +3,9 @@ package org.jlortiz.playercollars;
 import dev.emi.trinkets.api.SlotReference;
 import dev.emi.trinkets.api.TrinketsApi;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -42,5 +44,9 @@ public class PlayerCollarsMod implements ModInitializer {
 	public void onInitialize() {
 		ServerPlayNetworking.registerGlobalReceiver(new Identifier(MOD_ID, "update_collar"), PacketUpdateCollar::handle);
 		TrinketsApi.registerTrinket(PlayerCollarsMod.COLLAR_ITEM, PlayerCollarsMod.COLLAR_ITEM);
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(itemGroup -> {
+			itemGroup.add(COLLAR_ITEM);
+			itemGroup.add(CLICKER_ITEM);
+		});
 	}
 }
