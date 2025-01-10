@@ -13,11 +13,11 @@
       "tag": "c:dyes"
     },
     "i": {
-      "tag": "c:gold_ingots"
+      "tag": "c:ingots/gold"
     }
   },
   "result": {
-    "item": "playercollars:collar",
+    "id": "playercollars:collar",
     "count": 1
   }
 }

@@ -8,10 +8,9 @@
     "jlortiz0"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "sources": "https://github.com/jlortiz0/PlayerCollars"
   },
-  "license": "CC0-1.0",
+  "license": "MIT",
   "icon": "assets/playercollars/icon.png",
   "environment": "*",
   "entrypoints": {
