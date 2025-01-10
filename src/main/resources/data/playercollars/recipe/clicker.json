@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "OiO",
+    " O "
+  ],
+  "key": {
+    "#": "#minecraft:buttons",
+    "O": "#minecraft:planks",
+    "i": "#c:ingots/iron"
+  },
+  "result": {
+    "id": "playercollars:clicker",
+    "count": 1
+  }
+}
