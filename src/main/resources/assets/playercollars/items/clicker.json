@@ -1,0 +1,20 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "property": "minecraft:using_item",
+    "on_false": {
+      "type": "minecraft:model",
+      "model": "playercollars:item/clicker"
+    },
+    "on_true": {
+      "type": "minecraft:model",
+      "model": "playercollars:item/clicker_on",
+      "tints": [
+        {
+          "type": "minecraft:dyed_color",
+          "default": 16777215
+        }
+      ]
+    }
+  }
+}

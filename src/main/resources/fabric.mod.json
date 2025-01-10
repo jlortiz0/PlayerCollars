@@ -11,7 +11,7 @@
     "homepage": "https://fabricmc.net/",
     "sources": "https://github.com/FabricMC/fabric-example-mod"
   },
-  "license": "CC0-1.0",
+  "license": "MIT",
   "icon": "assets/playercollars/icon.png",
   "environment": "*",
   "entrypoints": {
@@ -27,7 +27,7 @@
   ],
   "depends": {
     "fabricloader": ">=0.15.10",
-    "minecraft": "=1.21.x",
+    "minecraft": ">=1.21.2",
     "java": ">=17",
     "fabric-api": "*",
     "trinkets": "=3.10.x"

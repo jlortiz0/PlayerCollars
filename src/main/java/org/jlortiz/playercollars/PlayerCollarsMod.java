@@ -52,11 +52,9 @@ public class PlayerCollarsMod implements ModInitializer {
 	public static ItemStack filterStacksByOwner(List<Pair<SlotReference, ItemStack>> stacks, UUID plr) {
 		for (Pair<SlotReference, ItemStack> p : stacks) {
 			ItemStack is = p.getRight();
-			if (is.getItem() instanceof CollarItem item) {
-				OwnerComponent owner = item.getOwner(is);
-				if (owner != null && owner.uuid().equals(plr)) {
-					return is;
-				}
+			OwnerComponent owner = is.get(PlayerCollarsMod.OWNER_COMPONENT_TYPE);
+			if (owner != null && owner.uuid().equals(plr)) {
+				return is;
 			}
 		}
 		return null;

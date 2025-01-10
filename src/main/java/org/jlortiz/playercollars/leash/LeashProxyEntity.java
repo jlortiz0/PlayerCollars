@@ -92,7 +92,11 @@ public final class LeashProxyEntity extends TurtleEntity {
     }
 
     @Override
-    public void detachLeash(boolean sendPacket, boolean dropItem) {
+    public void detachLeash() {
+    }
+
+    @Override
+    public void detachLeashWithoutDrop() {
     }
 
     @Override

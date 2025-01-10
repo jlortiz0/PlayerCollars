@@ -10,7 +10,6 @@
   "mixins": [
     "MixinPlayerEntity",
     "MixinServerPlayerEntity",
-    "MixinServerWorld",
     "MixinTurtleEntity"
   ]
 }

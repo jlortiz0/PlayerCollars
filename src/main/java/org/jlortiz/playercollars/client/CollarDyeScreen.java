@@ -14,13 +14,11 @@ import net.minecraft.text.Text;
 import org.jlortiz.playercollars.OwnerComponent;
 import org.jlortiz.playercollars.PacketUpdateCollar;
 import org.jlortiz.playercollars.PlayerCollarsMod;
-import org.jlortiz.playercollars.item.CollarItem;
 
 import java.util.UUID;
 
 public class CollarDyeScreen extends Screen {
     private final ItemStack is;
-    private static final CollarItem item = PlayerCollarsMod.COLLAR_ITEM;
     private final int initColor, initPaw;
     private final UUID ownUUID;
     private OwnerComponent owner;
@@ -29,9 +27,9 @@ public class CollarDyeScreen extends Screen {
         super(is.getName());
         this.is = is;
         this.ownUUID = plr;
-        initColor = item.getColor(is);
-        initPaw = item.getPawColor(is);
-        owner = item.getOwner(is);
+        initColor = PlayerCollarsMod.COLLAR_ITEM.getColor(is);
+        initPaw = PlayerCollarsMod.COLLAR_ITEM.getPawColor(is);
+        owner = is.get(PlayerCollarsMod.OWNER_COMPONENT_TYPE);
     }
 
     @Override

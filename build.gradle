@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.6-SNAPSHOT'
+    id 'fabric-loom' version '1.9-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -37,8 +37,8 @@ dependencies {
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-base:6.1.0"
-    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:6.1.0"
+    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-base:6.2.2"
+    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:6.2.2"
     modImplementation "curse.maven:trinkets-341284:5534317"
 }
 
