@@ -160,7 +160,7 @@ public abstract class MixinServerPlayerEntity implements LeashImpl {
                     .map((x) -> PlayerCollarsMod.filterStacksByOwner(x, player.getUuid()))
                     .ifPresent((stack1) -> {
                         found.set(true);
-                        leashplayer$loyalty = player.getAttributeValue(PlayerCollarsMod.ATTR_LEASH_DISTANCE);
+                        leashplayer$loyalty = ((PlayerEntity) (Object) this).getAttributeValue(PlayerCollarsMod.ATTR_LEASH_DISTANCE);
                     });
             if (!found.get()) return ActionResult.PASS;
             if (!player.isCreative()) {

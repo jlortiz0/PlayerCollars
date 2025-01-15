@@ -4,6 +4,8 @@ import com.google.common.collect.Multimap;
 import dev.emi.trinkets.api.SlotReference;
 import dev.emi.trinkets.api.TrinketEnums;
 import dev.emi.trinkets.api.TrinketItem;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
@@ -62,6 +64,7 @@ public class CollarItem extends TrinketItem {
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public TypedActionResult<ItemStack> use(World p_41432_, PlayerEntity p_41433_, Hand p_41434_) {
         ItemStack is = p_41433_.getStackInHand(p_41434_);
         if (p_41433_.isSneaking() && p_41432_.isClient) {
