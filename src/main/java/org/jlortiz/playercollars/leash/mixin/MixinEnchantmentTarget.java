@@ -38,11 +38,14 @@ public abstract class MixinEnchantmentTarget {
             return ls;
         } else if (stack.getItem() == PlayerCollarsMod.CLICKER_ITEM) {
             Enchantment enchantment = Enchantments.LURE;
+            List<EnchantmentLevelEntry> output = new ArrayList<>();
             for (int i = enchantment.getMaxLevel(); i > 0; --i) {
-                if (i == 1 || (power >= enchantment.getMinPower(i) && power <= enchantment.getMaxPower(i))) {
-                    return List.of(new EnchantmentLevelEntry(enchantment, i));
+                if (i == 1 || (power >= enchantment.getMinPower(i) / 2 && power <= enchantment.getMaxPower(i) / 2)) {
+                    output.add(new EnchantmentLevelEntry(enchantment, i));
+                    return output;
                 }
             }
+            return output;
         }
         return EnchantmentHelper.getPossibleEntries(power, stack, treasureAllowed);
     }
