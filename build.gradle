@@ -49,6 +49,9 @@ processResources {
         expand "version": project.version
     }
 }
+fabricApi {
+    configureDataGeneration()
+}
 
 tasks.withType(JavaCompile).configureEach {
     it.options.release = 21
@@ -68,6 +71,8 @@ jar {
     from("LICENSE") {
         rename { "${it}_${project.base.archivesName.get()}"}
     }
+    exclude('org/jlortiz/playercollars/datagen/**')
+    exclude('resources/assets/playercollars/lang/en_us.existing.json')
 }
 
 // configure the maven publication

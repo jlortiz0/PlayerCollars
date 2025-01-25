@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "b": {
+      "tag": "minecraft:buttons"
+    },
+    "i": {
+      "tag": "c:ingots/iron"
+    },
+    "p": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "pattern": [
+    " b ",
+    "pip",
+    " p "
+  ],
+  "result": {
+    "count": 1,
+    "id": "playercollars:clicker"
+  }
+}

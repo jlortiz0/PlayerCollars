@@ -7,8 +7,15 @@
   "authors": [
     "jlortiz0"
   ],
+  "credits": [
+    "pog5",
+    "tess-a-ract",
+    "ItsCynthiaTime"
+  ],
   "contact": {
-    "sources": "https://github.com/jlortiz0/PlayerCollars"
+    "sources": "https://github.com/jlortiz0/PlayerCollars",
+    "homepage": "https://modrinth.com/mod/leashable-collars",
+    "issues": "https://github.com/jlortiz0/PlayerCollars/issues"
   },
   "license": "MIT",
   "icon": "assets/playercollars/icon.png",
@@ -19,6 +26,9 @@
     ],
     "client": [
       "org.jlortiz.playercollars.client.RegisterClient"
+    ],
+    "fabric-datagen": [
+      "org.jlortiz.playercollars.datagen.DatagenEntrypoint"
     ]
   },
   "mixins": [
