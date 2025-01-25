@@ -8,21 +8,22 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.block.*;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.component.ComponentType;
 import net.minecraft.entity.attribute.ClampedEntityAttribute;
 import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.item.ItemGroups;
-import net.minecraft.item.ItemStack;
+import net.minecraft.item.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.Uuids;
-import org.jlortiz.playercollars.item.ClickerItem;
-import org.jlortiz.playercollars.item.CollarItem;
-import org.jlortiz.playercollars.item.RegenerationEnchantmentEffect;
+import org.jlortiz.playercollars.item.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -51,6 +52,9 @@ public class PlayerCollarsMod implements ModInitializer {
 			Registries.ATTRIBUTE, Identifier.of(PlayerCollarsMod.MOD_ID, "leash_distance"),
 			new ClampedEntityAttribute("attribute.playercollars.leash_distance", 4, 2, 4));
 
+	public static final DogBedBlock[] DOG_BEDS = new DogBedBlock[DyeColor.values().length];
+	public static final BedItem[] DOG_BED_ITEMS = new BedItem[DyeColor.values().length];
+
 	public static ItemStack filterStacksByOwner(List<Pair<SlotReference, ItemStack>> stacks, UUID plr) {
 		for (Pair<SlotReference, ItemStack> p : stacks) {
 			ItemStack is = p.getRight();
@@ -74,6 +78,17 @@ public class PlayerCollarsMod implements ModInitializer {
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(itemGroup -> {
 			itemGroup.add(COLLAR_ITEM);
 			itemGroup.add(CLICKER_ITEM);
+		});
+
+		for (DyeColor c : DyeColor.values()) {
+			DOG_BEDS[c.ordinal()] = Registry.register(Registries.BLOCK, Identifier.of(MOD_ID, c.getName() + "_dog_bed"),
+					new DogBedBlock(c, AbstractBlock.Settings.create().sounds(BlockSoundGroup.WOOD).strength(0.2F).nonOpaque().burnable().pistonBehavior(PistonBehavior.DESTROY)));
+			DOG_BED_ITEMS[c.ordinal()] = Registry.register(Registries.ITEM, Identifier.of(MOD_ID, c.getName() + "_dog_bed"),
+					new BedItem(DOG_BEDS[c.ordinal()], (new Item.Settings()).maxCount(1)));
+		}
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(itemGroup -> {
+			for (BedItem bed : DOG_BED_ITEMS)
+				itemGroup.add(bed);
 		});
 	}
 }

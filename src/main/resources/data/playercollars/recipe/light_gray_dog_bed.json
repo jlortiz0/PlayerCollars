@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "W W",
+    "WWW"
+  ],
+  "key": {
+    "W": {
+      "item": "minecraft:light_gray_wool"
+    }
+  },
+  "result": {
+    "id": "playercollars:light_gray_dog_bed",
+    "count": 1
+  }
+}

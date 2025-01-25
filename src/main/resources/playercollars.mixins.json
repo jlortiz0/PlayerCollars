@@ -11,6 +11,7 @@
     "MixinPlayerEntity",
     "MixinServerPlayerEntity",
     "MixinServerWorld",
-    "MixinTurtleEntity"
+    "MixinTurtleEntity",
+    "MixinLivingEntity"
   ]
 }
