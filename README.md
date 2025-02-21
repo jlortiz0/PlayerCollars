@@ -2,7 +2,7 @@
 
 Lets players wear pet collars. See branches for possible versions. Some pre-compiled versions are available on [Modrinth](https://modrinth.com/mod/leashable-collars).
 
-This mod requires [Curios](https://www.curseforge.com/minecraft/mc-mods/curios) under Forge and [Trinkets](https://modrinth.com/mod/trinkets) under Fabric.
+This mod requires [Curios](https://www.curseforge.com/minecraft/mc-mods/curios) under Forge and [Trinkets](https://modrinth.com/mod/trinkets) or [Accessories](https://modrinth.com/mod/accessories) under Fabric!
 
 ## Usage
 
