@@ -15,7 +15,7 @@ LIL
 
 where L is leather, I is a gold ingot, and D is a dye.
 
-When crafted, collars are red. They can be dyed similar to leather armor. Alternatively, shift right click to edit the colors manually. This menu also allows editing of the paw color (blue by default) and setting the collar's owner.
+When crafted, collars are red. They can be dyed similar to leather armor. Alternatively, shift right click (while holding the collar) to edit the colors manually. This menu also allows editing of the paw color (blue by default) and setting the collar's owner.
 
 ### Owner mechanics
 
