@@ -6,14 +6,8 @@ This mod requires [Curios](https://www.curseforge.com/minecraft/mc-mods/curios) 
 
 ## Usage
 
-Recipe is
-```
- L 
-LIL
- D 
-```
+![image](https://github.com/user-attachments/assets/d1c56231-384e-450e-b7c2-a873d78a7cbe)
 
-where L is leather, I is a gold ingot, and D is a dye.
 
 When crafted, collars are red. They can be dyed similar to leather armor. Alternatively, shift right click (while holding the collar) to edit the colors manually. This menu also allows editing of the paw color (blue by default) and setting the collar's owner.
 
@@ -29,14 +23,9 @@ Collars can have an "owner", the presence of which will affect the wearer of the
 
 ### Clickers
 
-...
-```
- # 
-OIO
- O
-```
+![image](https://github.com/user-attachments/assets/909ef7e4-bdde-483f-8718-443c7ca7bad7)
 
-where `#` is a button, `O` is planks, and `I` is an iron ingot.
+
 
 If an owner uses a clicker, nearby owned players will be forced to look at the owner. The radius is determined by the level of Audible the clicker is enchanted with.
 
