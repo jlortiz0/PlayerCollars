@@ -21,13 +21,20 @@ Collars can have an "owner", the presence of which will affect the wearer of the
 - Tight Leash: Wearer will be pulled closer to the owner when a lead is used. Default follow distance is 4 blocks, each level of Loyalty reduces this by 1 to a minimum of 2 blocks.
 - Spiked: Works like Thorns, but with no durability penalty.
 
+To add an enchantment to a collar, first enchant a book and then add the enchantment in an anvil.
+![image](https://github.com/user-attachments/assets/a6da8fa3-edae-48bb-8ad5-d5e980a86e32)
+![image](https://github.com/user-attachments/assets/86a9af4f-f673-40dd-9daa-47d8bd3da25f)
+
 ### Clickers
 
 ![image](https://github.com/user-attachments/assets/909ef7e4-bdde-483f-8718-443c7ca7bad7)
 
 
-
 If an owner uses a clicker, nearby owned players will be forced to look at the owner. The radius is determined by the level of Audible the clicker is enchanted with.
+
+To add audible to a clicker, enchant a book with audible and add the enchantment in an avil!
+![image](https://github.com/user-attachments/assets/fa2ef542-3ba2-4bdd-8027-ea8c89d538bb)
+![image](https://github.com/user-attachments/assets/5303b83d-6670-4a9f-abfe-70b6d8ab7dd4)
 
 Clickers can be dyed in the same manner as leather armor.
 
