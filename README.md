@@ -5,6 +5,7 @@ Lets players wear pet collars. See branches for possible versions. Some pre-comp
 This mod requires [Curios](https://www.curseforge.com/minecraft/mc-mods/curios) under Forge and [Trinkets](https://modrinth.com/mod/trinkets) under fabric or [Accessories](https://modrinth.com/mod/accessories) for 1.21.4.
 
 ## Usage
+Collars can be crafted with the following recipe:
 
 ![image](https://github.com/user-attachments/assets/d1c56231-384e-450e-b7c2-a873d78a7cbe)
 
@@ -26,6 +27,7 @@ To add an enchantment to a collar, first enchant a book and then add the enchant
 ![image](https://github.com/user-attachments/assets/86a9af4f-f673-40dd-9daa-47d8bd3da25f)
 
 ### Clickers
+Clickers can be crafted with the following recipe:
 
 ![image](https://github.com/user-attachments/assets/909ef7e4-bdde-483f-8718-443c7ca7bad7)
 
