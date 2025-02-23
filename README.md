@@ -15,16 +15,20 @@ When crafted, collars are red. They can be dyed similar to leather armor. Altern
 ### Owner mechanics
 
 Collars can have an "owner", the presence of which will affect the wearer of the collar. Owners can use leads to move the wearer of the collar. Some enchantments will provide additional effects.
+The maximum length of the lead can be added by modifying the `playercollars:leash_distance` attribute of the player. The default value is 6 but can be increaded up to 16 blocks!
+
+`/attribute <username> playercollars:leash_distance base set 14`
 
 ### Enchantments
 
 - Healing: Wearer will recieve Regeneration when within 16 blocks of the owner.
-- Tight Leash: Wearer will be pulled closer to the owner when a lead is used. Default follow distance is 4 blocks, each level of Loyalty reduces this by 1 to a minimum of 2 blocks.
+- Tight Leash: Wearer will be pulled closer to the owner when a lead is used. Default follow distance is 6 blocks, each level of Loyalty reduces this by 1 to a minimum of 2 blocks.
 - Spiked: Works like Thorns, but with no durability penalty.
 
-To add an enchantment to a collar, first enchant a book and then add the enchantment in an anvil.
-![image](https://github.com/user-attachments/assets/a6da8fa3-edae-48bb-8ad5-d5e980a86e32)
-![image](https://github.com/user-attachments/assets/86a9af4f-f673-40dd-9daa-47d8bd3da25f)
+Collars can be enchanted in an enchanting table
+
+![image](https://github.com/user-attachments/assets/63cc26f4-067b-44aa-848a-0d2e4d773082)
+
 
 ### Clickers
 Clickers can be crafted with the following recipe:
@@ -34,9 +38,10 @@ Clickers can be crafted with the following recipe:
 
 If an owner uses a clicker, nearby owned players will be forced to look at the owner. The radius is determined by the level of Audible the clicker is enchanted with.
 
-To add audible to a clicker, enchant a book with audible and add the enchantment in an avil!
-![image](https://github.com/user-attachments/assets/fa2ef542-3ba2-4bdd-8027-ea8c89d538bb)
-![image](https://github.com/user-attachments/assets/5303b83d-6670-4a9f-abfe-70b6d8ab7dd4)
+Clickers can be enchanted in an enchanting table
+
+![image](https://github.com/user-attachments/assets/193809fd-21cb-4ef3-b432-055186464393)
+
 
 Clickers can be dyed in the same manner as leather armor.
 
