@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "playercollars:item/tagless_collar",
+    "tints": [
+      {
+        "type": "minecraft:dye",
+        "default": 4288230195
+      }
+    ]
+  }
+}

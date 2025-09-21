@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "g": "#c:ingots/gold",
+    "s": "minecraft:stick"
+  },
+  "pattern": [
+    "  g",
+    " g ",
+    "s  "
+  ],
+  "result": {
+    "count": 1,
+    "id": "playercollars:golden_spatula"
+  }
+}

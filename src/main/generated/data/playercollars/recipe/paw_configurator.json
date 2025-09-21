@@ -3,8 +3,8 @@
   "category": "equipment",
   "ingredients": [
     "#c:dusts/redstone",
-    "#c:ingots/iron",
-    "#playercollars:paws"
+    "#c:ingots/copper",
+    "playercollars:collar_locker"
   ],
   "result": {
     "count": 1,

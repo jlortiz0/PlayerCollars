@@ -1,6 +1,7 @@
 {
   "values": [
     "playercollars:collar",
+    "playercollars:tagless_collar",
     {
       "id": "#petworks:collars",
       "required": false

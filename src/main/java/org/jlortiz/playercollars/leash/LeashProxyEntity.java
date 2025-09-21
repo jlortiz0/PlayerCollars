@@ -10,6 +10,7 @@ import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.Vec3d;
+import org.joml.Math;
 
 import java.util.Objects;
 
@@ -23,7 +24,19 @@ public final class LeashProxyEntity extends TurtleEntity {
         if (target.getWorld() != getWorld() || !target.isAlive()) return true;
 
         Vec3d posActual = this.getPos();
-        Vec3d posTarget = target.getPos().add(0.0D, 1.3D, -0.15D);
+        Vec3d posTarget = switch (target.getPose()) {
+            // No point in making cases for SPIN_ATTACK and FALL_FLYING since the leash will break anyway
+            /*
+            10/28/2025 H1ggsK: Disabled boosting for firework rockets and riptide tridents, but
+            still allow FALL_FLYING so might be good to have a leash pose for that
+            */
+            case CROUCHING: yield new Vec3d(0.0D, 1.1D, -0.15D);
+            case SWIMMING: yield Vec3d.fromPolar(0, target.getBodyYaw()).multiply(0.35).add(0, 0.2, -0.1);
+            case SLEEPING: if (target.getSleepingDirection() != null)
+                yield new Vec3d(target.getSleepingDirection().getUnitVector().mul(-0.2f)).add(0, 0.1, -0.15);
+            default: yield new Vec3d(0.0D, 1.3D, -0.15D);
+        };
+        posTarget = posTarget.multiply(target.getScale()).add(target.getPos());
 
         if (!Objects.equals(posActual, posTarget)) {
             setRotation(0.0F, 0.0F);

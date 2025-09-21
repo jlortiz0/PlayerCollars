@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "age=0": {
+      "model": "playercollars:block/orange_dog_bowl_0"
+    },
+    "age=1": {
+      "model": "playercollars:block/orange_dog_bowl_1"
+    },
+    "age=2": {
+      "model": "playercollars:block/orange_dog_bowl_2"
+    },
+    "age=3": {
+      "model": "playercollars:block/orange_dog_bowl_3"
+    }
+  }
+}

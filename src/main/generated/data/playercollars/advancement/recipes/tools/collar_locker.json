@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_collar": {
+      "conditions": {
+        "items": [
+          {
+            "items": "#c:collars"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "playercollars:collar_locker"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_collar"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "playercollars:collar_locker"
+    ]
+  }
+}

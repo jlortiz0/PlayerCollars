@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "foot_paws",
+  "key": {
+    "l": "minecraft:leather",
+    "w": "minecraft:red_wool"
+  },
+  "pattern": [
+    " w ",
+    " w ",
+    "wlw"
+  ],
+  "result": {
+    "count": 1,
+    "id": "playercollars:red_foot_paws"
+  }
+}

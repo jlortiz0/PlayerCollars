@@ -6,17 +6,17 @@ import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Uuids;
 import org.jlortiz.playercollars.OwnerComponent;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 
 import java.util.Optional;
-import java.util.UUID;
 
-public record PacketStampDeed(UUID stamper) implements CustomPayload {
+public class PacketStampDeed implements CustomPayload {
+    public static final PacketStampDeed INSTANCE = new PacketStampDeed();
     public static final CustomPayload.Id<PacketStampDeed> ID = new CustomPayload.Id<>(Identifier.of(PlayerCollarsMod.MOD_ID, "stamp_deed"));
-    public static final PacketCodec<RegistryByteBuf, PacketStampDeed> CODEC = PacketCodec.tuple(
-            Uuids.PACKET_CODEC, PacketStampDeed::stamper, PacketStampDeed::new);
+    public static final PacketCodec<RegistryByteBuf, PacketStampDeed> CODEC = PacketCodec.unit(INSTANCE);
+
+    private PacketStampDeed() {}
 
     @Override
     public Id<? extends CustomPayload> getId() {
@@ -32,7 +32,7 @@ public record PacketStampDeed(UUID stamper) implements CustomPayload {
                 String plrName = context.player().getName().getString();
                 is = new ItemStack(PlayerCollarsMod.DEED_OF_OWNERSHIP_STAMPED);
                 is.set(PlayerCollarsMod.OWNER_COMPONENT_TYPE, new OwnerComponent(
-                   owner.uuid(), owner.name(), Optional.of(stamper), Optional.of(plrName)
+                   owner.uuid(), owner.name(), Optional.of(context.player().getUuid()), Optional.of(plrName)
                 ));
                 context.player().getInventory().setStack(context.player().getInventory().selectedSlot, is);
             }

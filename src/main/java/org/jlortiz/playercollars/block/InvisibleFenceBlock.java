@@ -62,7 +62,7 @@ public class InvisibleFenceBlock extends HorizontalFacingBlock {
     public static final EnumProperty<DoubleBlockHalf> HALF = Properties.DOUBLE_BLOCK_HALF;
 
     public InvisibleFenceBlock(AbstractBlock.Settings settings) {
-        super(settings);
+        super(settings.registryKey(REGISTRY_KEY));
         setDefaultState(this.getStateManager().getDefaultState().with(FACING, Direction.NORTH).with(HALF, DoubleBlockHalf.LOWER));
     }
 

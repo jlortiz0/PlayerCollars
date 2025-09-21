@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "#c:dusts/redstone",
+    "minecraft:chain",
+    "minecraft:chain",
+    "minecraft:iron_bars"
+  ],
+  "result": {
+    "count": 1,
+    "id": "playercollars:collar_locker"
+  }
+}

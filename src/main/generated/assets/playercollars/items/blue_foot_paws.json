@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "playercollars:item/foot_paws",
+    "tints": [
+      {
+        "type": "minecraft:dye",
+        "default": -14339694
+      },
+      {
+        "type": "minecraft:map_color",
+        "default": 15832783
+      }
+    ]
+  }
+}

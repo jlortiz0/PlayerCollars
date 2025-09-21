@@ -1,7 +1,7 @@
 {
   "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "group": "dog_bed",
+  "group": "paws",
   "key": {
     "l": "minecraft:leather",
     "w": "minecraft:light_gray_wool"

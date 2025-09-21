@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "d": "#c:dyes",
+    "l": "minecraft:leather"
+  },
+  "pattern": [
+    " l ",
+    "ldl"
+  ],
+  "result": {
+    "count": 1,
+    "id": "playercollars:tagless_collar"
+  }
+}

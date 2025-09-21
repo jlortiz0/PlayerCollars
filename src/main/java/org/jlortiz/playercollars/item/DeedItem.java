@@ -15,7 +15,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import org.jlortiz.playercollars.OwnerComponent;
 import org.jlortiz.playercollars.PlayerCollarsMod;
-import org.jlortiz.playercollars.client.DeedItemScreen;
+import org.jlortiz.playercollars.client.screen.DeedItemScreen;
 
 public class DeedItem extends Item {
     public static final RegistryKey<Item> REGISTRY_KEY = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(PlayerCollarsMod.MOD_ID, "deed_of_ownership"));

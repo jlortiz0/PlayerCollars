@@ -1,88 +1,58 @@
 package org.jlortiz.playercollars.item;
 
-import io.wispforest.accessories.api.AccessoryItem;
+import com.mojang.datafixers.util.Either;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.MapColor;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.DyedColorComponent;
-import net.minecraft.component.type.MapColorComponent;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.sound.SoundEvents;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
-import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
-public class PawsItem extends AccessoryItem {
-    public final int color, beansColor;
-
-    public PawsItem(RegistryKey<Item> key, int color, int beansColor) {
-        super(new Item.Settings().maxCount(1).registryKey(key)
-                .component(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color | 0xFF000000, false))
-                .component(DataComponentTypes.MAP_COLOR, new MapColorComponent(beansColor))
-        );
-        this.color = color | 0xFF000000;
-        this.beansColor = beansColor;
+public class PawsItem extends FootPawsItem {
+    public PawsItem(RegistryKey<Item> key, int color, int pawColor) {
+        super(key, color, pawColor);
     }
 
     public static boolean shouldPreventBlockInteraction(ItemStack stack, @NotNull BlockState block) {
         if (block.isIn(PlayerCollarsMod.PAWS_ALLOW_INTERACT)) return false;
-        Set<Identifier> allowed = stack.get(PlayerCollarsMod.CAN_INTERACT_COMPONENT_TYPE);
+        List<Either<TagKey<Block>, RegistryKey<Block>>> allowed = stack.get(PlayerCollarsMod.CAN_INTERACT_COMPONENT_TYPE);
         Optional<RegistryKey<Block>> key = block.getRegistryEntry().getKey();
-        return allowed != null && key.isPresent() && !allowed.contains(key.get().getValue());
+        if (allowed == null || key.isEmpty()) return false;
+        for (Either<TagKey<Block>, RegistryKey<Block>> entry : allowed) {
+            if (entry.map(block::isIn, (y) -> y.equals(key.get()))) return false;
+        }
+        return true;
     }
 
-    public static boolean isSlippery(ItemStack stack) {
-        Boolean slippery = stack.get(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
-        return slippery != null && slippery;
+    public static boolean shouldDrop(ItemStack pawsStack, ItemStack thing) {
+        if (thing.isEmpty()) return false;
+        List<Either<TagKey<Item>, RegistryKey<Item>>> slippery = pawsStack.get(PlayerCollarsMod.HELD_ITEMS_COMPONENT_TYPE);
+        Optional<RegistryKey<Item>> key = thing.getRegistryEntry().getKey();
+        if (slippery == null || key.isEmpty()) return false;
+        for (Either<TagKey<Item>, RegistryKey<Item>> entry : slippery) {
+            if (entry.map(thing::isIn, (y) -> y.equals(key.get()))) return false;
+        }
+        return true;
     }
 
     @Override
     public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
         super.appendTooltip(stack, context, tooltip, type);
-        if (isSlippery(stack)) tooltip.add(Text.translatable("item.playercollars.paws.slippery"));
-    }
-
-    @Override
-    public ItemStack getRecipeRemainder(ItemStack stack) {
-        return stack;
+        if (stack.get(PlayerCollarsMod.HELD_ITEMS_COMPONENT_TYPE) != null) tooltip.add(Text.translatable("item.playercollars.paws.slippery"));
+        if (stack.get(PlayerCollarsMod.CAN_INTERACT_COMPONENT_TYPE) != null) tooltip.add(Text.translatable("item.playercollars.paws.interaction"));
     }
 
     public static RegistryKey<Item> getRegistryKey(DyeColor c) {
         return RegistryKey.of(RegistryKeys.ITEM, Identifier.of(PlayerCollarsMod.MOD_ID, c.getName() + "_paws"));
-    }
-
-    @Override
-    public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        if (!user.isSneaking()) return super.use(world, user, hand);
-        if (Boolean.TRUE.equals(user.getStackInHand(hand).get(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE)))
-            return super.use(world, user, hand);
-        Hand otherHand = hand == Hand.MAIN_HAND ? Hand.OFF_HAND : Hand.MAIN_HAND;
-        if (user.getStackInHand(otherHand).getItem() != Items.HONEY_BOTTLE)
-            return super.use(world, user, hand);
-
-        if (world.isClient) {
-            user.playSound(SoundEvents.BLOCK_HONEY_BLOCK_PLACE);
-            return ActionResult.CONSUME;
-        }
-
-        user.getStackInHand(hand).set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
-        if (!user.isCreative()) user.setStackInHand(otherHand, new ItemStack(Items.GLASS_BOTTLE));
-        return ActionResult.CONSUME;
     }
 }

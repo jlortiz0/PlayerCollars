@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.enums.BedPart;
+import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
@@ -21,6 +22,7 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import org.jlortiz.playercollars.PlayerCollarsMod;
+import org.jlortiz.playercollars.block.InvisibleFenceBlock;
 
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
@@ -28,10 +30,13 @@ import java.util.function.Function;
 
 public class DatagenEntrypoint implements DataGeneratorEntrypoint {
     public static final BlockItem[] WOOLS = new BlockItem[DyeColor.values().length];
+    public static final BlockItem[] TERRACOTTAS = new BlockItem[DyeColor.values().length];
     @Override
     public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
-        for (DyeColor c : DyeColor.values())
+        for (DyeColor c : DyeColor.values()) {
             WOOLS[c.ordinal()] = (BlockItem) Registries.ITEM.get(Identifier.ofVanilla(c.getName() + "_wool"));
+            TERRACOTTAS[c.ordinal()] = (BlockItem) Registries.ITEM.get(Identifier.ofVanilla(c.getName() + "_terracotta"));
+        }
 
         FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
         pack.addProvider(RecipeDataGenerator::new);
@@ -51,6 +56,9 @@ public class DatagenEntrypoint implements DataGeneratorEntrypoint {
         public void generate() {
             for (int i = 0; i < PlayerCollarsMod.DOG_BEDS.length; i++)
                 addDrop(PlayerCollarsMod.DOG_BEDS[i], dropsWithProperty(PlayerCollarsMod.DOG_BEDS[i], BedBlock.PART, BedPart.HEAD));
+            for (int i = 0; i < PlayerCollarsMod.DOG_BOWLS.length; i++)
+                addDrop(PlayerCollarsMod.DOG_BOWLS[i], drops(PlayerCollarsMod.DOG_BOWL_ITEMS[i]));
+            addDrop(PlayerCollarsMod.INVISIBLE_FENCE_BLOCK, dropsWithProperty(PlayerCollarsMod.INVISIBLE_FENCE_BLOCK, InvisibleFenceBlock.HALF, DoubleBlockHalf.LOWER));
         }
     }
 
@@ -61,10 +69,12 @@ public class DatagenEntrypoint implements DataGeneratorEntrypoint {
 
         @Override
         protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
-            getOrCreateTagBuilder(ItemTags.DYEABLE).add(PlayerCollarsMod.COLLAR_ITEM).add(PlayerCollarsMod.CLICKER_ITEM);
-            getOrCreateTagBuilder(TagKey.of(RegistryKeys.ITEM, Identifier.of(Accessories.MODID, "necklace"))).add(PlayerCollarsMod.COLLAR_ITEM);
+            getOrCreateTagBuilder(ItemTags.DYEABLE).add(PlayerCollarsMod.COLLAR_ITEM).add(PlayerCollarsMod.CLICKER_ITEM).add(PlayerCollarsMod.TAGLESS_COLLAR_ITEM);
+            getOrCreateTagBuilder(TagKey.of(RegistryKeys.ITEM, Identifier.of(Accessories.MODID, "necklace"))).add(PlayerCollarsMod.COLLAR_ITEM).add(PlayerCollarsMod.TAGLESS_COLLAR_ITEM);
             getOrCreateTagBuilder(TagKey.of(RegistryKeys.ITEM, Identifier.of(Accessories.MODID, "hand"))).add(PlayerCollarsMod.PAWS_ITEMS);
+            getOrCreateTagBuilder(TagKey.of(RegistryKeys.ITEM, Identifier.of(Accessories.MODID, "shoes"))).addTag(PlayerCollarsMod.FOOT_PAWS_TAG);
             getOrCreateTagBuilder(PlayerCollarsMod.PAWS_TAG).add(PlayerCollarsMod.PAWS_ITEMS);
+            getOrCreateTagBuilder(PlayerCollarsMod.FOOT_PAWS_TAG).add(PlayerCollarsMod.FOOT_PAWS_ITEMS);
             getOrCreateTagBuilder(PlayerCollarsMod.COLLAR_TAG).add(PlayerCollarsMod.COLLAR_ITEM)
                     .addOptionalTag(TagKey.of(RegistryKeys.ITEM, Identifier.of("petworks", "collars")));
         }
@@ -78,6 +88,9 @@ public class DatagenEntrypoint implements DataGeneratorEntrypoint {
         @Override
         protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
             getOrCreateTagBuilder(BlockTags.BEDS).add(PlayerCollarsMod.DOG_BEDS);
+//            getOrCreateTagBuilder(PlayerCollarsMod.PAWS_ALLOW_INTERACT).addTag(BlockTags.BUTTONS)
+//                    .add(Blocks.LEVER).addTag(BlockTags.CROPS).addTag(BlockTags.BEDS)
+//                    .addTag(BlockTags.GEODE_INVALID_BLOCKS).addTag(BlockTags.CAULDRONS);
         }
     }
 
@@ -128,6 +141,9 @@ public class DatagenEntrypoint implements DataGeneratorEntrypoint {
             generateColorNames(translationBuilder, " Human-Sized Dog Bed", DyeColor::byId, PlayerCollarsMod.DOG_BED_ITEMS);
             generateColorNames(translationBuilder, " Human-Sized Dog Bed", DyeColor::byId, PlayerCollarsMod.DOG_BEDS);
             generateColorNames(translationBuilder, " Paws", (i) -> PlayerCollarsMod.PAWS_DYE_COLORS[i], PlayerCollarsMod.PAWS_ITEMS);
+            generateColorNames(translationBuilder, " Foot Paws", (i) -> PlayerCollarsMod.PAWS_DYE_COLORS[i], PlayerCollarsMod.FOOT_PAWS_ITEMS);
+            generateColorNames(translationBuilder, " Dog Bowl", DyeColor::byId, PlayerCollarsMod.DOG_BOWL_ITEMS);
+            generateColorNames(translationBuilder, " Dog Bowl", DyeColor::byId, PlayerCollarsMod.DOG_BOWLS);
 
             try {
                 Path existingFilePath = dataOutput.getModContainer().findPath("assets/" + PlayerCollarsMod.MOD_ID + "/lang/en_us.existing.json").get();

@@ -1,4 +1,4 @@
-package org.jlortiz.playercollars.client;
+package org.jlortiz.playercollars.client.screen;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
@@ -69,12 +69,12 @@ public class CollarDyeScreen extends Screen {
         this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), (btn) -> {
             PacketUpdateCollar.OwnerState os = owner == null ? PacketUpdateCollar.OwnerState.DEL : (owner.uuid().equals(ownUUID) ? PacketUpdateCollar.OwnerState.ADD : PacketUpdateCollar.OwnerState.NOP);
             ClientPlayNetworking.send(new PacketUpdateCollar(is, os));
-            this.client.setScreen(null);
+            close();
         }).dimensions(x + 5, y + 50, 75, 20).build());
         this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.cancel"), (btn) -> {
             is.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(initColor, true));
             is.set(DataComponentTypes.MAP_COLOR, new MapColorComponent(initPaw));
-            this.client.setScreen(null);
+            close();
         }).dimensions(x - 80, y + 50, 75, 20).build());
 
         ButtonWidget ownerButton = ButtonWidget.builder(Text.empty(), this::updateOwner).dimensions(x - 80, y + 72, 160, 20).build();
