@@ -3,9 +3,9 @@ package org.jlortiz.playercollars;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.ListCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import dev.emi.trinkets.api.SlotReference;
-import dev.emi.trinkets.api.TrinketsApi;
+import dev.emi.trinkets.api.*;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory;
@@ -20,10 +20,14 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.component.ComponentType;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.ClampedEntityAttribute;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.decoration.LeashKnotEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
@@ -54,9 +58,7 @@ import org.jlortiz.playercollars.network.PacketLookAtLerped;
 import org.jlortiz.playercollars.network.PacketStampDeed;
 import org.jlortiz.playercollars.network.PacketUpdateCollar;
 
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.UnaryOperator;
 
 public class PlayerCollarsMod implements ModInitializer {
@@ -100,8 +102,12 @@ public class PlayerCollarsMod implements ModInitializer {
 	public static final RegistryEntry<EntityAttribute> ATTR_LEASH_DISTANCE = Registry.registerReference(
 			Registries.ATTRIBUTE, Identifier.of(MOD_ID, "leash_distance"),
 			new ClampedEntityAttribute("attribute.playercollars.leash_distance", 4, 2, 16));
-	public static final GameRules.Key<GameRules.BooleanRule> PLAYER_LEASHES_BREAK_RULE = GameRuleRegistry.register(
-			"playerLeashesBreak", GameRules.Category.PLAYER, GameRuleFactory.createBooleanRule(true));
+    public static final GameRules.Key<GameRules.BooleanRule> PLAYER_LEASHES_BREAK_RULE = GameRuleRegistry.register(
+            "playerLeashesBreak", GameRules.Category.PLAYER, GameRuleFactory.createBooleanRule(true));
+    public static final GameRules.Key<GameRules.BooleanRule> DROP_BINDING_CURSE_ON_DEATH_RULE = GameRuleRegistry.register(
+            "dropBindingCurseTrinketItemsOnDeath", GameRules.Category.PLAYER, GameRuleFactory.createBooleanRule(true));
+
+    public static final TagKey<Item> BINDING_CURSE_ENCHANTABLE_TAG = TagKey.of(Registries.ITEM.getKey(), Identifier.of("playercollars", "enchantable/equippable"));
 
 	public static final DogBedBlock[] DOG_BEDS = new DogBedBlock[DyeColor.values().length];
 	public static final BedItem[] DOG_BED_ITEMS = new BedItem[DyeColor.values().length];
@@ -239,5 +245,42 @@ public class PlayerCollarsMod implements ModInitializer {
 			}
 			return ActionResult.PASS;
 		});
+
+        ServerLivingEntityEvents.ALLOW_DEATH.register((LivingEntity entity, DamageSource source, float amount) -> {
+            // only run on *player* death and on the server
+            if(!(entity instanceof ServerPlayerEntity player)) return true;
+            // only do if gamerule is true
+            if(!player.getWorld().getGameRules().getBoolean(PlayerCollarsMod.DROP_BINDING_CURSE_ON_DEATH_RULE)) return true;
+
+            TrinketComponent trinkets = TrinketsApi.getTrinketComponent(player).orElse(null);
+            if(trinkets == null) return true;
+            TrinketComponent component = TrinketsApi.getTrinketComponent(player).orElse(null);
+            if(component == null) return true;
+            ArrayList<Pair<String, String>> slotsToCheck = new ArrayList<>();
+            // add more slots if needed, these are just the group and slot in trinkets
+            slotsToCheck.add(new Pair<>("hand", "glove"));
+            slotsToCheck.add(new Pair<>("chest", "necklace"));
+            slotsToCheck.add(new Pair<>("feet", "shoes"));
+            for(Pair<String, String> slot : slotsToCheck) {
+                // check SlotGroup and SlotType just to be sure they exist and all that (im not entirely sure whether this is needed)
+                SlotGroup group = component.getGroups().getOrDefault(slot.getLeft(), null);
+                if(group == null) continue;
+                SlotType type = group.getSlots().getOrDefault(slot.getRight(), null);
+                if(type == null) continue;
+                ItemStack stack = component.getInventory().get(slot.getLeft()).get(slot.getRight()).getStack(0 /* offset = 0 */);
+                if(!stack.hasEnchantments()) continue;
+                // only do this for items that are actually enchantable with curse of binding and are provided by this mod (item tag is defined manually)
+
+                if(!stack.isIn(PlayerCollarsMod.BINDING_CURSE_ENCHANTABLE_TAG)) continue;
+                // this monster checks if the item has curse of binding enchantment
+                if(EnchantmentHelper.getLevel(player.getWorld().getRegistryManager().getWrapperOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(Enchantments.BINDING_CURSE), stack) == 0) continue;
+
+                // drop item and make slot empty
+                player.dropItem(stack, true, false);
+                component.getInventory().get(slot.getLeft()).get(slot.getRight()).setStack(0, ItemStack.EMPTY);
+            }
+            return true;
+        });
+
 	}
 }
