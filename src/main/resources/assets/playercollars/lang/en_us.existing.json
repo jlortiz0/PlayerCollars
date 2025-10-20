@@ -46,5 +46,6 @@
   "message.playercollars.no_break_fence": "Can't unleash yourself!",
   "message.playercollars.no_attack_owner": "Don't attack your owner!",
   "tag.block.playercollars.paws_allow_interact": "Usable with Paws",
-  "gamerule.playerLeashesBreak": "Player collar leashes break if stretched too far"
+  "gamerule.playerLeashesBreak": "Player collar leashes break if stretched too far",
+  "gamerule.dropBindingCurseTrinketItemsOnDeath": "Drop accessories (Collar, Paws) with Curse of Binding on death"
 }

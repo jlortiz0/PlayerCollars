@@ -39,6 +39,7 @@
   "enchantment.playercollars.regeneration": "Healing",
   "enchantment.playercollars.short_leash": "Tight Leash",
   "enchantment.playercollars.thorns": "Spiked",
+  "gamerule.dropBindingCurseTrinketItemsOnDeath": "Drop accessories (Collar, Paws) with Curse of Binding on death",
   "gamerule.playerLeashesBreak": "Player collar leashes break if stretched too far",
   "item.playercollars.black_foot_paws": "Black Foot Paws",
   "item.playercollars.black_paws": "Black Paws",
