@@ -1,6 +1,8 @@
 package org.jlortiz.playercollars.client.screen;
 
 import com.mojang.datafixers.util.Either;
+import io.wispforest.accessories.client.gui.ButtonEvents;
+import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.tag.FabricTagKey;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -59,11 +61,11 @@ public class TagLikeListWidget<T extends ItemConvertible> extends EntryListWidge
     private class TransparentButton extends ButtonWidget {
         protected TransparentButton() {
             super(0, 0, TagLikeListWidget.this.getRowWidth(), TagLikeListWidget.this.itemHeight,
-                    Text.empty(), (x) -> {}, ButtonWidget.DEFAULT_NARRATION_SUPPLIER);
+                    net.minecraft.text.Text.empty(), (x) -> {}, ButtonWidget.DEFAULT_NARRATION_SUPPLIER);
         }
 
         @Override
-        protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+        protected void drawIcon(DrawContext context, int mouseX, int mouseY, float delta) {
             if (this.isHovered())
                 context.fill(getX(), getY(), getX() + getWidth(), getY() + height, 0x999999 + (142 << 24));
         }

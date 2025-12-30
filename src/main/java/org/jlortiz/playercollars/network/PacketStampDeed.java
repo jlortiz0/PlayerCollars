@@ -34,7 +34,7 @@ public class PacketStampDeed implements CustomPayload {
                 is.set(PlayerCollarsMod.OWNER_COMPONENT_TYPE, new OwnerComponent(
                    owner.uuid(), owner.name(), Optional.of(context.player().getUuid()), Optional.of(plrName)
                 ));
-                context.player().getInventory().setStack(context.player().getInventory().selectedSlot, is);
+                context.player().getInventory().setStack(context.player().getInventory().getSelectedSlot(), is);
             }
         });
     }

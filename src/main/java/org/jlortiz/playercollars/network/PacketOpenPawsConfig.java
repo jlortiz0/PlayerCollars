@@ -35,7 +35,7 @@ public record PacketOpenPawsConfig(UUID pawHolder, boolean heldItems) implements
 
     public void handle(ServerPlayNetworking.Context context) {
         context.server().execute(() -> {
-            PlayerEntity pet = context.player().getWorld().getPlayerByUuid(pawHolder);
+            PlayerEntity pet = context.player().getEntityWorld().getPlayerByUuid(pawHolder);
             if (pet == null) return;
             AccessoriesCapability cap = AccessoriesCapability.get(pet);
             if (cap == null) return;

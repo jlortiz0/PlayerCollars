@@ -39,15 +39,14 @@ public abstract class PlayerEntityMixin extends LivingEntity {
         super(entityType, world);
     }
 
-    @Redirect(method = "getBlockBreakingSpeed", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;getBlockBreakingSpeed(Lnet/minecraft/block/BlockState;)F"), require=0)
-    private float getBlockBreakingSpeed(PlayerInventory instance, BlockState block) {
-        float ret = instance.getBlockBreakingSpeed(block);
+    @Redirect(method = "getBlockBreakingSpeed", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;getMiningSpeedMultiplier(Lnet/minecraft/block/BlockState;)F"), require=0)
+    private float getMiningSpeedMultiplier(ItemStack instance, BlockState state) {
+        float ret = instance.getItem().getMiningSpeed(instance, state);
         AccessoriesCapability cap = AccessoriesCapability.get(this);
         if (cap == null) return ret;
         if (cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.PAWS_TAG)).isEmpty()) return ret;
-        if (TagUtil.isIn(BlockTags.SHOVEL_MINEABLE, block.getBlock())) {
+        if (TagUtil.isIn(BlockTags.SHOVEL_MINEABLE, state.getBlock()))
             return ToolMaterial.IRON.speed();
-        }
         return (ret - 1) * 0.125f + 1;
     }
 
@@ -70,7 +69,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
         AccessoriesCapability cap = AccessoriesCapability.get(this);
         if (cap == null) return;
         for (SlotEntryReference sr : cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.PAWS_TAG))) {
-            if (PawsItem.shouldDrop(sr.stack(), inventory.getMainHandStack())) {
+            if (PawsItem.shouldDrop(sr.stack(), inventory.getSelectedStack())) {
                 ItemStack stack = inventory.dropSelectedItem(true);
                 if (!stack.isEmpty()) dropItem(stack, true);
             }

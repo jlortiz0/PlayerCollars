@@ -34,8 +34,8 @@ public class DatagenEntrypoint implements DataGeneratorEntrypoint {
     @Override
     public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
         for (DyeColor c : DyeColor.values()) {
-            WOOLS[c.ordinal()] = (BlockItem) Registries.ITEM.get(Identifier.ofVanilla(c.getName() + "_wool"));
-            TERRACOTTAS[c.ordinal()] = (BlockItem) Registries.ITEM.get(Identifier.ofVanilla(c.getName() + "_terracotta"));
+            WOOLS[c.ordinal()] = (BlockItem) Registries.ITEM.get(Identifier.ofVanilla(c.getId() + "_wool"));
+            TERRACOTTAS[c.ordinal()] = (BlockItem) Registries.ITEM.get(Identifier.ofVanilla(c.getId() + "_terracotta"));
         }
 
         FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
@@ -117,7 +117,7 @@ public class DatagenEntrypoint implements DataGeneratorEntrypoint {
 
         private static void generateColorNames(TranslationBuilder translationBuilder, String suffix, Function<Integer, DyeColor> getColor, String... keys) {
             for (int i = 0; i < keys.length; i++) {
-                String pre = getColor.apply(i).getName();
+                String pre = getColor.apply(i).getId();
                 char []buf = new char[pre.length() + suffix.length()];
                 boolean newWord = true;
                 for (int j = 0; j < pre.length(); j++) {
@@ -138,12 +138,12 @@ public class DatagenEntrypoint implements DataGeneratorEntrypoint {
 
         @Override
         public void generateTranslations(RegistryWrapper.WrapperLookup registryLookup, TranslationBuilder translationBuilder) {
-            generateColorNames(translationBuilder, " Human-Sized Dog Bed", DyeColor::byId, PlayerCollarsMod.DOG_BED_ITEMS);
-            generateColorNames(translationBuilder, " Human-Sized Dog Bed", DyeColor::byId, PlayerCollarsMod.DOG_BEDS);
+            generateColorNames(translationBuilder, " Human-Sized Dog Bed", DyeColor::byIndex, PlayerCollarsMod.DOG_BED_ITEMS);
+            generateColorNames(translationBuilder, " Human-Sized Dog Bed", DyeColor::byIndex, PlayerCollarsMod.DOG_BEDS);
             generateColorNames(translationBuilder, " Paws", (i) -> PlayerCollarsMod.PAWS_DYE_COLORS[i], PlayerCollarsMod.PAWS_ITEMS);
             generateColorNames(translationBuilder, " Foot Paws", (i) -> PlayerCollarsMod.PAWS_DYE_COLORS[i], PlayerCollarsMod.FOOT_PAWS_ITEMS);
-            generateColorNames(translationBuilder, " Dog Bowl", DyeColor::byId, PlayerCollarsMod.DOG_BOWL_ITEMS);
-            generateColorNames(translationBuilder, " Dog Bowl", DyeColor::byId, PlayerCollarsMod.DOG_BOWLS);
+            generateColorNames(translationBuilder, " Dog Bowl", DyeColor::byIndex, PlayerCollarsMod.DOG_BOWL_ITEMS);
+            generateColorNames(translationBuilder, " Dog Bowl", DyeColor::byIndex, PlayerCollarsMod.DOG_BOWLS);
 
             try {
                 Path existingFilePath = dataOutput.getModContainer().findPath("assets/" + PlayerCollarsMod.MOD_ID + "/lang/en_us.existing.json").get();

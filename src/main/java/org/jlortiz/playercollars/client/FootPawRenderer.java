@@ -6,14 +6,15 @@ import io.wispforest.accessories.api.client.Side;
 import io.wispforest.accessories.api.slot.SlotReference;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.OverlayTexture;
+import net.minecraft.client.render.RenderLayers;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.model.EntityModel;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.client.render.entity.state.LivingEntityRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.item.ItemDisplayContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ModelTransformationMode;
 import net.minecraft.world.World;
 import org.joml.Quaternionf;
 
@@ -24,7 +25,8 @@ public class FootPawRenderer implements AccessoryRenderer {
         matrices.multiply(new Quaternionf().rotateXYZ((float) -Math.PI / 2, 0, 0), 0, 0, 0);
         matrices.translate(0, 0, 0.125);
         matrices.scale(0.75f, 0.75f, 0.75f);
-        MinecraftClient.getInstance().getItemRenderer().renderItem(stack, ModelTransformationMode.FIXED, light, OverlayTexture.DEFAULT_UV, matrices, multiBufferSource, world, 0);
+
+        MinecraftClient.getInstance().getItemRenderer().renderItem(stack, ItemDisplayContext.FIXED, light, OverlayTexture.DEFAULT_UV, matrices, multiBufferSource, world, 0);
         matrices.pop();
     }
 
@@ -35,7 +37,7 @@ public class FootPawRenderer implements AccessoryRenderer {
         ItemStack is = itemStack.copy();
         is.remove(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
         is.remove(DataComponentTypes.ENCHANTMENTS);
-        renderForLeg(is, matrixStack, model, slotReference.entity().getWorld(), vertexConsumerProvider, i, false);
-        renderForLeg(is, matrixStack, model, slotReference.entity().getWorld(), vertexConsumerProvider, i, true);
+        renderForLeg(is, matrixStack, model, slotReference.entity().getEntityWorld(), vertexConsumerProvider, i, false);
+        renderForLeg(is, matrixStack, model, slotReference.entity().getEntityWorld(), vertexConsumerProvider, i, true);
     }
 }

@@ -52,8 +52,8 @@ public class RecipeDataGenerator extends FabricRecipeProvider {
                         .offerTo(exporter);
                 createShapeless(RecipeCategory.TOOLS, PlayerCollarsMod.COLLAR_LOCKER_ITEM)
                         .input(ConventionalItemTags.REDSTONE_DUSTS)
-                        .input(Items.CHAIN)
-                        .input(Items.CHAIN)
+                        .input(Items.IRON_CHAIN)
+                        .input(Items.IRON_CHAIN)
                         .input(Items.IRON_BARS)
                         .criterion(hasItem(PlayerCollarsMod.COLLAR_ITEM),
                                 conditionsFromTag(PlayerCollarsMod.COLLAR_TAG))

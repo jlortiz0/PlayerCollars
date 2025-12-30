@@ -12,8 +12,7 @@ import io.wispforest.accessories.api.slot.SlotEntryReference;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory;
-import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;
+import net.fabricmc.fabric.api.gamerule.v1.GameRuleBuilder;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -51,8 +50,10 @@ import net.minecraft.util.dynamic.Codecs;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
+import net.minecraft.world.rule.GameRule;
+import net.minecraft.world.rule.GameRuleCategory;
+import net.minecraft.world.rule.GameRules;
 import org.jetbrains.annotations.Nullable;
 import org.jlortiz.playercollars.block.DogBedBlock;
 import org.jlortiz.playercollars.block.DogBowlBlock;
@@ -125,11 +126,16 @@ public class PlayerCollarsMod implements ModInitializer {
 	public static final RegistryEntry<EntityAttribute> ATTR_LEASH_DISTANCE = Registry.registerReference(
 			Registries.ATTRIBUTE, Identifier.of(MOD_ID, "leash_distance"),
 			new ClampedEntityAttribute("attribute.playercollars.leash_distance", 4, 2, 16));
-	public static final GameRules.Key<GameRules.BooleanRule> PLAYER_LEASHES_BREAK_RULE = GameRuleRegistry.register(
-			"playerLeashesBreak", GameRules.Category.PLAYER, GameRuleFactory.createBooleanRule(true));
-    public static final GameRules.Key<GameRules.BooleanRule> LEASHED_PLAYERS_RIDE_ENTITIES = GameRuleRegistry.register(
-            "leashedPlayersRideEntities", GameRules.Category.PLAYER, GameRuleFactory.createBooleanRule(false));
 
+	public static final GameRule<Boolean> PLAYER_LEASHES_BREAK_RULE = GameRuleBuilder
+			.forBoolean(true)
+			.category(GameRuleCategory.PLAYER)
+			.buildAndRegister(Identifier.of(MOD_ID,"player_leashes_break"));
+	public static final GameRule<Boolean> LEASHED_PLAYERS_RIDE_ENTITIES = GameRuleBuilder
+			.forBoolean(false)
+			.category(GameRuleCategory.PLAYER)
+			.buildAndRegister(Identifier.of(MOD_ID,"leashed_players_ride_entities"));
+	
 	public static final DogBedBlock[] DOG_BEDS = new DogBedBlock[DyeColor.values().length];
 	public static final BedItem[] DOG_BED_ITEMS = new BedItem[DyeColor.values().length];
 	public static final TagKey<Item> COLLAR_TAG = TagKey.of(RegistryKeys.ITEM, Identifier.of("c", "collars"));
@@ -206,7 +212,7 @@ public class PlayerCollarsMod implements ModInitializer {
 	}
 
 	public static ActionResult pullPlayerTowards(ServerPlayerEntity plr, Vec3d towards, double minDist, double maxDist, UnaryOperator<Double> getFactor) {
-		Vec3d vecTo = towards.subtract(plr.getPos());
+		Vec3d vecTo = towards.subtract(plr.getEntityPos());
 		double distance = vecTo.length();
 		if (distance < minDist) return ActionResult.PASS;
 		if (distance > maxDist) return ActionResult.FAIL;
@@ -251,7 +257,7 @@ public class PlayerCollarsMod implements ModInitializer {
 		}
 
 		PlayerBlockBreakEvents.BEFORE.register((World var1, PlayerEntity player, BlockPos blockPos, BlockState var4, @Nullable BlockEntity var5) -> {
-			if (var1.isClient) return true;
+			if (var1.isClient()) return true;
 			if (player.isSpectator()) return true;
 			Entity leashHolderEntity = ((LeashImpl) player).leashplayers$getProxyLeashHolder();
 			if (leashHolderEntity instanceof LeashKnotEntity knot && blockPos.equals(knot.getAttachedBlockPos())) {
@@ -262,7 +268,7 @@ public class PlayerCollarsMod implements ModInitializer {
 		});
 
 		AttackEntityCallback.EVENT.register((PlayerEntity player, World var2, Hand var3, Entity var4, @Nullable EntityHitResult var5) -> {
-			if (var2.isClient) return ActionResult.PASS;
+			if (var2.isClient()) return ActionResult.PASS;
 			if (player.isSpectator()) return ActionResult.PASS;
 			AccessoriesCapability cap = AccessoriesCapability.get(player);
 			if (cap != null) {

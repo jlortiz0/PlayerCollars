@@ -11,8 +11,8 @@ import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.client.render.entity.state.LivingEntityRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.item.ItemDisplayContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ModelTransformationMode;
 import net.minecraft.util.Arm;
 import net.minecraft.world.World;
 import org.joml.Quaternionf;
@@ -25,7 +25,7 @@ public class PawRenderer implements AccessoryRenderer {
         matrices.multiply(new Quaternionf().rotateXYZ((float) Math.PI, (float) (left ? Math.PI : -Math.PI)/ 2, 0));
         matrices.translate(0, -0.1875, -0.125);
         matrices.scale(0.75f, 0.625f, model.thinArms ? 0.875f : 1.03125f);
-        MinecraftClient.getInstance().getItemRenderer().renderItem(stack, ModelTransformationMode.FIXED, light, OverlayTexture.DEFAULT_UV, matrices, multiBufferSource, world, 0);
+        MinecraftClient.getInstance().getItemRenderer().renderItem(stack, ItemDisplayContext.FIXED, light, OverlayTexture.DEFAULT_UV, matrices, multiBufferSource, world, 0);
         matrices.pop();
     }
 
@@ -38,7 +38,7 @@ public class PawRenderer implements AccessoryRenderer {
         matrices.multiply(new Quaternionf().rotateXYZ((float) Math.PI, 0, 0));
         matrices.translate(left ? 0 : 0.015625, -0.1875, left ? -0.135 : -0.14);
         matrices.scale(model.thinArms ? 0.59375f : 0.75f, 0.75f, 1.03125f);
-        MinecraftClient.getInstance().getItemRenderer().renderItem(stack, ModelTransformationMode.FIXED, light, OverlayTexture.DEFAULT_UV, matrices, multiBufferSource, reference.entity().getWorld(), 0);
+        MinecraftClient.getInstance().getItemRenderer().renderItem(stack, ItemDisplayContext.FIXED, light, OverlayTexture.DEFAULT_UV, matrices, multiBufferSource, reference.entity().getEntityWorld(), 0);
         matrices.pop();
     }
 
@@ -49,7 +49,7 @@ public class PawRenderer implements AccessoryRenderer {
         ItemStack is = stack.copy();
         is.remove(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
         is.remove(DataComponentTypes.ENCHANTMENTS);
-        renderForArm(is, matrices, model, reference.entity().getWorld(), multiBufferSource, light, false);
-        renderForArm(is, matrices, model, reference.entity().getWorld(), multiBufferSource, light, true);
+        renderForArm(is, matrices, model, reference.entity().getEntityWorld(), multiBufferSource, light, false);
+        renderForArm(is, matrices, model, reference.entity().getEntityWorld(), multiBufferSource, light, true);
     }
 }

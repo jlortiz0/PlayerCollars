@@ -8,6 +8,7 @@ import net.minecraft.block.*;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityCollisionHandler;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MovementType;
 import net.minecraft.item.Item;
@@ -67,7 +68,7 @@ public class InvisibleFenceBlock extends HorizontalFacingBlock {
     }
 
     @Override
-    protected VoxelShape getInsideCollisionShape(BlockState state, World world, BlockPos pos) {
+    protected VoxelShape getInsideCollisionShape(BlockState state, BlockView world, BlockPos pos, Entity entity) {
         return state.get(HALF) == DoubleBlockHalf.LOWER ? VoxelShapes.fullCube() : COLLISION_SHAPE_UPPER;
     }
 
@@ -83,7 +84,7 @@ public class InvisibleFenceBlock extends HorizontalFacingBlock {
 
     @Override
     @Environment(EnvType.CLIENT)
-    protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
+    protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler, boolean bl) {
         if (!(entity instanceof ClientPlayerEntity plr)) return;
         BlockPos redstoneQueryPos = pos;
         if (state.get(HALF) == DoubleBlockHalf.UPPER) redstoneQueryPos = redstoneQueryPos.down();
