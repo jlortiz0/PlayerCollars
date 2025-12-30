@@ -15,6 +15,8 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Hand;
@@ -56,7 +58,7 @@ public class DogBowlBlock extends Block implements BlockEntityProvider {
     }
 
     public static RegistryKey<Block> getRegistryKey(DyeColor c) {
-        return RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(PlayerCollarsMod.MOD_ID, c.getName() + "_dog_bowl"));
+        return RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(PlayerCollarsMod.MOD_ID, c.getId() + "_dog_bowl"));
     }
 
     @Nullable
@@ -139,18 +141,17 @@ public class DogBowlBlock extends Block implements BlockEntityProvider {
         }
 
         @Override
-        protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-            super.readNbt(nbt, registryLookup);
-            inBowl = Optional.of(nbt.getCompound("item"))
-                    .flatMap((x) -> ItemStack.fromNbt(registryLookup, x))
-                    .orElse(ItemStack.EMPTY);
+        protected void readData(ReadView view) {
+            // reference LecternBlockEntity if this breaks
+            super.readData(view);
+            this.inBowl = view.read("item", ItemStack.CODEC).orElse(ItemStack.EMPTY);
         }
 
         @Override
-        protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-            super.writeNbt(nbt, registryLookup);
-            if (!inBowl.isEmpty())
-                nbt.put("item", inBowl.toNbt(registryLookup));
+        protected void writeData(WriteView view) {
+            super.writeData(view);
+            if (!this.inBowl.isEmpty())
+                view.put("item", ItemStack.CODEC, this.inBowl);
         }
 
         protected int getCount() {

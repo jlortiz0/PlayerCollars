@@ -32,7 +32,7 @@ public class ClickerItem extends Item {
     @Override
     public ActionResult use(World p_41432_, PlayerEntity p_41433_, Hand p_41434_) {
         p_41433_.setCurrentHand(p_41434_);
-        if (!p_41432_.isClient) {
+        if (!p_41432_.isClient()) {
             double distance = p_41433_.getAttributeValue(PlayerCollarsMod.ATTR_CLICKER_DISTANCE);
             if (distance > 0) {
                 List<ServerPlayerEntity> plrs = ((ServerWorld) p_41432_).getPlayers((p) -> !p.isPartOf(p_41433_) && p.isInRange(p_41433_, distance));
@@ -59,7 +59,7 @@ public class ClickerItem extends Item {
 
     @Override
     public boolean onStoppedUsing(ItemStack p_41412_, World p_41413_, LivingEntity p_41414_, int p_41415_) {
-        if (!p_41413_.isClient) {
+        if (!p_41413_.isClient()) {
             p_41413_.playSoundFromEntity(null, p_41414_, PlayerCollarsMod.CLICKER_OFF, SoundCategory.PLAYERS, 1, 1);
         }
         return false;

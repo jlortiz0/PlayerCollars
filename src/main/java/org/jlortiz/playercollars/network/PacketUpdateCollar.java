@@ -42,7 +42,7 @@ public record PacketUpdateCollar(OwnerState os, int pawColor, int color) impleme
         context.server().execute(() -> {
             ItemStack is = context.player().getMainHandStack();
             if (!is.isEmpty() && is.getItem() instanceof CollarItem) {
-                is.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color, true));
+                is.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color));
                 is.set(DataComponentTypes.MAP_COLOR, new MapColorComponent(pawColor));
                 if (os == OwnerState.DEL) {
                     is.remove(PlayerCollarsMod.OWNER_COMPONENT_TYPE);

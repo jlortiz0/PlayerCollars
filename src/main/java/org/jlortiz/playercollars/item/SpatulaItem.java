@@ -34,8 +34,8 @@ public class SpatulaItem extends Item {
     @Override
     public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
         ServerWorld world = null;
-        if (!entity.getWorld().isClient)
-            world = (ServerWorld) entity.getWorld();
+        if (!entity.getEntityWorld().isClient())
+            world = (ServerWorld) entity.getEntityWorld();
 
         int count = 0;
         for (EquipmentSlot slot : EquipmentSlot.values()) {
@@ -62,8 +62,8 @@ public class SpatulaItem extends Item {
         }
 
         if (count == 0) return ActionResult.PASS;
-        stack.damage(count, user, LivingEntity.getSlotForHand(hand));
-        entity.playSound(SoundEvents.ITEM_WOLF_ARMOR_BREAK);
+        stack.damage(count, user, hand.getEquipmentSlot());
+        entity.playSound(SoundEvents.ITEM_WOLF_ARMOR_BREAK.value());
         return ActionResult.SUCCESS;
     }
 }

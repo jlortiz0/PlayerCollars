@@ -11,8 +11,8 @@ import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.client.render.entity.state.LivingEntityRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.item.ItemDisplayContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ModelTransformationMode;
 import net.minecraft.registry.tag.ItemTags;
 import org.joml.Quaternionf;
 
@@ -29,14 +29,14 @@ public class CollarRenderer implements AccessoryRenderer {
                     break;
                 }
             }
-            matrixStack.translate(body.pivotX * 0.0625f, body.pivotY * 0.0625f, body.pivotZ * 0.0625f);
+            matrixStack.translate(body.originX * 0.0625f, body.originY * 0.0625f, body.originZ * 0.0625f);
             matrixStack.multiply(new Quaternionf().rotateXYZ(body.pitch, body.yaw, body.roll + (float) Math.PI));
             matrixStack.scale((hasChestplate ? 0.7f : 0.85f) * body.xScale, 0.85f * body.yScale, (hasChestplate ? 1.1f : 0.85f) * body.zScale);
             matrixStack.translate(0, hasChestplate ? 0.475 : 0.4125, -0.005);
             ItemStack is2 = itemStack.copy();
             is2.remove(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
             is2.remove(DataComponentTypes.ENCHANTMENTS);
-            MinecraftClient.getInstance().getItemRenderer().renderItem(is2, ModelTransformationMode.HEAD, i, OverlayTexture.DEFAULT_UV, matrixStack, vertexConsumerProvider, slotReference.entity().getWorld(), 0);
+            MinecraftClient.getInstance().getItemRenderer().renderItem(is2, ItemDisplayContext.HEAD, i, OverlayTexture.DEFAULT_UV, matrixStack, vertexConsumerProvider, slotReference.entity().getEntityWorld(), 0);
         } catch (ClassCastException ignored) {}
     }
 }

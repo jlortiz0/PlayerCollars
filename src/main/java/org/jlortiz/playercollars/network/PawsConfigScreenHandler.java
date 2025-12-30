@@ -46,7 +46,7 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
         };
         this.data = (data == null) ? new ArrayList<>() : new ArrayList<>(data);
         this.listToDisplay = data;
-        this.world = playerInventory.player.getWorld();
+        this.world = playerInventory.player.getEntityWorld();
         inventory.onOpen(playerInventory.player);
 
         this.addSlot(new Slot(inventory, 0, 175, 108) {

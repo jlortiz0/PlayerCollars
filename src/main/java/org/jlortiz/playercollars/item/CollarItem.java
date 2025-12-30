@@ -9,10 +9,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.AttributeModifierSlot;
-import net.minecraft.component.type.DyedColorComponent;
-import net.minecraft.component.type.EnchantableComponent;
-import net.minecraft.component.type.MapColorComponent;
+import net.minecraft.component.type.*;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
@@ -30,6 +27,7 @@ import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.client.screen.CollarDyeScreen;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class CollarItem extends AccessoryItem {
     public static final RegistryKey<Item> REGISTRY_KEY = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(PlayerCollarsMod.MOD_ID, "collar"));
@@ -39,7 +37,7 @@ public class CollarItem extends AccessoryItem {
     public CollarItem(boolean tagless) {
         super(new Item.Settings().maxCount(1).registryKey(tagless ? TAGLESS_REGISTRY_KEY : REGISTRY_KEY)
                 .component(DataComponentTypes.ENCHANTABLE, new EnchantableComponent(100))
-                .component(DataComponentTypes.DYED_COLOR, new DyedColorComponent(MapColor.RED.color, false))
+                .component(DataComponentTypes.DYED_COLOR, new DyedColorComponent(MapColor.RED.color))
                 .component(DataComponentTypes.MAP_COLOR, new MapColorComponent(MapColor.BLUE.color)));
         this.tagless = tagless;
     }
@@ -58,7 +56,7 @@ public class CollarItem extends AccessoryItem {
     @Environment(EnvType.CLIENT)
     public ActionResult use(World p_41432_, PlayerEntity p_41433_, Hand p_41434_) {
         ItemStack is = p_41433_.getStackInHand(p_41434_);
-        if (p_41433_.isSneaking() && p_41432_.isClient) {
+        if (p_41433_.isSneaking() && p_41432_.isClient()) {
             MinecraftClient.getInstance().setScreen(new CollarDyeScreen(is, p_41433_.getUuid()));
             return ActionResult.CONSUME;
         }
@@ -74,14 +72,14 @@ public class CollarItem extends AccessoryItem {
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
-        super.appendTooltip(stack, context, tooltip, type);
+    public void appendTooltip(ItemStack stack, Item.TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType type) {
+        super.appendTooltip(stack, context, displayComponent, textConsumer, type);
         if (type.isAdvanced() && !tagless) {
-            tooltip.add(Text.translatable("item.playercollars.collar.paw_color", Integer.toHexString(getPawColor(stack))).setStyle(Style.EMPTY.withColor(Colors.GRAY)));
+            textConsumer.accept(Text.translatable("item.playercollars.collar.paw_color", Integer.toHexString(getPawColor(stack))).setStyle(Style.EMPTY.withColor(Colors.GRAY)));
         }
         OwnerComponent owner = stack.get(PlayerCollarsMod.OWNER_COMPONENT_TYPE);
         if (owner != null) {
-            tooltip.add(Text.translatable("item.playercollars.collar.owner", owner.name()).formatted(Formatting.GRAY));
+            textConsumer.accept(Text.translatable("item.playercollars.collar.owner", owner.name()).formatted(Formatting.GRAY));
         }
     }
 

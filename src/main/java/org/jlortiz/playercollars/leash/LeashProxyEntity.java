@@ -7,6 +7,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.math.MathConstants;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Math;
@@ -21,9 +22,9 @@ public final class LeashProxyEntity extends TurtleEntity {
         if (proxyIsRemoved()) return false;
 
         if (target == null) return true;
-        if (target.getWorld() != getWorld() || !target.isAlive()) return true;
+        if (target.getEntityWorld() != getEntityWorld() || !target.isAlive()) return true;
 
-        Vec3d posActual = this.getPos();
+        Vec3d posActual = this.getEntityPos();
         Vec3d posTarget = switch (target.getPose()) {
             // No point in making cases for SPIN_ATTACK since leashed players can't use it
             case CROUCHING: yield new Vec3d(0.0D, 1.1D, -0.15D);
@@ -34,12 +35,12 @@ public final class LeashProxyEntity extends TurtleEntity {
                     yield new Vec3d(target.getSleepingDirection().getUnitVector().mul(-0.2f)).add(0, 0.1, -0.15);
             default: yield new Vec3d(0.0D, 1.3D, -0.15D);
         };
-        posTarget = posTarget.multiply(target.getScale()).add(target.getPos());
+        posTarget = posTarget.multiply(target.getScale()).add(target.getEntityPos());
 
         if (!Objects.equals(posActual, posTarget)) {
             setRotation(0.0F, 0.0F);
             setPos(posTarget.x, posTarget.y, posTarget.z);
-            setBoundingBox(DIMENSIONS.getBoxAt(target.getPos()));
+            setBoundingBox(DIMENSIONS.getBoxAt(target.getEntityPos()));
         }
 
         return false;
@@ -47,7 +48,7 @@ public final class LeashProxyEntity extends TurtleEntity {
 
     @Override
     public void tick() {
-        if (this.getWorld().isClient) return;
+        if (this.getEntityWorld().isClient()) return;
         if (proxyUpdate() && !proxyIsRemoved()) {
             proxyRemove();
         }
@@ -68,7 +69,7 @@ public final class LeashProxyEntity extends TurtleEntity {
     public static final String TEAM_NAME = "leashplayersimpl";
 
     public LeashProxyEntity(LivingEntity target) {
-        super(EntityType.TURTLE, target.getWorld());
+        super(EntityType.TURTLE, target.getEntityWorld());
         this.target = target;
 
         setHealth(1.0F);
@@ -77,7 +78,7 @@ public final class LeashProxyEntity extends TurtleEntity {
         setInvisible(true);
         noClip = true;
 
-        MinecraftServer server = getServer();
+        MinecraftServer server = target.getEntityWorld().getServer();
         if (server != null) {
             ServerScoreboard scoreboard = server.getScoreboard();
 
@@ -121,9 +122,9 @@ public final class LeashProxyEntity extends TurtleEntity {
     }
 
     @Override
-    public void writeCustomDataToNbt(NbtCompound nbt) {
-        super.writeCustomDataToNbt(nbt);
-        nbt.putString("Team", TEAM_NAME);
+    public void writeCustomData(WriteView view) {
+        super.writeCustomData(view);
+        view.putString("Team", TEAM_NAME);
     }
 
     @Override

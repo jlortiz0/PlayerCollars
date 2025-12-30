@@ -1,5 +1,6 @@
 package org.jlortiz.playercollars.client.screen;
 
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.render.RenderLayer;
@@ -56,7 +57,7 @@ public class PawsConfigScreen<T extends ItemConvertible> extends HandledScreen<P
     protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
         int x = (width - backgroundWidth - 50) / 2;
         int y = (height - backgroundHeight) / 2;
-        context.drawTexture(RenderLayer::getGuiTextured, TEXTURE, x, y, 0, 0, backgroundWidth + 50, backgroundHeight, 256, 256);
-        context.drawTexture(RenderLayer::getGuiTextured, WIDGETS_TEXTURE, x + 7, y + 108, stack.isEmpty() ? 16 : 0, 0, 16, 16, 32, 16);
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0, 0, backgroundWidth + 50, backgroundHeight, 256, 256);
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, WIDGETS_TEXTURE, x + 7, y + 108, stack.isEmpty() ? 16 : 0, 0, 16, 16, 32, 16);
     }
 }
