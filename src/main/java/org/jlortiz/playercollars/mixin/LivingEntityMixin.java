@@ -21,7 +21,7 @@ public abstract class LivingEntityMixin extends Entity {
         super(type, world);
     }
 
-    @Inject(method="setPositionInBed", at = @At("HEAD"), cancellable = true)
+    @Inject(method="setPositionInBed", at = @At("HEAD"), cancellable = true, require=0)
     private void correctDogBedHeight(BlockPos pos, CallbackInfo ci) {
         BlockState state = getWorld().getBlockState(pos);
         if (state.getBlock() instanceof DogBedBlock) {
