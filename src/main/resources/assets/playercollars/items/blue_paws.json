@@ -11,7 +11,7 @@
           "tints": [
             {
               "type": "minecraft:dye",
-              "default": 4288230195
+              "default": -14804197
             }
           ]
         }
@@ -23,7 +23,7 @@
       "tints": [
         {
           "type": "minecraft:dye",
-          "default": 4288230195
+          "default": 15832783
         }
       ]
     }
