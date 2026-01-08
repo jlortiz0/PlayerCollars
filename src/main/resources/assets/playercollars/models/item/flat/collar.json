@@ -1,0 +1,8 @@
+{
+    "parent":  "item/generated",
+	"textures": {
+		"layer0": "playercollars:item/collar_base",
+        "layer1": "playercollars:item/collar_tag",
+		"layer2": "playercollars:item/collar_tag_inner"
+	}
+}

@@ -7,19 +7,11 @@
         "when": "gui",
         "model": {
           "type": "minecraft:model",
-          "model": "playercollars:item/flat/collar",
+          "model": "playercollars:item/flat/paws",
           "tints": [
             {
               "type": "minecraft:dye",
               "default": 4288230195
-            },
-            {
-              "type": "minecraft:constant",
-              "value": 16777215
-            },
-            {
-              "type": "minecraft:map_color",
-              "default": 3361970
             }
           ]
         }
@@ -27,15 +19,11 @@
     ],
     "fallback": {
       "type": "minecraft:model",
-      "model": "playercollars:item/collar",
+      "model": "playercollars:item/paws",
       "tints": [
         {
           "type": "minecraft:dye",
           "default": 4288230195
-        },
-        {
-          "type": "minecraft:map_color",
-          "default": 3361970
         }
       ]
     }

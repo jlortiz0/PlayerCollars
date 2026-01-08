@@ -1,12 +1,31 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "playercollars:item/tagless_collar",
-    "tints": [
+    "type": "minecraft:select",
+    "property": "minecraft:display_context",
+    "cases": [
       {
-        "type": "minecraft:dye",
-        "default": 4288230195
+        "when": "gui",
+        "model": {
+          "type": "minecraft:model",
+          "model": "playercollars:item/flat/tagless_collar",
+          "tints": [
+            {
+              "type": "minecraft:dye",
+              "default": 4288230195
+            }
+          ]
+        }
       }
-    ]
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "playercollars:item/tagless_collar",
+      "tints": [
+        {
+          "type": "minecraft:dye",
+          "default": 4288230195
+        }
+      ]
+    }
   }
 }
