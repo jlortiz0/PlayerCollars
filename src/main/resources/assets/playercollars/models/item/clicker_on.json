@@ -1,8 +1,8 @@
 {
-	"credit": "Made with Blockbench",
 	"parent": "playercollars:item/clicker",
 	"textures": {
-		"layer0": "playercollars:item/clicker_on"
+		"layer0": "playercollars:item/clicker_on",
+		"layer1": "playercollars:item/clicker_on_overlay"
 	},
 	"display": {
 		"thirdperson_righthand": {

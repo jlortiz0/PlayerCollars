@@ -1,9 +1,8 @@
 {
-	"format_version": "1.21.6",
-	"credit": "Made with Blockbench",
 	"parent": "item/generated",
 	"textures": {
-		"layer0": "playercollars:item/clicker"
+		"layer0": "playercollars:item/clicker",
+		"layer1": "playercollars:item/clicker_overlay"
 	},
 	"gui_light": "front",
 	"display": {

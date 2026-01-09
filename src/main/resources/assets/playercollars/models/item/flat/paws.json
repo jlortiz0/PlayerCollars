@@ -2,6 +2,6 @@
     "parent":  "item/generated",
 	"textures": {
 		"layer0": "playercollars:item/paws_base",
-        "layer1": "playercollars:item/paws_beans"
+		"layer1": "playercollars:item/paws_beans"
 	}
 }
