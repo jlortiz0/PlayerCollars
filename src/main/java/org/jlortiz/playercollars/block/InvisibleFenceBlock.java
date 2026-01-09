@@ -1,27 +1,25 @@
 package org.jlortiz.playercollars.block;
 
-import com.mojang.serialization.MapCodec;
 import io.wispforest.accessories.api.AccessoriesCapability;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.block.*;
-import net.minecraft.block.enums.DoubleBlockHalf;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MovementType;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
+import net.minecraft.particle.DustParticleEffect;
+import net.minecraft.particle.ParticleUtil;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.state.StateManager;
-import net.minecraft.state.property.EnumProperty;
+import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
@@ -31,49 +29,17 @@ import net.minecraft.world.WorldView;
 import net.minecraft.world.tick.ScheduledTickView;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 
-public class InvisibleFenceBlock extends HorizontalFacingBlock {
+import java.util.List;
+import java.util.Optional;
+
+public class InvisibleFenceBlock extends FenceBlock {
     public static final RegistryKey<Block> REGISTRY_KEY = RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(PlayerCollarsMod.MOD_ID, "invisible_fence"));
     public static final RegistryKey<Item> ITEM_REGISTRY_KEY = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(PlayerCollarsMod.MOD_ID, "invisible_fence"));
-    private static final VoxelShape COLLISION_SHAPE_UPPER = Block.createCuboidShape(0, 0, 0, 16, 8, 16);
-    private static final VoxelShape[] OUTLINE_SHAPES = new VoxelShape[] {
-        VoxelShapes.union(
-            Block.createCuboidShape(1.0, 0.0, 1.0, 15.0, 1.0, 15.0),
-            Block.createCuboidShape(6.0, 1.0, 2.5, 10.0, 2.0, 13.5),
-            Block.createCuboidShape(3.0, 1.0, 8.5, 13.0, 2.0, 10.0),
-            Block.createCuboidShape(4.5, 1.0, 10.0, 11.5, 2.0, 11.5)
-        ), VoxelShapes.union(
-            Block.createCuboidShape(1.0, 0.0, 1.0, 15.0, 1.0, 15.0),
-            Block.createCuboidShape(2.5, 1.0, 6.0, 13.5, 2.0, 10.0),
-            Block.createCuboidShape(5.5, 1.0, 3.0, 7.0, 2.0, 13.0),
-            Block.createCuboidShape(4.0, 1.0, 4.5, 5.5, 2.0, 11.5)
-        ), VoxelShapes.union(
-            Block.createCuboidShape(1.0, 0.0, 1.0, 15.0, 1.0, 15.0),
-            Block.createCuboidShape(6.0, 1.0, 2.5, 10.0, 2.0, 13.5),
-            Block.createCuboidShape(3.0, 1.0, 5.5, 13.0, 2.0, 7.0),
-            Block.createCuboidShape(4.5, 1.0, 4.0, 11.5, 2.0, 5.5)
-        ), VoxelShapes.union(
-            Block.createCuboidShape(1.0, 0.0, 1.0, 15.0, 1.0, 15.0),
-            Block.createCuboidShape(2.5, 1.0, 6.0, 13.5, 2.0, 10.0),
-            Block.createCuboidShape(8.5, 1.0, 3.0, 10.0, 2.0, 13.0),
-            Block.createCuboidShape(10.0, 1.0, 4.5, 11.5, 2.0, 11.5)
-        )
-    };
-    private static final MapCodec<InvisibleFenceBlock> CODEC = createCodec(InvisibleFenceBlock::new);
-    public static final EnumProperty<DoubleBlockHalf> HALF = Properties.DOUBLE_BLOCK_HALF;
+    public static final BooleanProperty POWERED = Properties.POWERED;
 
     public InvisibleFenceBlock(AbstractBlock.Settings settings) {
         super(settings.registryKey(REGISTRY_KEY));
-        setDefaultState(this.getStateManager().getDefaultState().with(FACING, Direction.NORTH).with(HALF, DoubleBlockHalf.LOWER));
-    }
-
-    @Override
-    protected VoxelShape getInsideCollisionShape(BlockState state, World world, BlockPos pos) {
-        return state.get(HALF) == DoubleBlockHalf.LOWER ? VoxelShapes.fullCube() : COLLISION_SHAPE_UPPER;
-    }
-
-    @Override
-    protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return state.get(HALF) == DoubleBlockHalf.LOWER ? OUTLINE_SHAPES[state.get(FACING).getHorizontalQuarterTurns()] : VoxelShapes.empty();
+        setDefaultState(this.getStateManager().getDefaultState().with(POWERED, false).with(WATERLOGGED, false));
     }
 
     @Override
@@ -81,63 +47,85 @@ public class InvisibleFenceBlock extends HorizontalFacingBlock {
         return BlockRenderType.INVISIBLE;
     }
 
-    @Override
-    @Environment(EnvType.CLIENT)
-    protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
-        if (!(entity instanceof ClientPlayerEntity plr)) return;
-        BlockPos redstoneQueryPos = pos;
-        if (state.get(HALF) == DoubleBlockHalf.UPPER) redstoneQueryPos = redstoneQueryPos.down();
-        if (world.getReceivedRedstonePower(redstoneQueryPos) == 0) {
-            if (world.getReceivedRedstonePower(redstoneQueryPos.down()) == 0) return;
-        }
-
-        AccessoriesCapability cap = AccessoriesCapability.get(plr);
-        if (cap == null || cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG)).isEmpty()) return;
-
-        Vec3d pushBack = state.get(FACING).getDoubleVector();
-        double dp = plr.getVelocity().dotProduct(pushBack.negate());
-        if (dp > 0) {
-            // This still stutters even though the multiplier is very small, but 1 is too small.
-            // Not sure if there's a way to balance it.
-            plr.move(MovementType.SELF, pushBack.multiply(1.0009765625 * dp));
-        }
-    }
-
-    @Override
-    protected MapCodec<? extends HorizontalFacingBlock> getCodec() {
-        return CODEC;
-    }
-
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        builder.add(FACING, HALF);
-    }
-
-    @Override
-    public BlockState getPlacementState(ItemPlacementContext ctx) {
-        return this.getDefaultState().with(FACING, ctx.getHorizontalPlayerFacing().getOpposite()).with(HALF, DoubleBlockHalf.LOWER);
-    }
-
-    @Override
-    public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack itemStack) {
-        world.setBlockState(pos.up(), state.with(HALF, DoubleBlockHalf.UPPER), 3);
+        super.appendProperties(builder);
+        builder.add(POWERED);
     }
 
     @Override
     protected BlockState getStateForNeighborUpdate(BlockState state, WorldView world, ScheduledTickView tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, Random random) {
-        DoubleBlockHalf half = state.get(HALF);
-        if (direction.getAxis() == Direction.Axis.Y && half == DoubleBlockHalf.LOWER == (direction == Direction.UP)) {
-            return neighborState.getBlock() instanceof InvisibleFenceBlock && neighborState.get(HALF) != half ? neighborState.with(HALF, half) : Blocks.AIR.getDefaultState();
-        } else {
-            return half == DoubleBlockHalf.LOWER && direction == Direction.DOWN && !state.canPlaceAt(world, pos) ? Blocks.AIR.getDefaultState() : super.getStateForNeighborUpdate(state, world, tickView, pos, direction, neighborPos, neighborState, random);
+        state = super.getStateForNeighborUpdate(state, world, tickView, pos, direction, neighborPos, neighborState, random);
+        if (neighborState.isOf(this) && neighborState.get(POWERED) != state.get(POWERED)) {
+            state = state.with(POWERED, neighborState.get(POWERED));
         }
+        return state;
     }
 
     @Override
-    protected boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
-        BlockPos blockPos = pos.down();
-        BlockState blockState = world.getBlockState(blockPos);
-        return state.get(HALF) == DoubleBlockHalf.LOWER ?
-                blockState.isSideSolidFullSquare(world, blockPos, Direction.UP)
-                        && world.getBlockState(pos.up()).isAir() : blockState.isOf(this);
+    protected VoxelShape getCameraCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+        return VoxelShapes.empty();
+    }
+
+    @Override
+    public BlockState getPlacementState(ItemPlacementContext ctx) {
+        BlockState state = super.getPlacementState(ctx);
+        BlockState neighbor = ctx.getWorld().getBlockState(ctx.getBlockPos().north());
+        boolean shouldPower = neighbor.isOf(this) && neighbor.get(POWERED);
+        if (!shouldPower) {
+            neighbor =  ctx.getWorld().getBlockState(ctx.getBlockPos().east());
+            shouldPower = neighbor.isOf(this) && neighbor.get(POWERED);
+        }
+        if (!shouldPower) {
+            neighbor =  ctx.getWorld().getBlockState(ctx.getBlockPos().south());
+            shouldPower = neighbor.isOf(this) && neighbor.get(POWERED);
+        }
+        if (!shouldPower) {
+            neighbor =  ctx.getWorld().getBlockState(ctx.getBlockPos().west());
+            shouldPower = neighbor.isOf(this) && neighbor.get(POWERED);
+        }
+        if (shouldPower) state = state.with(POWERED, true);
+        return state;
+    }
+
+    @Override
+    protected VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+        if (context instanceof EntityShapeContext e) {
+            if (state.get(POWERED) && e.getEntity() instanceof LivingEntity livingEntity) {
+                AccessoriesCapability cap = AccessoriesCapability.get(livingEntity);
+                if (cap == null) return VoxelShapes.empty();
+
+                return cap.getEquipped((y) -> y.isIn(PlayerCollarsMod.COLLAR_TAG)).isEmpty() ?
+                        VoxelShapes.empty() : super.getCollisionShape(state, world, pos, context);
+            }
+            // Vertical collision is cached using EntityShapeContext.ABSENT.
+            // This will be re-checked if something actually lands on the fence, so this is safe for players.
+            // It can cause unusual behaviour if something tries to pathfind through it, so that is left disabled.
+            if (e.getEntity() == null) return super.getCollisionShape(state, world, pos, context);
+        }
+        return VoxelShapes.empty();
+    }
+
+    @Override
+    public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
+        super.randomDisplayTick(state, world, pos, random);
+        if (state.get(POWERED) && random.nextFloat() < 0.25)
+            ParticleUtil.spawnParticlesAround(world, pos, 1, 0.5, 0.5, true, DustParticleEffect.DEFAULT);
+    }
+
+    @Override
+    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+        if (world.isClient()) return ActionResult.PASS;
+        if (!Optional.ofNullable(AccessoriesCapability.get(player)).map((x) -> x.getEquipped((y) -> y.isIn(PlayerCollarsMod.COLLAR_TAG)))
+                .map(List::isEmpty).orElse(true)) {
+            player.sendMessage(Text.translatable("block.playercollars.invisible_fence.toggle_fail").formatted(Formatting.RED), true);
+            return ActionResult.FAIL;
+        }
+        state = state.with(POWERED, !state.get(POWERED));
+        world.setBlockState(pos, state, 7);
+        player.sendMessage(Text.translatable(
+                state.get(POWERED) ? "block.playercollars.invisible_fence.toggle_on"
+                        : "block.playercollars.invisible_fence.toggle_off")
+                .formatted(Formatting.GREEN), true);
+        return ActionResult.SUCCESS;
     }
 }

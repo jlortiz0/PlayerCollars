@@ -10,7 +10,6 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.enums.BedPart;
-import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
@@ -22,7 +21,6 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import org.jlortiz.playercollars.PlayerCollarsMod;
-import org.jlortiz.playercollars.block.InvisibleFenceBlock;
 
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
@@ -58,7 +56,7 @@ public class DatagenEntrypoint implements DataGeneratorEntrypoint {
                 addDrop(PlayerCollarsMod.DOG_BEDS[i], dropsWithProperty(PlayerCollarsMod.DOG_BEDS[i], BedBlock.PART, BedPart.HEAD));
             for (int i = 0; i < PlayerCollarsMod.DOG_BOWLS.length; i++)
                 addDrop(PlayerCollarsMod.DOG_BOWLS[i], drops(PlayerCollarsMod.DOG_BOWL_ITEMS[i]));
-            addDrop(PlayerCollarsMod.INVISIBLE_FENCE_BLOCK, dropsWithProperty(PlayerCollarsMod.INVISIBLE_FENCE_BLOCK, InvisibleFenceBlock.HALF, DoubleBlockHalf.LOWER));
+            addDrop(PlayerCollarsMod.INVISIBLE_FENCE_BLOCK, drops(PlayerCollarsMod.INVISIBLE_FENCE_BLOCK));
         }
     }
 
@@ -91,6 +89,7 @@ public class DatagenEntrypoint implements DataGeneratorEntrypoint {
 //            getOrCreateTagBuilder(PlayerCollarsMod.PAWS_ALLOW_INTERACT).addTag(BlockTags.BUTTONS)
 //                    .add(Blocks.LEVER).addTag(BlockTags.CROPS).addTag(BlockTags.BEDS)
 //                    .addTag(BlockTags.GEODE_INVALID_BLOCKS).addTag(BlockTags.CAULDRONS);
+            getOrCreateTagBuilder(BlockTags.FENCES).add(PlayerCollarsMod.INVISIBLE_FENCE_BLOCK);
         }
     }
 

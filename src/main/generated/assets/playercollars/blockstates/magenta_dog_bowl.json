@@ -1,16 +1,28 @@
 {
   "variants": {
-    "age=0": {
+    "age=0,snowy=false": {
       "model": "playercollars:block/magenta_dog_bowl_0"
     },
-    "age=1": {
+    "age=0,snowy=true": {
+      "model": "playercollars:block/magenta_dog_bowl_milk"
+    },
+    "age=1,snowy=false": {
       "model": "playercollars:block/magenta_dog_bowl_1"
     },
-    "age=2": {
+    "age=1,snowy=true": {
+      "model": "playercollars:block/magenta_dog_bowl_milk"
+    },
+    "age=2,snowy=false": {
       "model": "playercollars:block/magenta_dog_bowl_2"
     },
-    "age=3": {
+    "age=2,snowy=true": {
+      "model": "playercollars:block/magenta_dog_bowl_milk"
+    },
+    "age=3,snowy=false": {
       "model": "playercollars:block/magenta_dog_bowl_3"
+    },
+    "age=3,snowy=true": {
+      "model": "playercollars:block/magenta_dog_bowl_milk"
     }
   }
 }

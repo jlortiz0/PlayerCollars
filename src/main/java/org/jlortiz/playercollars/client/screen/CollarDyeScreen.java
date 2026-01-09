@@ -84,7 +84,7 @@ public class CollarDyeScreen extends Screen {
         ButtonWidget ownerButton = ButtonWidget.builder(Text.empty(), this::updateOwner).dimensions(x - 80, y + 72, 160, 20).build();
         if (owner == null) {
             ownerButton.setMessage(Text.translatable("item.playercollars.collar.become_owner"));
-        } else if (owner.uuid().equals(ownUUID)) {
+        } else if (owner.uuid().equals(ownUUID) && owner.owned().isEmpty()) {
             ownerButton.setMessage(Text.translatable("item.playercollars.collar.remove_owner"));
         } else {
             ownerButton.setMessage(Text.translatable("item.playercollars.collar.owner", owner.name()));

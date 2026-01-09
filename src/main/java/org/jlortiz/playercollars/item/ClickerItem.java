@@ -10,12 +10,15 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.ActionResult;
+import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Unit;
 import net.minecraft.world.World;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.network.PacketLookAtLerped;
@@ -33,15 +36,27 @@ public class ClickerItem extends Item {
     public ActionResult use(World p_41432_, PlayerEntity p_41433_, Hand p_41434_) {
         p_41433_.setCurrentHand(p_41434_);
         if (!p_41432_.isClient) {
+            ItemStack is = p_41433_.getStackInHand(p_41434_);
+            if (p_41433_.isSneaking()) {
+                if (is.contains(DataComponentTypes.INTANGIBLE_PROJECTILE)) {
+                    is.remove(DataComponentTypes.INTANGIBLE_PROJECTILE);
+                    p_41433_.sendMessage(Text.translatable("item.playercollars.clicker.turn_disable"), true);
+                } else {
+                    is.set(DataComponentTypes.INTANGIBLE_PROJECTILE, Unit.INSTANCE);
+                    p_41433_.sendMessage(Text.translatable("item.playercollars.clicker.turn_enable"), true);
+                }
+                return ActionResult.CONSUME;
+            }
+
             double distance = p_41433_.getAttributeValue(PlayerCollarsMod.ATTR_CLICKER_DISTANCE);
-            if (distance > 0) {
+            if (distance > 0 && is.contains(DataComponentTypes.INTANGIBLE_PROJECTILE)) {
                 List<ServerPlayerEntity> plrs = ((ServerWorld) p_41432_).getPlayers((p) -> !p.isPartOf(p_41433_) && p.isInRange(p_41433_, distance));
                 PacketLookAtLerped packet = new PacketLookAtLerped(p_41433_);
                 for (ServerPlayerEntity p : plrs) {
                     AccessoriesCapability cap = AccessoriesCapability.get(p);
                     if (cap != null) {
-                        ItemStack is = PlayerCollarsMod.filterStacksByOwner(cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG)), p_41433_.getUuid(), p.getUuid());
-                        if (is != null) {
+                        ItemStack collar = PlayerCollarsMod.filterStacksByOwner(cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG)), p_41433_.getUuid(), p.getUuid());
+                        if (collar != null) {
                             ServerPlayNetworking.send(p, packet);
                         }
                     }
@@ -63,5 +78,12 @@ public class ClickerItem extends Item {
             p_41413_.playSoundFromEntity(null, p_41414_, PlayerCollarsMod.CLICKER_OFF, SoundCategory.PLAYERS, 1, 1);
         }
         return false;
+    }
+
+    @Override
+    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+        super.appendTooltip(stack, context, tooltip, type);
+        if (stack.contains(DataComponentTypes.INTANGIBLE_PROJECTILE))
+            tooltip.add(Text.translatable("item.playercollars.clicker.turn"));
     }
 }

@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import io.wispforest.accessories.api.AccessoriesCapability;
 import io.wispforest.accessories.api.slot.SlotEntryReference;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -24,11 +25,11 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
 
     @Inject(at=@At("TAIL"), method="damage")
     private void checkCollarThorns(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        if (source.getAttacker() != null) {
+        if (source.getAttacker() instanceof LivingEntity attacker) {
             AccessoriesCapability cap = AccessoriesCapability.get(this);
             if (cap == null) return;
             for (SlotEntryReference ser : cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG)))
-                EnchantmentHelper.onTargetDamaged(world, source.getAttacker(), source, ser.stack());
+                EnchantmentHelper.onTargetDamaged(world, attacker, source, ser.stack());
         }
     }
 }

@@ -9,6 +9,7 @@ import net.minecraft.scoreboard.Team;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.MathConstants;
 import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Math;
 
 import java.util.Objects;
@@ -45,6 +46,11 @@ public final class LeashProxyEntity extends TurtleEntity {
         return false;
     }
 
+    @NotNull
+    public LivingEntity getLeashTarget() {
+        return target;
+    }
+
     @Override
     public void tick() {
         if (this.getWorld().isClient) return;
@@ -67,7 +73,7 @@ public final class LeashProxyEntity extends TurtleEntity {
 
     public static final String TEAM_NAME = "leashplayersimpl";
 
-    public LeashProxyEntity(LivingEntity target) {
+    public LeashProxyEntity(@NotNull LivingEntity target) {
         super(EntityType.TURTLE, target.getWorld());
         this.target = target;
 
