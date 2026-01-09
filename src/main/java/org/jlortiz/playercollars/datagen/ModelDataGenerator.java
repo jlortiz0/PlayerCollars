@@ -66,8 +66,6 @@ public class ModelDataGenerator extends FabricModelProvider {
         Identifier glassPost = Models.FENCE_POST.upload(PlayerCollarsMod.INVISIBLE_FENCE_BLOCK, glassTexture, blockStateModelGenerator.modelCollector);
         Identifier glassSide = Models.FENCE_SIDE.upload(PlayerCollarsMod.INVISIBLE_FENCE_BLOCK, glassTexture, blockStateModelGenerator.modelCollector);
         blockStateModelGenerator.blockStateCollector.accept(BlockStateModelGenerator.createFenceBlockState(PlayerCollarsMod.INVISIBLE_FENCE_BLOCK, glassPost, glassSide));
-        blockStateModelGenerator.registerParentedItemModel(PlayerCollarsMod.INVISIBLE_FENCE_BLOCK, Models.FENCE_INVENTORY.upload(ModelIds.getItemModelId(PlayerCollarsMod.INVISIBLE_FENCE_BLOCK_ITEM),
-                TextureMap.all(Blocks.GLASS), blockStateModelGenerator.modelCollector));
     }
 
     @Override
