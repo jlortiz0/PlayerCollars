@@ -1,8 +1,48 @@
 {
-  "variants": {
-    "facing=north": { "model": "playercollars:block/invisible_fence" },
-    "facing=east": { "model": "playercollars:block/invisible_fence", "y": 90 },
-    "facing=south": { "model": "playercollars:block/invisible_fence", "y": 180 },
-    "facing=west": { "model": "playercollars:block/invisible_fence", "y": 270 }
-  }
+  "multipart": [
+    {
+      "apply": {
+        "model": "playercollars:block/invisible_fence_post"
+      }
+    },
+    {
+      "apply": {
+        "model": "playercollars:block/invisible_fence_side",
+        "uvlock": true
+      },
+      "when": {
+        "north": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "playercollars:block/invisible_fence_side",
+        "uvlock": true,
+        "y": 90
+      },
+      "when": {
+        "east": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "playercollars:block/invisible_fence_side",
+        "uvlock": true,
+        "y": 180
+      },
+      "when": {
+        "south": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "playercollars:block/invisible_fence_side",
+        "uvlock": true,
+        "y": 270
+      },
+      "when": {
+        "west": "true"
+      }
+    }
+  ]
 }
