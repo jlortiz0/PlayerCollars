@@ -77,16 +77,23 @@ public class ModelDataGenerator extends FabricModelProvider {
             itemModelGenerator.output.accept(PlayerCollarsMod.DOG_BED_ITEMS[i], m);
         }
 
-        //Skip these because they're already manually done
-        // Identifier pawsModel = Identifier.of(PlayerCollarsMod.MOD_ID, "item/paws");
-        // for (FootPawsItem i : PlayerCollarsMod.PAWS_ITEMS) {
-        //     itemModelGenerator.output.accept(i, ItemModels.tinted(pawsModel, new DyeTintSource(i.color), new MapColorTintSource(i.beansColor)));
-        // }
+         Identifier pawsModel = Identifier.of(PlayerCollarsMod.MOD_ID, "item/paws");
+         Identifier pawsFlatModel = Identifier.of(PlayerCollarsMod.MOD_ID, "item/flat/paws");
+         for (FootPawsItem i : PlayerCollarsMod.PAWS_ITEMS) {
+             itemModelGenerator.output.accept(i, ItemModels.select(new DisplayContextProperty(),
+                     ItemModels.tinted(pawsModel, new DyeTintSource(i.color), new MapColorTintSource(i.beansColor)),
+                     new SelectItemModel.SwitchCase<>(List.of(ModelTransformationMode.GUI), ItemModels.tinted(pawsFlatModel, new DyeTintSource(i.color), new MapColorTintSource(i.beansColor)))
+             ));
+         }
 
-        // pawsModel = Identifier.of(PlayerCollarsMod.MOD_ID, "item/foot_paws");
-        // for (FootPawsItem i : PlayerCollarsMod.FOOT_PAWS_ITEMS) {
-        //     itemModelGenerator.output.accept(i, ItemModels.tinted(pawsModel, new DyeTintSource(i.color), new MapColorTintSource(i.beansColor)));
-        // }
+         pawsModel = Identifier.of(PlayerCollarsMod.MOD_ID, "item/foot_paws");
+         pawsFlatModel = Identifier.of(PlayerCollarsMod.MOD_ID, "item/flat/foot_paws");
+         for (FootPawsItem i : PlayerCollarsMod.FOOT_PAWS_ITEMS) {
+             itemModelGenerator.output.accept(i, ItemModels.select(new DisplayContextProperty(),
+                     ItemModels.tinted(pawsModel, new DyeTintSource(i.color), new MapColorTintSource(i.beansColor)),
+                     new SelectItemModel.SwitchCase<>(List.of(ModelTransformationMode.GUI), ItemModels.tinted(pawsFlatModel, new DyeTintSource(i.color), new MapColorTintSource(i.beansColor)))
+             ));
+         }
 
         itemModelGenerator.register(PlayerCollarsMod.DEED_OF_OWNERSHIP, Models.GENERATED);
         itemModelGenerator.register(PlayerCollarsMod.DEED_OF_OWNERSHIP_STAMPED, Models.GENERATED);
