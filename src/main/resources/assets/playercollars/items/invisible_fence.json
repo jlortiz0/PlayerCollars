@@ -1,0 +1,19 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:display_context",
+    "cases": [
+      {
+        "when": "gui",
+        "model": {
+          "type": "minecraft:model",
+          "model": "playercollars:item/flat/invisible_fence"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "playercollars:item/invisible_fence"
+    }
+  }
+}
