@@ -10,6 +10,9 @@ import net.minecraft.client.render.item.model.ItemModel;
 import net.minecraft.client.render.item.tint.ConstantTintSource;
 import net.minecraft.client.render.item.tint.DyeTintSource;
 import net.minecraft.client.render.item.tint.MapColorTintSource;
+import net.minecraft.client.render.item.model.SelectItemModel;
+import net.minecraft.client.render.item.property.select.DisplayContextProperty;
+import net.minecraft.item.ModelTransformationMode;
 import net.minecraft.item.Item;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
@@ -17,7 +20,7 @@ import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.block.DogBedBlock;
 import org.jlortiz.playercollars.block.DogBowlBlock;
 import org.jlortiz.playercollars.item.FootPawsItem;
-
+import java.util.List;
 import java.util.Optional;
 
 public class ModelDataGenerator extends FabricModelProvider {
