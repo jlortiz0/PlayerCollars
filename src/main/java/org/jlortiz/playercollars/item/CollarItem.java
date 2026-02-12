@@ -9,35 +9,43 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.AttributeModifierSlot;
+import net.minecraft.component.type.DyedColorComponent;
+import net.minecraft.component.type.MapColorComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.DyeableItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.*;
+import net.minecraft.util.Colors;
+import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jlortiz.playercollars.OwnerComponent;
 import org.jlortiz.playercollars.PlayerCollarsMod;
-import org.jlortiz.playercollars.client.CollarDyeScreen;
+import org.jlortiz.playercollars.client.screen.CollarDyeScreen;
 
 import java.util.List;
-import java.util.UUID;
 
 public class CollarItem extends Item implements DyeableItem, Trinket {
+    public final boolean tagless;
 
-    public CollarItem() {
+    public CollarItem(boolean tagless) {
         super(new Item.Settings().maxCount(1));
+        this.tagless = tagless;
         TrinketsApi.registerTrinket(this, this);
     }
 
@@ -47,17 +55,7 @@ public class CollarItem extends Item implements DyeableItem, Trinket {
     }
 
     @Override
-    public void tick(ItemStack stack, SlotReference slot, LivingEntity entity) {
-        if (entity.getWorld().isClient) return;
-        if (EnchantmentHelper.getLevel(Enchantments.MENDING, stack) > 0) {
-            Pair<UUID, String> owner = this.getOwner(stack);
-            if (owner == null || owner.getLeft().equals(entity.getUuid())) return;
-            PlayerEntity own = entity.getWorld().getPlayerByUuid(owner.getLeft());
-            if (own != null && own.distanceTo(entity) < 16) {
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 40, 0, false, false, false));
-            }
-        }
-    }
+    public void tick(ItemStack stack, SlotReference slot, LivingEntity entity) {}
 
     @Override
     public int getColor(ItemStack itemStack) {
@@ -103,14 +101,22 @@ public class CollarItem extends Item implements DyeableItem, Trinket {
     }
 
     @Override
-    public void appendTooltip(ItemStack p_41421_, @Nullable World p_41422_, List<Text> p_41423_, @NotNull TooltipContext p_41424_) {
-        super.appendTooltip(p_41421_, p_41422_, p_41423_, p_41424_);
-        if (p_41424_.isAdvanced()) {
-            p_41423_.add(Text.translatable("item.playercollars.collar.paw_color", Integer.toHexString(getPawColor(p_41421_))).setStyle(Style.EMPTY.withColor(Colors.GRAY)));
+    public Text getName(ItemStack stack) {
+        OwnerComponent owner = stack.get(PlayerCollarsMod.OWNER_COMPONENT_TYPE);
+        if (owner != null && owner.ownedName().isPresent())
+            return Text.translatable("item.playercollars.collar.named", owner.ownedName().get());
+        return super.getName(stack);
+    }
+
+    @Override
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, @NotNull TooltipContext context) {
+        super.appendTooltip(stack, world, context, tooltip, context);
+        if (type.isAdvanced() && !tagless) {
+            tooltip.add(Text.translatable("item.playercollars.collar.paw_color", Integer.toHexString(getPawColor(stack))).setStyle(Style.EMPTY.withColor(Colors.GRAY)));
         }
-        Pair<UUID, String> owner = getOwner(p_41421_);
+        OwnerComponent owner = getOwner(stack);
         if (owner != null) {
-            p_41423_.add(Text.translatable("item.playercollars.collar.owner", owner.getRight()).setStyle(Style.EMPTY.withColor(Colors.GRAY)));
+            tooltip.add(Text.translatable("item.playercollars.collar.owner", owner.name()).setStyle(Style.EMPTY.withColor(Colors.GRAY)));
         }
     }
 

@@ -20,6 +20,7 @@ public abstract class MixinPlayerEntity {
         cir.getReturnValue().add(PlayerCollarsMod.ATTR_LEASH_DISTANCE);
     }
 
+    // Ideally this should be in MixinServerPlayerEntity, but I'm *very* wary about overriding methods in the player
     @Inject(method = "interact", at = @At("RETURN"), cancellable = true)
     private void leashplayers$onInteract(Entity entity, Hand hand, CallbackInfoReturnable<ActionResult> info) {
         if (info.getReturnValue() != ActionResult.PASS) return;

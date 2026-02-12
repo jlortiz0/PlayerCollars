@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "dog_bed",
+  "key": {
+    "w": {
+      "item": "minecraft:black_wool"
+    }
+  },
+  "pattern": [
+    "w w",
+    "www"
+  ],
+  "result": {
+    "count": 1,
+    "id": "playercollars:black_dog_bed"
+  }
+}

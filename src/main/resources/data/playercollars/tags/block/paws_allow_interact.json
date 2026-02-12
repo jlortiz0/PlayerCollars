@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:buttons",
+    "minecraft:lever",
+    "#minecraft:beds",
+    "#minecraft:cauldrons",
+    "#minecraft:crops",
+    "#minecraft:geode_invalid_blocks"
+  ]
+}

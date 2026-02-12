@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "dog_bowl",
+  "key": {
+    "w": {
+      "item": "minecraft:black_terracotta"
+    }
+  },
+  "pattern": [
+    "w w",
+    "www"
+  ],
+  "result": {
+    "count": 1,
+    "id": "playercollars:black_dog_bowl"
+  }
+}

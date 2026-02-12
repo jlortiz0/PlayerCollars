@@ -72,6 +72,13 @@ processResources {
         expand "version": project.version
     }
 }
+fabricApi {
+    configureDataGeneration()
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/playercollars.accesswidener")
+}
 
 tasks.withType(JavaCompile).configureEach {
     it.options.release = 17
@@ -81,7 +88,7 @@ java {
     // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
     // if it is present.
     // If you remove this line, sources will not be generated.
-    withSourcesJar()
+    // withSourcesJar()
 
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
@@ -91,6 +98,8 @@ jar {
     from("LICENSE") {
         rename { "${it}_${project.base.archivesName.get()}"}
     }
+    exclude('org/jlortiz/playercollars/datagen/**')
+    exclude('assets/playercollars/lang/en_us.existing.json')
 }
 
 // configure the maven publication

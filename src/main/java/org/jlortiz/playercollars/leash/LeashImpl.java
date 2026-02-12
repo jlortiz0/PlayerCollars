@@ -7,5 +7,6 @@ import net.minecraft.util.Hand;
 
 public interface LeashImpl {
     ActionResult leashplayers$interact(PlayerEntity plr, Hand hand);
+
     Entity leashplayers$getProxyLeashHolder();
 }
