@@ -21,16 +21,16 @@ public abstract class MixinTurtleEntity extends AnimalEntity {
         super(entityType, world);
     }
 
-    @Inject(method = "readCustomDataFromNbt", at = @At("RETURN"))
+    @Inject(method = "readCustomData", at = @At("RETURN"))
     private void leashplayers$onReadCustomDataFromNbt(CallbackInfo info) {
-        MinecraftServer server = getServer();
+        MinecraftServer server = getEntityWorld().getServer();
         if (server == null) return;
 
         Team team = server.getScoreboard().getScoreHolderTeam(getNameForScoreboard());
         if (team != null && Objects.equals(team.getName(), LeashProxyEntity.TEAM_NAME)) {
             detachLeash();
             setInvulnerable(false);
-            kill((ServerWorld) getWorld());
+            kill((ServerWorld) getEntityWorld());
         }
     }
 }

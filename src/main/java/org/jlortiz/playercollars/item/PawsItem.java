@@ -3,6 +3,7 @@ package org.jlortiz.playercollars.item;
 import com.mojang.datafixers.util.Either;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
@@ -17,6 +18,7 @@ import org.jlortiz.playercollars.PlayerCollarsMod;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class PawsItem extends FootPawsItem {
     public PawsItem(RegistryKey<Item> key, int color, int pawColor) {
@@ -46,13 +48,13 @@ public class PawsItem extends FootPawsItem {
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
-        super.appendTooltip(stack, context, tooltip, type);
-        if (stack.get(PlayerCollarsMod.HELD_ITEMS_COMPONENT_TYPE) != null) tooltip.add(Text.translatable("item.playercollars.paws.slippery"));
-        if (stack.get(PlayerCollarsMod.CAN_INTERACT_COMPONENT_TYPE) != null) tooltip.add(Text.translatable("item.playercollars.paws.interaction"));
+    public void appendTooltip(ItemStack stack, TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType type) {
+        super.appendTooltip(stack, context, displayComponent, textConsumer, type);
+        if (stack.get(PlayerCollarsMod.HELD_ITEMS_COMPONENT_TYPE) != null) textConsumer.accept(Text.translatable("item.playercollars.paws.slippery"));
+        if (stack.get(PlayerCollarsMod.CAN_INTERACT_COMPONENT_TYPE) != null) textConsumer.accept(Text.translatable("item.playercollars.paws.interaction"));
     }
 
     public static RegistryKey<Item> getRegistryKey(DyeColor c) {
-        return RegistryKey.of(RegistryKeys.ITEM, Identifier.of(PlayerCollarsMod.MOD_ID, c.getName() + "_paws"));
+        return RegistryKey.of(RegistryKeys.ITEM, Identifier.of(PlayerCollarsMod.MOD_ID, c.getId() + "_paws"));
     }
 }

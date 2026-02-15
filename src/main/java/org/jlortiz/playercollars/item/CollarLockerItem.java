@@ -29,12 +29,12 @@ import java.util.List;
 public class CollarLockerItem extends Item {
     public static final RegistryKey<Item> REGISTRY_KEY = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(PlayerCollarsMod.MOD_ID, "collar_locker"));
     public CollarLockerItem() {
-        super(new Settings().maxCount(1).registryKey(REGISTRY_KEY));
+        super(new net.minecraft.item.Item.Settings().maxCount(1).registryKey(REGISTRY_KEY));
     }
 
     @Override
     public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
-        if (!(entity instanceof PlayerEntity player) || user.getWorld().isClient) return ActionResult.PASS;
+        if (!(entity instanceof PlayerEntity player) || user.getEntityWorld().isClient()) return ActionResult.PASS;
         AccessoriesCapability cap = AccessoriesCapability.get(player);
         if (cap == null) return ActionResult.PASS;
 
@@ -48,7 +48,7 @@ public class CollarLockerItem extends Item {
             return ActionResult.FAIL;
         }
 
-        RegistryEntry<Enchantment> binding = ((ServerPlayerEntity) user).getServerWorld().getRegistryManager()
+        RegistryEntry<Enchantment> binding = ((ServerPlayerEntity) user).getEntityWorld().getRegistryManager()
                 .getOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(Enchantments.BINDING_CURSE);
         boolean shouldLock = !EnchantmentHelper.hasAnyEnchantmentsWith(collarStack, EnchantmentEffectComponentTypes.PREVENT_ARMOR_CHANGE);
         List<SlotEntryReference> ls = cap.getEquipped(
@@ -74,7 +74,7 @@ public class CollarLockerItem extends Item {
         }
         player.sendMessage(Text.translatable(shouldLock ? "item.playercollars.collar_locker.locked" : "item.playercollars.collar_locker.unlocked"), true);
         user.sendMessage(Text.translatable(shouldLock ? "item.playercollars.collar_locker.locked" : "item.playercollars.collar_locker.unlocked"), true);
-        player.getWorld().playSound(null, entity.getX(), entity.getY(), entity.getZ(), shouldLock ? SoundEvents.ITEM_ARMOR_EQUIP_WOLF.value() : SoundEvents.ITEM_ARMOR_UNEQUIP_WOLF, SoundCategory.PLAYERS);
+        player.getEntityWorld().playSound(null, entity.getX(), entity.getY(), entity.getZ(), shouldLock ? SoundEvents.ITEM_ARMOR_EQUIP_WOLF.value() : SoundEvents.ITEM_ARMOR_UNEQUIP_WOLF, SoundCategory.PLAYERS);
 
         return ActionResult.SUCCESS;
     }

@@ -1,5 +1,6 @@
 package org.jlortiz.playercollars.item;
 
+import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
@@ -11,7 +12,7 @@ import net.minecraft.util.Identifier;
 import org.jlortiz.playercollars.OwnerComponent;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 public class StampedDeedItem extends Item {
     public static final RegistryKey<Item> REGISTRY_KEY = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(PlayerCollarsMod.MOD_ID, "stamped_deed_of_ownership"));
@@ -34,11 +35,11 @@ public class StampedDeedItem extends Item {
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
-        super.appendTooltip(stack, context, tooltip, type);
+    public void appendTooltip(ItemStack stack, TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType type) {
+        super.appendTooltip(stack, context, displayComponent, textConsumer, type);
         OwnerComponent owner = stack.get(PlayerCollarsMod.OWNER_COMPONENT_TYPE);
         if (owner != null) {
-            tooltip.add(Text.translatable("item.playercollars.collar.owner", owner.name()).formatted(Formatting.GRAY));
+            textConsumer.accept(Text.translatable("item.playercollars.collar.owner", owner.name()).formatted(Formatting.GRAY));
         }
     }
 }

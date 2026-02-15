@@ -1,7 +1,7 @@
 package org.jlortiz.playercollars.item;
 
-import io.wispforest.accessories.api.AccessoryItem;
-import io.wispforest.accessories.api.DropRule;
+import io.wispforest.accessories.api.core.AccessoryItem;
+import io.wispforest.accessories.api.events.DropRule;
 import io.wispforest.accessories.api.slot.SlotReference;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.DyedColorComponent;
@@ -20,7 +20,7 @@ public class FootPawsItem extends AccessoryItem {
 
     public FootPawsItem(RegistryKey<Item> key, int color, int beansColor) {
         super(new Item.Settings().maxCount(1).registryKey(key)
-                .component(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color | 0xFF000000, false))
+                .component(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color | 0xFF000000))
                 .component(DataComponentTypes.MAP_COLOR, new MapColorComponent(beansColor))
         );
         this.color = color | 0xFF000000;
@@ -28,7 +28,7 @@ public class FootPawsItem extends AccessoryItem {
     }
 
     public static RegistryKey<Item> getRegistryKey(DyeColor c) {
-        return RegistryKey.of(RegistryKeys.ITEM, Identifier.of(PlayerCollarsMod.MOD_ID, c.getName() + "_foot_paws"));
+        return RegistryKey.of(RegistryKeys.ITEM, Identifier.of(PlayerCollarsMod.MOD_ID, c.getId() + "_foot_paws"));
     }
 
     @Override
