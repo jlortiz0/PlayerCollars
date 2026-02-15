@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.9-SNAPSHOT'
+    id 'fabric-loom' version '1.15-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -27,6 +27,7 @@ repositories {
             includeGroup "maven.modrinth"
         }
     }
+    mavenLocal()
     maven { url 'https://maven.wispforest.io/releases' }
     maven { url 'https://maven.su5ed.dev/releases' }
     maven { url 'https://maven.fabricmc.net' }
@@ -42,7 +43,7 @@ dependencies {
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modImplementation("io.wispforest:accessories-fabric:1.2.16-beta+1.21.4")
+    modImplementation("io.wispforest:accessories-fabric:${project.accessories_version}")
 }
 
 processResources {
