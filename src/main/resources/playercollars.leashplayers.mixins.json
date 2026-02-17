@@ -9,7 +9,7 @@
   "refmap": "PlayerCollars-refmap.json",
   "mixins": [
     "MixinFireworkRocketItem",
-    "MixinLeashKnotEntity",
+    "MixinEntity",
     "MixinPlayerEntity",
     "MixinServerPlayerEntity",
     "MixinTridentItem",

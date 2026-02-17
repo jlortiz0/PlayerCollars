@@ -26,6 +26,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.component.ComponentType;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.Leashable;
 import net.minecraft.entity.attribute.ClampedEntityAttribute;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -59,6 +60,7 @@ import org.jlortiz.playercollars.block.DogBowlBlock;
 import org.jlortiz.playercollars.block.InvisibleFenceBlock;
 import org.jlortiz.playercollars.item.*;
 import org.jlortiz.playercollars.leash.LeashImpl;
+import org.jlortiz.playercollars.leash.LeashProxyEntity;
 import org.jlortiz.playercollars.network.*;
 
 import java.util.ArrayList;
@@ -228,6 +230,15 @@ public class PlayerCollarsMod implements ModInitializer {
 		plr.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(plr));
 		plr.velocityDirty = false;
 		return ActionResult.SUCCESS;
+	}
+
+	public static boolean blockLeashKnotBreak(Entity breaker, Entity holder) {
+		List<Leashable> list = Leashable.collectLeashablesHeldBy(holder);
+		for (Leashable l : list) {
+			if (!(l instanceof LeashProxyEntity le)) continue;
+			if (!le.canBeLeashedTo(breaker)) return true;
+		}
+		return false;
 	}
 
 	@Override
