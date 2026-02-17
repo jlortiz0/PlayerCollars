@@ -29,7 +29,7 @@ public class DeedItemScreen extends Screen {
 
     @Override
     public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
-        applyBlur();
+        applyBlur(context);
         renderDarkening(context);
         // TODO draw background
 //        renderBackgroundTexture();
@@ -37,7 +37,6 @@ public class DeedItemScreen extends Screen {
 
     @Override
     public void render(DrawContext p_281549_, int mouseX, int mouseY, float delta) {
-        renderBackground(p_281549_, mouseX, mouseY, delta);
         super.render(p_281549_, mouseX, mouseY, delta);
         p_281549_.drawCenteredTextWithShadow(textRenderer, Text.translatable("item.playercollars.deed_of_ownership"), this.width / 2, this.height / 2 - 88, -1);
         p_281549_.drawCenteredTextWithShadow(textRenderer, Text.translatable("item.playercollars.deed_of_ownership.line1", name, owner.name()), this.width / 2, this.height / 2 - 55, -1);

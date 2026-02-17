@@ -10,9 +10,13 @@ import net.minecraft.client.render.item.model.ItemModel;
 import net.minecraft.client.render.item.tint.ConstantTintSource;
 import net.minecraft.client.render.item.tint.DyeTintSource;
 import net.minecraft.client.render.item.tint.MapColorTintSource;
+import net.minecraft.client.render.model.json.ModelVariant;
+import net.minecraft.client.render.model.json.WeightedVariant;
 import net.minecraft.item.Item;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.collection.Pool;
+import net.minecraft.util.math.AxisRotation;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.block.DogBedBlock;
 import org.jlortiz.playercollars.block.DogBowlBlock;
@@ -29,15 +33,16 @@ public class ModelDataGenerator extends FabricModelProvider {
     public void generateBlockStateModels(BlockStateModelGenerator blockStateModelGenerator) {
         Model baseModel = new Model(Optional.of(Identifier.of(PlayerCollarsMod.MOD_ID, "block/white_dog_bed")), Optional.empty(), TextureKey.PARTICLE);
         for (DogBedBlock bed : PlayerCollarsMod.DOG_BEDS) {
-            blockStateModelGenerator.blockStateCollector.accept(VariantsBlockStateSupplier.create(bed)
-                    .coordinate(BlockStateVariantMap.create(BedBlock.FACING, BedBlock.PART).register(
+            blockStateModelGenerator.blockStateCollector.accept(VariantsBlockModelDefinitionCreator.of(bed)
+                    .with(BlockStateVariantMap.models(BedBlock.FACING, BedBlock.PART).generate(
                             (dir, part) -> {
                                 if (part == BedPart.HEAD)
                                     dir = dir.getOpposite();
-                                return BlockStateVariant.create()
-                                        .put(VariantSettings.Y, VariantSettings.Rotation.values()[dir.getHorizontalQuarterTurns()])
-                                        .put(VariantSettings.X, VariantSettings.Rotation.R0)
-                                        .put(VariantSettings.MODEL, Identifier.of(PlayerCollarsMod.MOD_ID, "block/" + bed.getColor().getName() + "_dog_bed"));
+                                return BlockStateModelGenerator.createWeightedVariant(
+                                        BlockStateModelGenerator.createModelVariant(Identifier.of(PlayerCollarsMod.MOD_ID, "block/" + bed.getColor().getId() + "_dog_bed"))
+                                                .withRotationX(AxisRotation.R0)
+                                                .withRotationY(AxisRotation.values()[dir.getHorizontalQuarterTurns()])
+                                );
                             }
                     )));
             if (bed.getColor() != DyeColor.WHITE)
@@ -50,14 +55,14 @@ public class ModelDataGenerator extends FabricModelProvider {
         }
         bowlModels[4] = new Model(Optional.of(Identifier.of(PlayerCollarsMod.MOD_ID, "block/red_dog_bowl_milk")), Optional.empty(), TextureKey.PARTICLE);
         for (DogBowlBlock bowl : PlayerCollarsMod.DOG_BOWLS) {
-            blockStateModelGenerator.blockStateCollector.accept(VariantsBlockStateSupplier.create(bowl)
-                    .coordinate(BlockStateVariantMap.create(DogBowlBlock.MILK, DogBowlBlock.LEVEL).register((milk, level) -> BlockStateVariant.create()
-                            .put(VariantSettings.MODEL, Identifier.of(PlayerCollarsMod.MOD_ID, "block/" + bowl.color.getName() + "_dog_bowl_" + (milk ? "milk" :level))))));
+            blockStateModelGenerator.blockStateCollector.accept(VariantsBlockModelDefinitionCreator.of(bowl)
+                            .with(BlockStateVariantMap.models(DogBowlBlock.MILK, DogBowlBlock.LEVEL).generate((milk, level) -> BlockStateModelGenerator.createWeightedVariant(
+                                    Identifier.of(PlayerCollarsMod.MOD_ID, "block/" + bowl.color.getId() + "_dog_bowl_" + (milk ? "milk" : level))))));
             if (bowl.color != DyeColor.RED) {
                 for (int i = 0; i < 4; i++)
-                    bowlModels[i].upload(Identifier.of(PlayerCollarsMod.MOD_ID, "block/" + bowl.color.getName() + "_dog_bowl_"+i),
+                    bowlModels[i].upload(Identifier.of(PlayerCollarsMod.MOD_ID, "block/" + bowl.color.getId() + "_dog_bowl_"+i),
                             TextureMap.particle(DatagenEntrypoint.TERRACOTTAS[bowl.color.ordinal()].getBlock()), blockStateModelGenerator.modelCollector);
-                bowlModels[4].upload(Identifier.of(PlayerCollarsMod.MOD_ID, "block/" + bowl.color.getName() + "_dog_bowl_milk"),
+                bowlModels[4].upload(Identifier.of(PlayerCollarsMod.MOD_ID, "block/" + bowl.color.getId() + "_dog_bowl_milk"),
                         TextureMap.particle(DatagenEntrypoint.TERRACOTTAS[bowl.color.ordinal()].getBlock()), blockStateModelGenerator.modelCollector);
             }
         }
@@ -65,7 +70,8 @@ public class ModelDataGenerator extends FabricModelProvider {
         TextureMap glassTexture = TextureMap.all(Blocks.GLASS);
         Identifier glassPost = Models.FENCE_POST.upload(PlayerCollarsMod.INVISIBLE_FENCE_BLOCK, glassTexture, blockStateModelGenerator.modelCollector);
         Identifier glassSide = Models.FENCE_SIDE.upload(PlayerCollarsMod.INVISIBLE_FENCE_BLOCK, glassTexture, blockStateModelGenerator.modelCollector);
-        blockStateModelGenerator.blockStateCollector.accept(BlockStateModelGenerator.createFenceBlockState(PlayerCollarsMod.INVISIBLE_FENCE_BLOCK, glassPost, glassSide));
+        blockStateModelGenerator.blockStateCollector.accept(BlockStateModelGenerator.createFenceBlockState(PlayerCollarsMod.INVISIBLE_FENCE_BLOCK,
+                new WeightedVariant(Pool.of(new ModelVariant(glassPost))), new WeightedVariant(Pool.of(new ModelVariant(glassSide)))));
         blockStateModelGenerator.registerParentedItemModel(PlayerCollarsMod.INVISIBLE_FENCE_BLOCK, Models.FENCE_INVENTORY.upload(ModelIds.getItemModelId(PlayerCollarsMod.INVISIBLE_FENCE_BLOCK_ITEM),
                 TextureMap.all(Blocks.GLASS), blockStateModelGenerator.modelCollector));
     }
@@ -94,7 +100,7 @@ public class ModelDataGenerator extends FabricModelProvider {
         itemModelGenerator.register(PlayerCollarsMod.COLLAR_LOCKER_ITEM, Models.GENERATED);
 
         for (DyeColor c : DyeColor.values()) {
-            Model baseBowl = new Model(Optional.of(Identifier.of(PlayerCollarsMod.MOD_ID, "block/" + c.getName() + "_dog_bowl_3")), Optional.empty());
+            Model baseBowl = new Model(Optional.of(Identifier.of(PlayerCollarsMod.MOD_ID, "block/" + c.getId() + "_dog_bowl_3")), Optional.empty());
             itemModelGenerator.register(PlayerCollarsMod.DOG_BOWL_ITEMS[c.ordinal()], baseBowl);
         }
     }

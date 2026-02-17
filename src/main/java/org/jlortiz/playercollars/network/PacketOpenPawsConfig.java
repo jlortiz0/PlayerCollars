@@ -14,7 +14,9 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.util.*;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.Uuids;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 
 import java.util.List;
@@ -35,7 +37,7 @@ public record PacketOpenPawsConfig(UUID pawHolder, boolean heldItems) implements
 
     public void handle(ServerPlayNetworking.Context context) {
         context.server().execute(() -> {
-            PlayerEntity pet = context.player().getWorld().getPlayerByUuid(pawHolder);
+            PlayerEntity pet = context.player().getEntityWorld().getPlayerByUuid(pawHolder);
             if (pet == null) return;
             AccessoriesCapability cap = AccessoriesCapability.get(pet);
             if (cap == null) return;

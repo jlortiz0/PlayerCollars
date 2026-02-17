@@ -1,8 +1,11 @@
 package org.jlortiz.playercollars.client.screen;
 
 import com.mojang.datafixers.util.Either;
+import io.wispforest.accessories.client.gui.ButtonEvents;
+import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.tag.FabricTagKey;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -59,13 +62,18 @@ public class TagLikeListWidget<T extends ItemConvertible> extends EntryListWidge
     private class TransparentButton extends ButtonWidget {
         protected TransparentButton() {
             super(0, 0, TagLikeListWidget.this.getRowWidth(), TagLikeListWidget.this.itemHeight,
-                    Text.empty(), (x) -> {}, ButtonWidget.DEFAULT_NARRATION_SUPPLIER);
+                    net.minecraft.text.Text.empty(), (x) -> {}, ButtonWidget.DEFAULT_NARRATION_SUPPLIER);
         }
 
         @Override
-        protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+        protected void drawIcon(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
             if (this.isHovered())
                 context.fill(getX(), getY(), getX() + getWidth(), getY() + height, 0x999999 + (142 << 24));
+        }
+
+        @Override
+        public Event<ButtonEvents.AdjustRendering> getRenderingEvent() {
+            return null;
         }
     }
 
@@ -83,24 +91,24 @@ public class TagLikeListWidget<T extends ItemConvertible> extends EntryListWidge
         }
 
         @Override
-        public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            this.button.setPosition(x, y - 2);
-            this.button.render(context, mouseX, mouseY, tickDelta);
-            context.drawText(client.textRenderer, label, x, y - 1, 0xFFFFFF, false);
+        public void render(DrawContext context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+            this.button.setPosition(mouseX, mouseY - 2);
+            this.button.render(context, mouseX, mouseY, deltaTicks);
+            context.drawText(client.textRenderer, label, mouseX, mouseY - 1, -1, false);
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            if (this.button.mouseClicked(mouseX, mouseY, button)) {
+        public boolean mouseClicked(Click click, boolean doubled) {
+            if (this.button.mouseClicked(click, doubled)) {
                 TagLikeListWidget.this.handleClick.accept(this.index);
                 return true;
             }
-            return super.mouseClicked(mouseX, mouseY, button);
+            return super.mouseClicked(click, doubled);
         }
 
         @Override
-        public boolean mouseReleased(double mouseX, double mouseY, int button) {
-            return this.button.mouseReleased(mouseX, mouseY, button);
+        public boolean mouseReleased(Click click) {
+            return this.button.mouseReleased(click);
         }
     }
 }

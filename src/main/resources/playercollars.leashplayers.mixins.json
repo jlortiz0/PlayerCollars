@@ -1,6 +1,6 @@
 {
   "minVersion": "0.8",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_21",
   "package": "org.jlortiz.playercollars.leash.mixin",
   "required": true,
   "injectors": {
@@ -9,7 +9,7 @@
   "refmap": "PlayerCollars-refmap.json",
   "mixins": [
     "MixinFireworkRocketItem",
-    "MixinLeashKnotEntity",
+    "MixinEntity",
     "MixinPlayerEntity",
     "MixinServerPlayerEntity",
     "MixinTridentItem",

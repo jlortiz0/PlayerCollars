@@ -35,14 +35,14 @@ public class PawSetupItem extends Item {
     @Environment(EnvType.CLIENT)
     public ActionResult use(World world, PlayerEntity user, Hand hand) {
         ItemStack is = user.getStackInHand(hand);
-        if (!user.isSneaking() || !world.isClient) return ActionResult.PASS;
+        if (!user.isSneaking() || !world.isClient()) return ActionResult.PASS;
         return useOnEntity(is, user, user, hand);
     }
 
     @Override
     @Environment(EnvType.CLIENT)
     public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
-        if (!(entity instanceof PlayerEntity player) || !user.getWorld().isClient) return ActionResult.PASS;
+        if (!(entity instanceof PlayerEntity player) || !user.getEntityWorld().isClient()) return ActionResult.PASS;
         AccessoriesCapability cap = AccessoriesCapability.get(player);
         if (cap == null) return ActionResult.PASS;
 

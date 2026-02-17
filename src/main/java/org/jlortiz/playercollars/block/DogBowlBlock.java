@@ -8,16 +8,16 @@ import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Hand;
@@ -34,8 +34,6 @@ import net.minecraft.world.WorldView;
 import net.minecraft.world.tick.ScheduledTickView;
 import org.jetbrains.annotations.Nullable;
 import org.jlortiz.playercollars.PlayerCollarsMod;
-
-import java.util.Optional;
 
 public class DogBowlBlock extends Block implements BlockEntityProvider {
     private static final VoxelShape SHAPE_BASE = VoxelShapes.union(
@@ -61,7 +59,7 @@ public class DogBowlBlock extends Block implements BlockEntityProvider {
     }
 
     public static RegistryKey<Block> getRegistryKey(DyeColor c) {
-        return RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(PlayerCollarsMod.MOD_ID, c.getName() + "_dog_bowl"));
+        return RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(PlayerCollarsMod.MOD_ID, c.getId() + "_dog_bowl"));
     }
 
     @Nullable
@@ -89,7 +87,7 @@ public class DogBowlBlock extends Block implements BlockEntityProvider {
     }
 
     protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        if (stack.isEmpty()) return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
+        if (stack.isEmpty() || world.isClient()) return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
         if (!(world.getBlockEntity(pos) instanceof DogBowlBlockEntity be)) return ActionResult.FAIL;
         if (stack.isOf(Items.MILK_BUCKET) && be.getCount() == 0) {
             be.insert(stack);
@@ -162,18 +160,17 @@ public class DogBowlBlock extends Block implements BlockEntityProvider {
         }
 
         @Override
-        protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-            super.readNbt(nbt, registryLookup);
-            inBowl = Optional.of(nbt.getCompound("item"))
-                    .flatMap((x) -> ItemStack.fromNbt(registryLookup, x))
-                    .orElse(ItemStack.EMPTY);
+        protected void readData(ReadView view) {
+            super.readData(view);
+            if (view.contains("item"))
+                inBowl = view.read("item", ItemStack.CODEC).orElse(ItemStack.EMPTY);
         }
 
         @Override
-        protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-            super.writeNbt(nbt, registryLookup);
+        protected void writeData(WriteView view) {
+            super.writeData(view);
             if (!inBowl.isEmpty())
-                nbt.put("item", inBowl.toNbt(registryLookup));
+                view.put("item", ItemStack.CODEC, inBowl);
         }
 
         protected int getCount() {

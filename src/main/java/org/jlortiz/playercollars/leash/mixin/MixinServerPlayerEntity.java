@@ -7,18 +7,18 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.leash.LeashImpl;
 import org.jlortiz.playercollars.leash.LeashProxyEntity;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -33,9 +33,8 @@ import java.util.UUID;
 public abstract class MixinServerPlayerEntity extends PlayerEntity implements LeashImpl {
     @Shadow public abstract boolean isDisconnected();
 
-    @Shadow public abstract ServerWorld getServerWorld();
-
     @Shadow public ServerPlayNetworkHandler networkHandler;
+    @Shadow @Final private MinecraftServer server;
     @Unique
     private LeashProxyEntity leashplayers$proxy;
     @Unique
@@ -47,8 +46,8 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
     @Unique
     private static final double FIREWORK_SEARCH_RADIUS = 128.0;
 
-    public MixinServerPlayerEntity(World world, BlockPos pos, float yaw, GameProfile gameProfile) {
-        super(world, pos, yaw, gameProfile);
+    public MixinServerPlayerEntity(World world, GameProfile profile) {
+        super(world, profile);
     }
 
     @Unique
@@ -89,7 +88,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
     private void leashplayers$apply() {
         Entity holder = leashplayers$holder;
         if (holder == null) return;
-        if (holder.getWorld() != getWorld()) {
+        if (holder.getEntityWorld() != getEntityWorld()) {
             leashplayers$detach();
             leashplayers$drop();
             return;
@@ -106,13 +105,13 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
         }
 
         if (result == ActionResult.FAIL) {
-            if (getServerWorld().getGameRules().getBoolean(PlayerCollarsMod.PLAYER_LEASHES_BREAK_RULE)) {
+            if (server.getOverworld().getGameRules().getValue(PlayerCollarsMod.PLAYER_LEASHES_BREAK_RULE)) {
                 leashplayers$detach();
                 leashplayers$drop();
             } else {
                 // leashplayers$killFireworksOfPlayer(); // Ended up not using this
                 this.setVelocity(Vec3d.ZERO);
-                leashplayers$proxy.refreshPositionAndAngles(holder.getPos(), leashplayers$proxy.getYaw(), leashplayers$proxy.getPitch());
+                leashplayers$proxy.refreshPositionAndAngles(holder.getEntityPos(), leashplayers$proxy.getYaw(), leashplayers$proxy.getPitch());
                 networkHandler.requestTeleport(holder.getX(), holder.getY(), holder.getZ(), getYaw(), getPitch());
             }
         }
@@ -120,7 +119,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
 
     @Unique
     private void leashplayers$killFireworksOfPlayer() {
-        for (FireworkRocketEntity rocket : getServerWorld().getEntitiesByClass(
+        for (FireworkRocketEntity rocket : server.getOverworld().getEntitiesByClass(
                 FireworkRocketEntity.class,
                 getBoundingBox().expand(FIREWORK_SEARCH_RADIUS),
                 rocket -> true
@@ -141,11 +140,11 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
 
         if (leashplayers$proxy == null) {
             leashplayers$proxy = new LeashProxyEntity(this);
-            getWorld().spawnEntity(leashplayers$proxy);
+            getEntityWorld().spawnEntity(leashplayers$proxy);
         }
         leashplayers$proxy.attachLeash(leashplayers$holder, true);
 
-        if (this.hasVehicle() && !this.getServerWorld().getGameRules().getBoolean(PlayerCollarsMod.LEASHED_PLAYERS_RIDE_ENTITIES)) {
+        if (this.hasVehicle() && !this.server.getOverworld().getGameRules().getValue(PlayerCollarsMod.LEASHED_PLAYERS_RIDE_ENTITIES)) {
             this.stopRiding();
         }
 
@@ -174,11 +173,11 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
         leashplayers$update();
     }
 
-    @Inject(method = "startRiding(Lnet/minecraft/entity/Entity;Z)Z", at = @At("HEAD"), cancellable = true)
-    private void leashplayers$startriding(Entity entity, boolean force, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "startRiding", at = @At("HEAD"), cancellable = true)
+    private void leashplayers$startriding(Entity entity, boolean force, boolean emitEvent, CallbackInfoReturnable<Boolean> cir) {
 
         boolean isLeashed = this.leashplayers$getProxyLeashHolder() != null;
-        boolean disallowMount = !this.getServerWorld().getGameRules().getBoolean(PlayerCollarsMod.LEASHED_PLAYERS_RIDE_ENTITIES);
+        boolean disallowMount = !this.server.getOverworld().getGameRules().getValue(PlayerCollarsMod.LEASHED_PLAYERS_RIDE_ENTITIES);
 
         if (isLeashed && disallowMount) {
             this.sendMessage(Text.translatable("message.playercollars.no_ride_entity"), true);

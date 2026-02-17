@@ -38,6 +38,6 @@ public class DogBedBlock extends BedBlock {
     }
 
     public static RegistryKey<Block> getRegistryKey(DyeColor c) {
-        return RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(PlayerCollarsMod.MOD_ID, c.getName() + "_dog_bed"));
+        return RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(PlayerCollarsMod.MOD_ID, c.getId() + "_dog_bed"));
     }
 }

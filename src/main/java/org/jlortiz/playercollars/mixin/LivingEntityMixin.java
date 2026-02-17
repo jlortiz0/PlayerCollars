@@ -23,7 +23,7 @@ public abstract class LivingEntityMixin extends Entity {
 
     @Inject(method="setPositionInBed", at = @At("HEAD"), cancellable = true, require=0)
     private void correctDogBedHeight(BlockPos pos, CallbackInfo ci) {
-        BlockState state = getWorld().getBlockState(pos);
+        BlockState state = getEntityWorld().getBlockState(pos);
         if (state.getBlock() instanceof DogBedBlock) {
             Vec3d vec = pos.toBottomCenterPos();
             Vector3f off = state.get(BedBlock.FACING).getUnitVector().div(10);

@@ -6,9 +6,9 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
@@ -27,7 +27,7 @@ public class DeedItem extends Item {
     @Override
     public ActionResult use(World p_41432_, PlayerEntity p_41433_, Hand p_41434_) {
         ItemStack is = p_41433_.getStackInHand(p_41434_);
-        if (p_41432_.isClient) {
+        if (p_41432_.isClient()) {
             OwnerComponent owner = is.get(PlayerCollarsMod.OWNER_COMPONENT_TYPE);
             if (owner != null && owner.owned().isEmpty()) {
                 if (owner.uuid().equals(p_41433_.getUuid())) {
