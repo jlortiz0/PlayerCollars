@@ -10,6 +10,7 @@ import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 import org.jlortiz.playercollars.OwnerComponent;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.item.CollarItem;
@@ -44,6 +45,10 @@ public record PacketUpdateCollar(OwnerState os, int pawColor, int color) impleme
             if (!is.isEmpty() && is.getItem() instanceof CollarItem) {
                 is.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color, true));
                 is.set(DataComponentTypes.MAP_COLOR, new MapColorComponent(pawColor));
+
+                OwnerComponent ownership = is.get(PlayerCollarsMod.OWNER_COMPONENT_TYPE);
+                if (isOwnerLocked(ownership)) return;
+
                 if (os == OwnerState.DEL) {
                     is.remove(PlayerCollarsMod.OWNER_COMPONENT_TYPE);
                 } else if (os == OwnerState.ADD) {
@@ -51,5 +56,9 @@ public record PacketUpdateCollar(OwnerState os, int pawColor, int color) impleme
                 }
             }
         });
+    }
+
+    private static boolean isOwnerLocked(@Nullable OwnerComponent ownership) {
+        return ownership != null && ownership.isOwnedByContract();
     }
 }
