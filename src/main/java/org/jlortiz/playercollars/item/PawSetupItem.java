@@ -46,8 +46,7 @@ public class PawSetupItem extends Item {
         AccessoriesCapability cap = AccessoriesCapability.get(player);
         if (cap == null) return ActionResult.PASS;
 
-        ItemStack collarStack = PlayerCollarsMod.filterStacksByOwner(cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG)), user.getUuid(), player.getUuid());
-        if (collarStack == null) {
+        if (!PlayerCollarsMod.getOwnershipLevel(player, user).isOwned()) {
             user.sendMessage(Text.translatable("item.playercollars.paw_configurator.no_set_non_owner").formatted(Formatting.RED), true);
             return ActionResult.FAIL;
         }

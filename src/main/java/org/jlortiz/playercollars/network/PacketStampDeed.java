@@ -28,7 +28,7 @@ public class PacketStampDeed implements CustomPayload {
             ItemStack is = context.player().getMainHandStack();
             if (!is.isEmpty() && is.isOf(PlayerCollarsMod.DEED_OF_OWNERSHIP)) {
                 OwnerComponent owner = is.get(PlayerCollarsMod.OWNER_COMPONENT_TYPE);
-                if (owner == null || owner.owned().isPresent()) return;
+                if (owner == null || owner.isOwnedByContract()) return;
                 String plrName = context.player().getName().getString();
                 is = new ItemStack(PlayerCollarsMod.DEED_OF_OWNERSHIP_STAMPED);
                 is.set(PlayerCollarsMod.OWNER_COMPONENT_TYPE, new OwnerComponent(

@@ -29,8 +29,8 @@ public class DeedItem extends Item {
         ItemStack is = p_41433_.getStackInHand(p_41434_);
         if (p_41432_.isClient) {
             OwnerComponent owner = is.get(PlayerCollarsMod.OWNER_COMPONENT_TYPE);
-            if (owner != null && owner.owned().isEmpty()) {
-                if (owner.uuid().equals(p_41433_.getUuid())) {
+            if (owner != null && !owner.isOwnedByContract()) {
+                if (owner.isOwnedBy(p_41433_.getUuid())) {
                     p_41433_.sendMessage(Text.translatable("item.playercollars.deed_of_ownership.no_self_own"), true);
                     return ActionResult.PASS;
                 }

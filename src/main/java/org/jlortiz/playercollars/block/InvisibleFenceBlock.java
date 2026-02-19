@@ -91,11 +91,7 @@ public class InvisibleFenceBlock extends FenceBlock {
     protected VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
         if (context instanceof EntityShapeContext e) {
             if (state.get(POWERED) && e.getEntity() instanceof LivingEntity livingEntity) {
-                AccessoriesCapability cap = AccessoriesCapability.get(livingEntity);
-                if (cap == null) return VoxelShapes.empty();
-
-                return cap.getEquipped((y) -> y.isIn(PlayerCollarsMod.COLLAR_TAG)).isEmpty() ?
-                        VoxelShapes.empty() : super.getCollisionShape(state, world, pos, context);
+                return PlayerCollarsMod.isPet(livingEntity) ? super.getCollisionShape(state, world, pos, context) : VoxelShapes.empty();
             }
             // Vertical collision is cached using EntityShapeContext.ABSENT.
             // This will be re-checked if something actually lands on the fence, so this is safe for players.
@@ -115,8 +111,7 @@ public class InvisibleFenceBlock extends FenceBlock {
     @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         if (world.isClient()) return ActionResult.PASS;
-        if (!Optional.ofNullable(AccessoriesCapability.get(player)).map((x) -> x.getEquipped((y) -> y.isIn(PlayerCollarsMod.COLLAR_TAG)))
-                .map(List::isEmpty).orElse(true)) {
+        if (PlayerCollarsMod.isPet(player)) {
             player.sendMessage(Text.translatable("block.playercollars.invisible_fence.toggle_fail").formatted(Formatting.RED), true);
             return ActionResult.FAIL;
         }

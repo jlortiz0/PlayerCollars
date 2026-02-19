@@ -1,6 +1,5 @@
 package org.jlortiz.playercollars.item;
 
-import io.wispforest.accessories.api.AccessoriesCapability;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.EnchantableComponent;
@@ -53,12 +52,8 @@ public class ClickerItem extends Item {
                 List<ServerPlayerEntity> plrs = ((ServerWorld) p_41432_).getPlayers((p) -> !p.isPartOf(p_41433_) && p.isInRange(p_41433_, distance));
                 PacketLookAtLerped packet = new PacketLookAtLerped(p_41433_);
                 for (ServerPlayerEntity p : plrs) {
-                    AccessoriesCapability cap = AccessoriesCapability.get(p);
-                    if (cap != null) {
-                        ItemStack collar = PlayerCollarsMod.filterStacksByOwner(cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG)), p_41433_.getUuid(), p.getUuid());
-                        if (collar != null) {
-                            ServerPlayNetworking.send(p, packet);
-                        }
+                    if (PlayerCollarsMod.getOwnershipLevel(p, p_41433_).isOwned()) {
+                        ServerPlayNetworking.send(p, packet);
                     }
                 }
             }

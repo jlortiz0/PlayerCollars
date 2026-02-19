@@ -40,8 +40,7 @@ public record PacketOpenPawsConfig(UUID pawHolder, boolean heldItems) implements
             AccessoriesCapability cap = AccessoriesCapability.get(pet);
             if (cap == null) return;
 
-            ItemStack collarStack = PlayerCollarsMod.filterStacksByOwner(cap.getEquipped((y) -> y.isIn(PlayerCollarsMod.COLLAR_TAG)), context.player().getUuid(), pawHolder);
-            if (collarStack == null) {
+            if (!PlayerCollarsMod.getOwnershipLevel(pet, context.player()).isOwned()) {
                 context.player().sendMessage(Text.translatable("item.playercollars.paw_configurator.no_set_non_owner").formatted(Formatting.RED), true);
                 return;
             }

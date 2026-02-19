@@ -1,7 +1,6 @@
 package org.jlortiz.playercollars.leash.mixin;
 
 import com.mojang.authlib.GameProfile;
-import io.wispforest.accessories.api.AccessoriesCapability;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FireworkRocketEntity;
@@ -195,10 +194,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
     public ActionResult leashplayers$interact(PlayerEntity player, Hand hand) {
         ItemStack stack = player.getStackInHand(hand);
         if (stack.getItem() == Items.LEAD && leashplayers$holder == null) {
-            AccessoriesCapability cap = AccessoriesCapability.get(this);
-            if (cap == null) return ActionResult.PASS;
-            ItemStack is = PlayerCollarsMod.filterStacksByOwner(cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG)), player.getUuid(), getUuid());
-            if (is == null) return ActionResult.PASS;
+            if (!PlayerCollarsMod.getOwnershipLevel(this, player).isOwned()) return ActionResult.PASS;
             leashplayer$loyalty = getAttributeValue(PlayerCollarsMod.ATTR_LEASH_DISTANCE);
             if (!player.isCreative()) {
                 stack.decrement(1);

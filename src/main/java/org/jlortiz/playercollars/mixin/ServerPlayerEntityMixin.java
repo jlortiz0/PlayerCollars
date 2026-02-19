@@ -26,9 +26,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
     @Inject(at=@At("TAIL"), method="damage")
     private void checkCollarThorns(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (source.getAttacker() instanceof LivingEntity attacker) {
-            AccessoriesCapability cap = AccessoriesCapability.get(this);
-            if (cap == null) return;
-            for (SlotEntryReference ser : cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG)))
+            for (SlotEntryReference ser : PlayerCollarsMod.getEquippedCollars(this))
                 EnchantmentHelper.onTargetDamaged(world, attacker, source, ser.stack());
         }
     }

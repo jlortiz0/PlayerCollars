@@ -55,6 +55,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jlortiz.playercollars.block.DogBedBlock;
 import org.jlortiz.playercollars.block.DogBowlBlock;
@@ -65,6 +66,7 @@ import org.jlortiz.playercollars.leash.LeashProxyEntity;
 import org.jlortiz.playercollars.network.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
@@ -201,12 +203,11 @@ public class PlayerCollarsMod implements ModInitializer {
 		Registry.register(Registries.SCREEN_HANDLER, Identifier.of(MOD_ID, "paws_item_config"), PAWS_ITEM_CONFIG_SCREEN_HANDLER);
 	}
 
-	public static ItemStack filterStacksByOwner(Iterable<SlotEntryReference> stacks, UUID plr, UUID entity) {
+	public static ItemStack filterStacksByOwner(Iterable<SlotEntryReference> stacks, UUID ownerUuid, UUID entity) {
 		for (SlotEntryReference p : stacks) {
 			ItemStack is = p.stack();
 			OwnerComponent owner = is.get(OWNER_COMPONENT_TYPE);
-			if (owner != null && owner.uuid().equals(plr) &&
-					(owner.owned().isEmpty() || owner.owned().get().equals(entity))) {
+			if (owner != null && owner.isOwnedBy(ownerUuid) && owner.isValidForPet(entity)) {
 				return is;
 			}
 		}
@@ -235,19 +236,75 @@ public class PlayerCollarsMod implements ModInitializer {
 			for (Leashable l : list) {
 				if (!(l instanceof LeashProxyEntity le)) continue;
 				LivingEntity leashTarget = le.getLeashTarget();
-				AccessoriesCapability cap = AccessoriesCapability.get(leashTarget);
-				if (cap == null) continue;
-				for (SlotEntryReference sr : cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG))) {
-					OwnerComponent oc = sr.stack().get(OWNER_COMPONENT_TYPE);
-					if (oc == null || !oc.owned().orElseGet(leashTarget::getUuid).equals(leashTarget.getUuid())) continue;
-					if (!player.getUuid().equals(oc.uuid())) {
-						player.sendMessage(Text.translatable("message.playercollars.no_break_fence_other", le.getLeashTarget().getName()).formatted(Formatting.RED), true);
-						return true;
-					}
+				if (doesPetBelongToSomeoneElse(leashTarget, player)) {
+					player.sendMessage(Text.translatable("message.playercollars.no_break_fence_other", le.getLeashTarget().getName()).formatted(Formatting.RED), true);
+					return true;
 				}
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Find all item slots containing collars currently equipped by the player.
+	 */
+	public static @NotNull List<SlotEntryReference> getEquippedCollars(@NotNull LivingEntity player) {
+		AccessoriesCapability cap = AccessoriesCapability.get(player);
+		if (cap == null) return Collections.emptyList();
+
+		return cap.getEquipped(x -> x.isIn(PlayerCollarsMod.COLLAR_TAG));
+	}
+
+	/**
+	 * Get the {@link ItemStack} describing the collar worn by the player which is owned by the given owner.
+	 * @return owned collar if present, or {@code null}
+	 */
+	public static @Nullable ItemStack getOwnedCollar(@NotNull LivingEntity player, @NotNull Entity owner) {
+		List<SlotEntryReference> equippedCollars = getEquippedCollars(player);
+		return PlayerCollarsMod.filterStacksByOwner(equippedCollars, owner.getUuid(), player.getUuid());
+	}
+
+	/**
+	 * Check if the player is a pet in the abstract.
+	 * Pets are subject to pet rules (currently just the inability to pass through or manipulate invisible fences).
+	 */
+	public static boolean isPet(@NotNull LivingEntity entity) {
+		return !getEquippedCollars(entity).isEmpty();
+	}
+
+	/**
+	 * Check what level of ownership a given potential owner has over the player.
+	 */
+	public static @NotNull OwnershipLevel getOwnershipLevel(@NotNull LivingEntity player, @NotNull Entity owner) {
+		return getOwnershipLevel(player, getOwnedCollar(player, owner));
+	}
+
+	/**
+	 * Check what level of ownership the given collar represents on the player.
+	 */
+	public static @NotNull OwnershipLevel getOwnershipLevel(@NotNull LivingEntity player, @Nullable ItemStack collarStack) {
+		if (collarStack == null) return OwnershipLevel.NOT_OWNED;
+
+		OwnerComponent ownerComponent = collarStack.get(OWNER_COMPONENT_TYPE);
+		if (ownerComponent == null || !ownerComponent.isValidForPet(player.getUuid())) return OwnershipLevel.NOT_OWNED;
+		if (ownerComponent.isOwnedByContract()) return OwnershipLevel.OWNED_SIGNED;
+		return OwnershipLevel.OWNED;
+	}
+
+	/**
+	 * Check if the player is owned by someone else.
+	 * @return {@code true} if the player is an owned pet, but not owned by the given owner.
+	 */
+	public static boolean doesPetBelongToSomeoneElse(@NotNull LivingEntity player, @NotNull Entity owner) {
+		boolean ownedBySomeoneElse = false;
+		for (SlotEntryReference collar : getEquippedCollars(player)) {
+			OwnerComponent ownership = collar.stack().get(OWNER_COMPONENT_TYPE);
+			if (ownership == null) continue;
+			if (!ownership.isValidForPet(player.getUuid())) continue;
+			if (ownership.isOwnedBy(owner.getUuid())) return false; // We have a claim to ownership
+			ownedBySomeoneElse = true;
+		}
+		return ownedBySomeoneElse;
 	}
 
 	@Override
@@ -299,24 +356,18 @@ public class PlayerCollarsMod implements ModInitializer {
 			if (player.isSpectator()) return ActionResult.PASS;
 
 			ServerWorld sworld = (ServerWorld) world;
-			AccessoriesCapability cap = AccessoriesCapability.get(player);
-			if (cap != null) {
-				for (SlotEntryReference sr : cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG))) {
-					OwnerComponent owner = sr.stack().get(OWNER_COMPONENT_TYPE);
-					if (owner != null && owner.uuid().equals(entity.getUuid())) {
-						// Collared players are allowed to attack owners, but have 75% damage returned to them
-						player.sendMessage(Text.translatable("message.playercollars.no_attack_owner").formatted(Formatting.RED), true);
+			if (getOwnershipLevel(player, entity).isOwned()) {
+				// Collared players are allowed to attack owners, but have 75% damage returned to them
+				player.sendMessage(Text.translatable("message.playercollars.no_attack_owner").formatted(Formatting.RED), true);
 
-						if (!sworld.getGameRules().getBoolean(ALLOW_ATTACK_OWNER)) {
-							return ActionResult.FAIL;
-						}
-
-						double f = player.getAttributeValue(EntityAttributes.ATTACK_DAMAGE);
-						f = (f - 1) * 0.75 + 1;
-						player.damage(sworld, player.getDamageSources().playerAttack(player), (float) Math.ceil(f));
-						return ActionResult.PASS;
-					}
+				if (!sworld.getGameRules().getBoolean(ALLOW_ATTACK_OWNER)) {
+					return ActionResult.FAIL;
 				}
+
+				double f = player.getAttributeValue(EntityAttributes.ATTACK_DAMAGE);
+				f = (f - 1) * 0.75 + 1;
+				player.damage(sworld, player.getDamageSources().playerAttack(player), (float) Math.ceil(f));
+				return ActionResult.PASS;
 			}
 
 			if (entity instanceof LeashKnotEntity ke && blockLeashKnotBreak(sworld, player, ke)) return ActionResult.FAIL;
