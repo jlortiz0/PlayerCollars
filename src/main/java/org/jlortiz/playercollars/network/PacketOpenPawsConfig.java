@@ -58,7 +58,7 @@ public record PacketOpenPawsConfig(UUID pawHolder, boolean heldItems) implements
                     for (int i = 0; i < pawsStack.size(); i++)
                         ps[i] = pawsStack.get(i).stack();
 
-                    PawsConfigScreenHandler sc = heldItems ?
+                    PawsConfigScreenHandler<?> sc = heldItems ?
                             new PawsConfigScreenHandler.PawsItemConfigScreenHandler(syncId, playerInventory,
                                     ps[0].get(PlayerCollarsMod.HELD_ITEMS_COMPONENT_TYPE)) :
                             new PawsConfigScreenHandler.PawsBlockConfigScreenHandler(syncId, playerInventory,
