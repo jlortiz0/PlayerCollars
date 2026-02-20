@@ -6,15 +6,13 @@ import com.mojang.serialization.codecs.EitherCodec;
 import com.mojang.serialization.codecs.ListCodec;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.component.ComponentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.item.ItemStack;
+import net.minecraft.item.*;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.Registry;
@@ -36,6 +34,9 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends ScreenHandler {
+    public static final int BTN_DENY_ALL_ID = 0;
+    public static final int BTN_ALLOW_ALL_ID = 1;
+    public static final int LIST_ID_OFFSET = 2;
     private final Inventory inventory;
     public final List<Either<TagKey<T>, RegistryKey<T>>> data;
     public List<Either<TagKey<T>, RegistryKey<T>>> listToDisplay;
@@ -116,21 +117,29 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
 
     @Override
     public boolean onButtonClick(PlayerEntity player, int id) {
-        if (id < 0) return false;
-        if (!world.isClient) {
+        if (world.isClient) return true;
+
+        if (id == BTN_DENY_ALL_ID) {
+            data.clear();
+            data.add(Either.right(getNullEntry()));
+        } else if (id == BTN_ALLOW_ALL_ID) {
+            data.clear();
+        } else {
+            int listSlot = id - LIST_ID_OFFSET;
+            if (listSlot < 0) return false;
             if (isDisplayingBackingList()) {
-                if (id >= data.size()) return false;
-                data.remove(id);
+                if (listSlot >= data.size()) return false;
+                data.remove(listSlot);
             } else {
-                if (id >= listToDisplay.size()) return false;
-                Either<TagKey<T>, RegistryKey<T>> value = listToDisplay.get(id);
+                if (listSlot >= listToDisplay.size()) return false;
+                Either<TagKey<T>, RegistryKey<T>> value = listToDisplay.get(listSlot);
                 if (!data.contains(value)) {
                     data.add(value);
                 }
                 returnToBackingList();
             }
-            syncBackingListToClient();
         }
+        syncBackingListToClient();
         return true;
     }
 
@@ -223,6 +232,8 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
 
     public abstract RegistryKey<Registry<T>> getRegistryKey();
 
+    protected abstract RegistryKey<T> getNullEntry();
+
     public static class PawsBlockConfigScreenHandler extends PawsConfigScreenHandler<Block> {
         public PawsBlockConfigScreenHandler(int syncId, PlayerInventory playerInventory, List<Either<TagKey<Block>, RegistryKey<Block>>> data) {
             super(PlayerCollarsMod.PAWS_BLOCK_INTERACTION_CONFIG_SCREEN_HANDLER, syncId, playerInventory, data);
@@ -245,6 +256,11 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
         @Override
         public RegistryKey<Registry<Block>> getRegistryKey() {
             return RegistryKeys.BLOCK;
+        }
+
+        @Override
+        protected RegistryKey<Block> getNullEntry() {
+            return world.getRegistryManager().getOrThrow(RegistryKeys.BLOCK).getKey(Blocks.AIR).get();
         }
 
         public ComponentType<? super List<Either<TagKey<Block>, RegistryKey<Block>>>> getComponentType() {
@@ -288,6 +304,11 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
         @Override
         public RegistryKey<Registry<Item>> getRegistryKey() {
             return RegistryKeys.ITEM;
+        }
+
+        @Override
+        protected RegistryKey<Item> getNullEntry() {
+            return world.getRegistryManager().getOrThrow(RegistryKeys.ITEM).getKey(Items.AIR).get();
         }
 
         @Override
