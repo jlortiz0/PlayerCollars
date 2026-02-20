@@ -5,7 +5,6 @@ import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemConvertible;
-import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jlortiz.playercollars.PlayerCollarsMod;
@@ -15,11 +14,10 @@ public class PawsConfigScreen<T extends ItemConvertible> extends HandledScreen<P
     private static final Identifier TEXTURE = Identifier.of(PlayerCollarsMod.MOD_ID, "textures/gui/paw_controller.png");
     private static final Identifier WIDGETS_TEXTURE = Identifier.of(PlayerCollarsMod.MOD_ID, "textures/gui/paw_controller_widgets.png");
     private TagLikeListWidget<T> listWidget;
-    private ItemStack stack;
+    private boolean addingTags = false;
 
     public PawsConfigScreen(PawsConfigScreenHandler<T> screenHandler, PlayerInventory playerInventory, Text text) {
         super(screenHandler, playerInventory, text);
-        stack = ItemStack.EMPTY;
     }
 
     @Override
@@ -34,18 +32,13 @@ public class PawsConfigScreen<T extends ItemConvertible> extends HandledScreen<P
     }
 
     private void handleButtonClick(int id) {
-        // Call the local function first to prevent a race where the list could be cleared before we update the payload.
-        handler.onButtonClick(client.player, id);
         client.interactionManager.clickButton(handler.syncId, id);
-        handler.getSlot(0).setStack(ItemStack.EMPTY);
-        if (stack.isEmpty())
-            listWidget.setList(handler.listToDisplay);
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        if (!ItemStack.areEqual(handler.getSlot(0).getStack(), stack)) {
-            stack = handler.getSlot(0).getStack();
+        if (handler.checkAndClearDirty()) {
+            addingTags = !handler.isDisplayingBackingList();
             listWidget.setList(handler.listToDisplay);
         }
         super.render(context, mouseX, mouseY, delta);
@@ -57,6 +50,6 @@ public class PawsConfigScreen<T extends ItemConvertible> extends HandledScreen<P
         int x = (width - backgroundWidth - 50) / 2;
         int y = (height - backgroundHeight) / 2;
         context.drawTexture(RenderLayer::getGuiTextured, TEXTURE, x, y, 0, 0, backgroundWidth + 50, backgroundHeight, 256, 256);
-        context.drawTexture(RenderLayer::getGuiTextured, WIDGETS_TEXTURE, x + 7, y + 108, stack.isEmpty() ? 16 : 0, 0, 16, 16, 32, 16);
+        context.drawTexture(RenderLayer::getGuiTextured, WIDGETS_TEXTURE, x + 7, y + 108, addingTags ? 0 : 16, 0, 16, 16, 32, 16);
     }
 }

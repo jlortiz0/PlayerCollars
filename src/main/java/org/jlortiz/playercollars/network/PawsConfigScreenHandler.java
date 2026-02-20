@@ -1,6 +1,10 @@
 package org.jlortiz.playercollars.network;
 
 import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.EitherCodec;
+import com.mojang.serialization.codecs.ListCodec;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -10,6 +14,8 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -19,6 +25,7 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.World;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 
@@ -33,6 +40,8 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
     public List<Either<TagKey<T>, RegistryKey<T>>> listToDisplay;
     protected ItemStack[] pawsStacks;
     protected final World world;
+    protected final PlayerEntity player;
+    private boolean dirty;
 
     public PawsConfigScreenHandler(ScreenHandlerType<? extends PawsConfigScreenHandler<T>> id, int syncId,
                                    PlayerInventory playerInventory, List<Either<TagKey<T>, RegistryKey<T>>> data) {
@@ -47,6 +56,8 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
         this.data = (data == null) ? new ArrayList<>() : new ArrayList<>(data);
         this.listToDisplay = data;
         this.world = playerInventory.player.getWorld();
+        this.player = playerInventory.player;
+        this.dirty = false;
         inventory.onOpen(playerInventory.player);
 
         this.addSlot(new Slot(inventory, 0, 175, 108) {
@@ -105,14 +116,29 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
     @Override
     public boolean onButtonClick(PlayerEntity player, int id) {
         if (id < 0) return false;
-        if (inventory.getStack(0).isEmpty()) {
-            if (id >= data.size()) return false;
-            data.remove(id);
-        } else {
-            if (id >= listToDisplay.size()) return false;
-            data.add(listToDisplay.get(id));
+        if (!world.isClient) {
+            if (isDisplayingBackingList()) {
+                if (id >= data.size()) return false;
+                data.remove(id);
+            } else {
+                if (id >= listToDisplay.size()) return false;
+                Either<TagKey<T>, RegistryKey<T>> value = listToDisplay.get(id);
+                if (!data.contains(value)) {
+                    data.add(value);
+                }
+                returnToBackingList();
+            }
+            syncBackingListToClient();
         }
         return true;
+    }
+
+    public boolean isDisplayingBackingList() {
+        return inventory.getStack(0).isEmpty();
+    }
+
+    public void returnToBackingList() {
+        inventory.setStack(0, ItemStack.EMPTY);
     }
 
     public void setPawsStack(ItemStack[] is) {
@@ -128,8 +154,68 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
     @Override
     public void onContentChanged(Inventory inventory) {
         super.onContentChanged(inventory);
-        ItemStack is = inventory.getStack(0);
-        this.listToDisplay = is.isEmpty() ? data : genForItem(is.getItem());
+        dirty = true;
+        if (!world.isClient) {
+            ItemStack is = inventory.getStack(0);
+            updateDisplayedList(isDisplayingBackingList() ? data : genForItem(is.getItem()));
+        }
+    }
+
+    private void updateDisplayedList(List<Either<TagKey<T>, RegistryKey<T>>> newList) {
+        this.listToDisplay = newList;
+        dirty = true;
+        syncListToClient(PacketUpdatePawsConfig.ListId.DISPLAY);
+    }
+
+    private void updateBackingList(List<Either<TagKey<T>, RegistryKey<T>>> newList) {
+        data.clear();
+        data.addAll(newList);
+        dirty = true;
+        syncBackingListToClient();
+    }
+
+    private void syncBackingListToClient() {
+        if (world.isClient) return;
+
+        syncListToClient(PacketUpdatePawsConfig.ListId.BACKING);
+        if (isDisplayingBackingList()) {
+            updateDisplayedList(data);
+        }
+    }
+
+    public boolean checkAndClearDirty() {
+        boolean wasDirty = dirty;
+        dirty = false;
+        return wasDirty;
+    }
+
+    public void syncListFromServer(PacketUpdatePawsConfig.ListId listId, NbtElement nbt) {
+        if (!world.isClient) return;
+
+        getCodec()
+                .parse(NbtOps.INSTANCE, nbt)
+                .ifSuccess(list -> {
+                    if (listId == PacketUpdatePawsConfig.ListId.BACKING) {
+                        updateBackingList(list);
+                    } else {
+                        updateDisplayedList(list);
+                    }
+                });
+    }
+
+    private void syncListToClient(PacketUpdatePawsConfig.ListId listId) {
+        if (world.isClient) return;
+
+        List<Either<TagKey<T>, RegistryKey<T>>> listToSync = listId == PacketUpdatePawsConfig.ListId.BACKING ? data : listToDisplay;
+        getCodec()
+                .encodeStart(NbtOps.INSTANCE, listToSync)
+                .ifSuccess(nbt -> ServerPlayNetworking.send(
+                        (ServerPlayerEntity) player, new PacketUpdatePawsConfig(syncId, listId, nbt)));
+    }
+
+    private Codec<List<Either<TagKey<T>, RegistryKey<T>>>> getCodec() {
+        RegistryKey<Registry<T>> key = getRegistryKey();
+        return new ListCodec<>(new EitherCodec<>(TagKey.codec(key), RegistryKey.createCodec(key)), 0, 65535);
     }
 
     protected abstract List<Either<TagKey<T>, RegistryKey<T>>> genForItem(Item item);
