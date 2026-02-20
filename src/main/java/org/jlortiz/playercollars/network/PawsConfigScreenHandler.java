@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.EitherCodec;
 import com.mojang.serialization.codecs.ListCodec;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
+import net.minecraft.component.ComponentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
@@ -224,7 +225,11 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
 
     public static class PawsBlockConfigScreenHandler extends PawsConfigScreenHandler<Block> {
         public PawsBlockConfigScreenHandler(int syncId, PlayerInventory playerInventory, List<Either<TagKey<Block>, RegistryKey<Block>>> data) {
-            super(PlayerCollarsMod.PAWS_BLOCK_CONFIG_SCREEN_HANDLER, syncId, playerInventory, data);
+            super(PlayerCollarsMod.PAWS_BLOCK_INTERACTION_CONFIG_SCREEN_HANDLER, syncId, playerInventory, data);
+        }
+
+        public PawsBlockConfigScreenHandler(ScreenHandlerType<? extends PawsConfigScreenHandler<Block>> id, int syncId, PlayerInventory playerInventory, List<Either<TagKey<Block>, RegistryKey<Block>>> data) {
+            super(id, syncId, playerInventory, data);
         }
 
         protected List<Either<TagKey<Block>, RegistryKey<Block>>> genForItem(Item item) {
@@ -242,12 +247,27 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
             return RegistryKeys.BLOCK;
         }
 
+        public ComponentType<? super List<Either<TagKey<Block>, RegistryKey<Block>>>> getComponentType() {
+            return PlayerCollarsMod.CAN_INTERACT_COMPONENT_TYPE;
+        }
+
         @Override
         public void onClosed(PlayerEntity player) {
             super.onClosed(player);
             if (pawsStacks != null)
                 for (ItemStack ps : pawsStacks)
-                    ps.set(PlayerCollarsMod.CAN_INTERACT_COMPONENT_TYPE, data.isEmpty() ? null : data);
+                    ps.set(getComponentType(), data.isEmpty() ? null : data);
+        }
+    }
+
+    public static class PawsBlockBreakConfigScreenHandler extends PawsBlockConfigScreenHandler {
+        public PawsBlockBreakConfigScreenHandler(int syncId, PlayerInventory playerInventory, List<Either<TagKey<Block>, RegistryKey<Block>>> data) {
+            super(PlayerCollarsMod.PAWS_BLOCK_BREAK_CONFIG_SCREEN_HANDLER, syncId, playerInventory, data);
+        }
+
+        @Override
+        public ComponentType<? super List<Either<TagKey<Block>, RegistryKey<Block>>>> getComponentType() {
+            return PlayerCollarsMod.CAN_BREAK_COMPONENT_TYPE;
         }
     }
 

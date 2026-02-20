@@ -48,6 +48,8 @@
   "gamerule.playerLeashesBreak": "Player collar leashes break if stretched too far",
   "gui.playercollars.paw_configurator.block.open": "Interactable Blocks",
   "gui.playercollars.paw_configurator.block.title": "%s's Paws - Blocks",
+  "gui.playercollars.paw_configurator.block_break.open": "Breakable Blocks",
+  "gui.playercollars.paw_configurator.block_break.title": "%s's Paws - Breakable",
   "gui.playercollars.paw_configurator.item.open": "Holdable Items",
   "gui.playercollars.paw_configurator.item.title": "%s's Paws - Items",
   "gui.playercollars.paw_configurator.title": "%s's Paws",

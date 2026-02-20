@@ -117,6 +117,13 @@ public class PlayerCollarsMod implements ModInitializer {
 			Identifier.of(MOD_ID, "can_interact_component"),
 			ComponentType.<List<Either<TagKey<Block>, RegistryKey<Block>>>>builder().codec(CAN_INTERACT_COMPONENT_CODEC).build());
 
+	private static final Codec<List<Either<TagKey<Block>, RegistryKey<Block>>>> CAN_BREAK_COMPONENT_CODEC = new ListCodec<>(
+			new EitherCodec<>(TagKey.codec(RegistryKeys.BLOCK), RegistryKey.createCodec(RegistryKeys.BLOCK)), 0, 1024);
+	public static final ComponentType<List<Either<TagKey<Block>, RegistryKey<Block>>>> CAN_BREAK_COMPONENT_TYPE = Registry.register(
+			Registries.DATA_COMPONENT_TYPE,
+			Identifier.of(MOD_ID, "can_break_component"),
+			ComponentType.<List<Either<TagKey<Block>, RegistryKey<Block>>>>builder().codec(CAN_BREAK_COMPONENT_CODEC).build());
+
 	private static final Codec<List<Either<TagKey<Item>, RegistryKey<Item>>>> HELD_ITEMS_COMPONENT_CODEC = new ListCodec<>(
 			new EitherCodec<>(TagKey.codec(RegistryKeys.ITEM), RegistryKey.createCodec(RegistryKeys.ITEM)), 0, 65535);
 	public static final ComponentType<List<Either<TagKey<Item>, RegistryKey<Item>>>> HELD_ITEMS_COMPONENT_TYPE = Registry.register(
@@ -156,8 +163,11 @@ public class PlayerCollarsMod implements ModInitializer {
 	public static final Item[] DOG_BOWL_ITEMS = new Item[DyeColor.values().length];
 	public static final BlockEntityType<DogBowlBlock.DogBowlBlockEntity> DOG_BOWL_BLOCK_ENTITY;
 	public static final ItemGroup GROUP;
-	public static final ExtendedScreenHandlerType<PawsConfigScreenHandler<Block>, List<Either<TagKey<Block>, RegistryKey<Block>>>> PAWS_BLOCK_CONFIG_SCREEN_HANDLER = new ExtendedScreenHandlerType<>(
+	public static final ExtendedScreenHandlerType<PawsConfigScreenHandler<Block>, List<Either<TagKey<Block>, RegistryKey<Block>>>> PAWS_BLOCK_INTERACTION_CONFIG_SCREEN_HANDLER = new ExtendedScreenHandlerType<>(
 			PawsConfigScreenHandler.PawsBlockConfigScreenHandler::new, PacketCodecs.codec(CAN_INTERACT_COMPONENT_CODEC)
+	);
+	public static final ExtendedScreenHandlerType<PawsConfigScreenHandler<Block>, List<Either<TagKey<Block>, RegistryKey<Block>>>> PAWS_BLOCK_BREAK_CONFIG_SCREEN_HANDLER = new ExtendedScreenHandlerType<>(
+			PawsConfigScreenHandler.PawsBlockBreakConfigScreenHandler::new, PacketCodecs.codec(CAN_BREAK_COMPONENT_CODEC)
 	);
 	public static final ExtendedScreenHandlerType<PawsConfigScreenHandler<Item>, List<Either<TagKey<Item>, RegistryKey<Item>>>> PAWS_ITEM_CONFIG_SCREEN_HANDLER = new ExtendedScreenHandlerType<>(
 			PawsConfigScreenHandler.PawsItemConfigScreenHandler::new, PacketCodecs.codec(HELD_ITEMS_COMPONENT_CODEC)
@@ -199,7 +209,8 @@ public class PlayerCollarsMod implements ModInitializer {
                             entries.add(INVISIBLE_FENCE_BLOCK_ITEM);
                         })).build());
 
-		Registry.register(Registries.SCREEN_HANDLER, Identifier.of(MOD_ID, "paws_block_config"), PAWS_BLOCK_CONFIG_SCREEN_HANDLER);
+		Registry.register(Registries.SCREEN_HANDLER, Identifier.of(MOD_ID, "paws_block_break_config"), PAWS_BLOCK_BREAK_CONFIG_SCREEN_HANDLER);
+		Registry.register(Registries.SCREEN_HANDLER, Identifier.of(MOD_ID, "paws_block_config"), PAWS_BLOCK_INTERACTION_CONFIG_SCREEN_HANDLER);
 		Registry.register(Registries.SCREEN_HANDLER, Identifier.of(MOD_ID, "paws_item_config"), PAWS_ITEM_CONFIG_SCREEN_HANDLER);
 	}
 

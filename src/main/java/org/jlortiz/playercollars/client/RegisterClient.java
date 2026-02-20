@@ -31,7 +31,8 @@ public class RegisterClient implements ClientModInitializer {
                 context.client().execute(() -> RotationLerpHandler.beginClickTurn(payload.vec())));
         ClientPlayNetworking.registerGlobalReceiver(PacketUpdatePawsConfig.ID, PacketUpdatePawsConfig::handle);
         WorldRenderEvents.END.register(RotationLerpHandler::turnTowardsClick);
-        HandledScreens.register(PlayerCollarsMod.PAWS_BLOCK_CONFIG_SCREEN_HANDLER, PawsConfigScreen<Block>::new);
+        HandledScreens.register(PlayerCollarsMod.PAWS_BLOCK_BREAK_CONFIG_SCREEN_HANDLER, PawsConfigScreen<Block>::new);
+        HandledScreens.register(PlayerCollarsMod.PAWS_BLOCK_INTERACTION_CONFIG_SCREEN_HANDLER, PawsConfigScreen<Block>::new);
         HandledScreens.register(PlayerCollarsMod.PAWS_ITEM_CONFIG_SCREEN_HANDLER, PawsConfigScreen<Item>::new);
     }
 }

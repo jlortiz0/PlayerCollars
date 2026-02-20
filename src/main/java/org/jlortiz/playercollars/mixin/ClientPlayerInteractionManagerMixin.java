@@ -28,11 +28,11 @@ public class ClientPlayerInteractionManagerMixin {
     @Shadow @Final private MinecraftClient client;
 
     @Unique
-    private static boolean shouldPawsBlock(LivingEntity player, BlockState block) {
+    private static boolean shouldPawsBlock(LivingEntity player, BlockState block, boolean isBreak) {
         AccessoriesCapability cap = AccessoriesCapability.get(player);
         if (cap == null) return false;
         for (SlotEntryReference sr : cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.PAWS_TAG))) {
-            if (PawsItem.shouldPreventBlockInteraction(sr.stack(), block)) {
+            if (PawsItem.shouldPreventBlockInteraction(sr.stack(), block, isBreak)) {
                 return true;
             }
         }
@@ -43,12 +43,12 @@ public class ClientPlayerInteractionManagerMixin {
     private void playercollars$cancelPawInteractions(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
         if (player.isSpectator()) return;
         BlockState block = this.client.world.getBlockState(hitResult.getBlockPos());
-        if (shouldPawsBlock(player, block)) cir.setReturnValue(ActionResult.PASS);
+        if (shouldPawsBlock(player, block, false)) cir.setReturnValue(ActionResult.PASS);
     }
 
     @Inject(method = "attackBlock", at = @At(value = "HEAD"), cancellable = true)
     private void playercollars$cancelPawBreak(BlockPos pos, Direction direction, CallbackInfoReturnable<Boolean> cir) {
         BlockState block = this.client.world.getBlockState(pos);
-        if (shouldPawsBlock(client.player, block)) cir.setReturnValue(false);
+        if (shouldPawsBlock(client.player, block, true)) cir.setReturnValue(false);
     }
 }
