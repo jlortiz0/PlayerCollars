@@ -24,7 +24,7 @@ public class PawsItem extends FootPawsItem {
     }
 
     public static boolean shouldPreventBlockInteraction(ItemStack stack, @NotNull BlockState block, boolean isBreak) {
-        if (block.isIn(PlayerCollarsMod.PAWS_ALLOW_INTERACT)) return false;
+        if (block.isIn(isBreak ? PlayerCollarsMod.PAWS_ALLOW_BREAK : PlayerCollarsMod.PAWS_ALLOW_INTERACT)) return false;
         List<Either<TagKey<Block>, RegistryKey<Block>>> allowed = stack.get(isBreak ? PlayerCollarsMod.CAN_BREAK_COMPONENT_TYPE : PlayerCollarsMod.CAN_INTERACT_COMPONENT_TYPE);
         Optional<RegistryKey<Block>> key = block.getRegistryEntry().getKey();
         if (allowed == null || key.isEmpty()) return false;
