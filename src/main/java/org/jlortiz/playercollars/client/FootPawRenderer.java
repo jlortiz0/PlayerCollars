@@ -15,9 +15,17 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ModelTransformationMode;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 
 public class FootPawRenderer implements AccessoryRenderer {
+    protected static @NotNull ItemStack makeUnenchantedItemStack(ItemStack stack) {
+        ItemStack is = stack.copy();
+        is.remove(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
+        is.remove(DataComponentTypes.ENCHANTMENTS);
+        return is;
+    }
+
     private static void renderForLeg(ItemStack stack, MatrixStack matrices, PlayerEntityModel model, World world, VertexConsumerProvider multiBufferSource, int light, boolean left) {
         matrices.push();
         AccessoryRenderer.transformToFace(matrices, left ? model.leftLeg : model.rightLeg, Side.BOTTOM);
@@ -32,9 +40,7 @@ public class FootPawRenderer implements AccessoryRenderer {
     public <S extends LivingEntityRenderState> void render(ItemStack itemStack, SlotReference slotReference, MatrixStack matrixStack, EntityModel<S> entityModel, S s, VertexConsumerProvider vertexConsumerProvider, int i, float v) {
         if (!(entityModel instanceof PlayerEntityModel model)) return;
 
-        ItemStack is = itemStack.copy();
-        is.remove(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
-        is.remove(DataComponentTypes.ENCHANTMENTS);
+        ItemStack is = makeUnenchantedItemStack(itemStack);
         renderForLeg(is, matrixStack, model, slotReference.entity().getWorld(), vertexConsumerProvider, i, false);
         renderForLeg(is, matrixStack, model, slotReference.entity().getWorld(), vertexConsumerProvider, i, true);
     }
