@@ -44,6 +44,16 @@ public class PawsConfigScreen<T extends ItemConvertible> extends HandledScreen<P
     }
 
     @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        boolean scrolled = false;
+        if (mouseX >= listWidget.getX() && mouseX < listWidget.getX() + listWidget.getWidth()
+                && mouseY >= listWidget.getY() && mouseY < listWidget.getY() + listWidget.getHeight()) {
+            scrolled = listWidget.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+        }
+        return scrolled || super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+    }
+
+    @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         if (handler.checkAndClearDirty()) {
             addingTags = !handler.isDisplayingBackingList();
