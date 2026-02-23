@@ -17,6 +17,7 @@
   "item.playercollars.clicker.turn_disable": "Force turning disabled",
   "item.playercollars.clicker.turn": "Pets will turn towards this sound",
   "item.playercollars.invisible_fence": "Invisible Fence",
+  "item.playercollars.invisible_fence.place_fail": "Pets can't place fencing",
   "block.playercollars.invisible_fence": "Invisible Fence",
   "block.playercollars.invisible_fence.toggle_fail": "Pets can't toggle fencing",
   "block.playercollars.invisible_fence.toggle_on": "Fences enabled",

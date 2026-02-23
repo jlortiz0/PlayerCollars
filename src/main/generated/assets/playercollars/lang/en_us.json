@@ -104,6 +104,7 @@
   "item.playercollars.green_dog_bed": "Green Human-Sized Dog Bed",
   "item.playercollars.green_dog_bowl": "Green Dog Bowl",
   "item.playercollars.invisible_fence": "Invisible Fence",
+  "item.playercollars.invisible_fence.place_fail": "Pets can't place fencing",
   "item.playercollars.light_blue_dog_bed": "Light Blue Human-Sized Dog Bed",
   "item.playercollars.light_blue_dog_bowl": "Light Blue Dog Bowl",
   "item.playercollars.light_gray_dog_bed": "Light Gray Human-Sized Dog Bed",

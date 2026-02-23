@@ -29,9 +29,6 @@ import net.minecraft.world.WorldView;
 import net.minecraft.world.tick.ScheduledTickView;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 
-import java.util.List;
-import java.util.Optional;
-
 public class InvisibleFenceBlock extends FenceBlock {
     public static final RegistryKey<Block> REGISTRY_KEY = RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(PlayerCollarsMod.MOD_ID, "invisible_fence"));
     public static final RegistryKey<Item> ITEM_REGISTRY_KEY = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(PlayerCollarsMod.MOD_ID, "invisible_fence"));
@@ -99,6 +96,12 @@ public class InvisibleFenceBlock extends FenceBlock {
             if (e.getEntity() == null) return super.getCollisionShape(state, world, pos, context);
         }
         return VoxelShapes.empty();
+    }
+
+    @Override
+    protected float calcBlockBreakingDelta(BlockState state, PlayerEntity player, BlockView world, BlockPos pos) {
+        if (PlayerCollarsMod.isPet(player)) return 0;
+        return super.calcBlockBreakingDelta(state, player, world, pos);
     }
 
     @Override
