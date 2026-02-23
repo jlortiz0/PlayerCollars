@@ -2,7 +2,9 @@ package org.jlortiz.playercollars.event;
 
 import io.wispforest.accessories.api.AccessoriesCapability;
 import io.wispforest.accessories.api.slot.SlotEntryReference;
+import net.fabricmc.fabric.api.event.client.player.ClientPlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
@@ -31,6 +33,9 @@ public class PawsEventHandler {
     public static void registerPawsEvents() {
         AttackBlockCallback.EVENT.register((PlayerEntity player, World world, Hand hand, BlockPos pos, Direction direction) ->
                 shouldPawsBlock(player, world.getBlockState(pos), true) ? ActionResult.FAIL : ActionResult.PASS);
+
+        PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, entity) ->
+                !shouldPawsBlock(player, world.getBlockState(pos), true));
 
         UseBlockCallback.EVENT.register((PlayerEntity player, World world, Hand hand, BlockHitResult hitResult) -> {
             if (player.isSpectator()) return ActionResult.PASS;
