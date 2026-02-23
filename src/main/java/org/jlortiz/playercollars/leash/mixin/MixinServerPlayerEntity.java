@@ -67,7 +67,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
     private void leashplayers$update() {
         if (
                 leashplayers$holder != null && (
-                        !leashplayers$holder.isAlive() || !isAlive()
+                        !leashplayers$holder.isAlive() || !isAlive() || !PlayerCollarsMod.isPet(this)
                 )
         ) {
             leashplayers$detach();
