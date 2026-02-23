@@ -48,6 +48,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
 import net.minecraft.util.*;
 import net.minecraft.util.dynamic.Codecs;
 import net.minecraft.util.hit.EntityHitResult;
@@ -102,6 +103,11 @@ public class PlayerCollarsMod implements ModInitializer {
 			Registries.DATA_COMPONENT_TYPE,
 			Identifier.of(MOD_ID, "owner_component"),
 			ComponentType.<OwnerComponent>builder().codec(OWNER_COMPONENT_CODEC).build());
+
+	public static final ComponentType<Text> NAME_TAG_COMPONENT_TYPE = Registry.register(
+			Registries.DATA_COMPONENT_TYPE,
+			Identifier.of(MOD_ID, "name_tag_component"),
+			ComponentType.<Text>builder().codec(TextCodecs.CODEC).build());
 
 	private static final Codec<List<Either<TagKey<Block>, RegistryKey<Block>>>> CAN_INTERACT_COMPONENT_CODEC = Codec.withAlternative(
 			new ListCodec<>(new EitherCodec<>(TagKey.codec(RegistryKeys.BLOCK), RegistryKey.createCodec(RegistryKeys.BLOCK)), 0, 1024),
@@ -322,6 +328,24 @@ public class PlayerCollarsMod implements ModInitializer {
 			ownedBySomeoneElse = true;
 		}
 		return ownedBySomeoneElse;
+	}
+
+	public static boolean renamePlayer(@NotNull LivingEntity player, @NotNull Entity owner, @NotNull Text text) {
+		ItemStack ownedCollar = getOwnedCollar(player, owner);
+		if (!getOwnershipLevel(player, ownedCollar).isOwned()) return false;
+
+		ownedCollar.set(NAME_TAG_COMPONENT_TYPE, text);
+		return true;
+	}
+
+	public static @Nullable Text getPlayerCustomName(@NotNull LivingEntity player) {
+		for (var collar : PlayerCollarsMod.getEquippedCollars(player)) {
+			var nameComponent = collar.stack().get(PlayerCollarsMod.NAME_TAG_COMPONENT_TYPE);
+			if (nameComponent != null) {
+				return nameComponent;
+			}
+		}
+		return null;
 	}
 
 	@Override

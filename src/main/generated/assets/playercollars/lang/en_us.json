@@ -71,6 +71,7 @@
   "item.playercollars.clicker.turn_enable": "Force turning enabled",
   "item.playercollars.collar": "Collar",
   "item.playercollars.collar.become_owner": "Become Owner",
+  "item.playercollars.collar.name_tag": "Name tag: %s",
   "item.playercollars.collar.named": "%s's Collar",
   "item.playercollars.collar.owner": "Owner: %s",
   "item.playercollars.collar.paw": "Paw",

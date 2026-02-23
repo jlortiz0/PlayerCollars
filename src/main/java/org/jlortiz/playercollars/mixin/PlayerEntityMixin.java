@@ -16,6 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ToolMaterial;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.text.Text;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.jlortiz.playercollars.PlayerCollarsMod;
@@ -89,5 +90,13 @@ public abstract class PlayerEntityMixin extends LivingEntity {
                 entityPose = EntityPose.SWIMMING;
         }
         instance.setPose(entityPose);
+    }
+
+    @Inject(method = "getDisplayName", at = @At("HEAD"), cancellable = true)
+    public void playercollars$getDisplayName(CallbackInfoReturnable<Text> cir) {
+        Text collaredName = PlayerCollarsMod.getPlayerCustomName(this);
+        if (collaredName != null) {
+            cir.setReturnValue(collaredName);
+        }
     }
 }

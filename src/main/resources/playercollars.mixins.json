@@ -10,6 +10,7 @@
   "mixins": [
     "BoneItemMixin",
     "LivingEntityMixin",
+    "NameTagMixin",
     "PlayerEntityMixin",
     "ServerPlayerEntityMixin"
   ]
