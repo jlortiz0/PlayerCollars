@@ -11,7 +11,7 @@ import net.minecraft.util.Identifier;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.network.PawsConfigScreenHandler;
 
-public class PawsConfigScreen<T extends ItemConvertible> extends HandledScreen<PawsConfigScreenHandler<T>> {
+public class PawsConfigScreen<T extends ItemConvertible> extends HandledScreen<PawsConfigScreenHandler<T>> implements PositionedScreen {
     private static final Identifier TEXTURE = Identifier.of(PlayerCollarsMod.MOD_ID, "textures/gui/paw_controller.png");
     private static final Identifier WIDGETS_TEXTURE = Identifier.of(PlayerCollarsMod.MOD_ID, "textures/gui/paw_controller_widgets.png");
     private static final int BUTTON_HEIGHT = 16;
@@ -51,6 +51,16 @@ public class PawsConfigScreen<T extends ItemConvertible> extends HandledScreen<P
             scrolled = listWidget.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
         }
         return scrolled || super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+    }
+
+    @Override
+    public int getX() {
+        return x;
+    }
+
+    @Override
+    public int getY() {
+        return y;
     }
 
     @Override

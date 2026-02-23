@@ -332,6 +332,8 @@ public class PlayerCollarsMod implements ModInitializer {
 		ServerPlayNetworking.registerGlobalReceiver(PacketUpdateCollar.ID, PacketUpdateCollar::handle);
 		PayloadTypeRegistry.playC2S().register(PacketStampDeed.ID, PacketStampDeed.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(PacketStampDeed.ID, PacketStampDeed::handle);
+		PayloadTypeRegistry.playC2S().register(PacketSetGhostItem.ID, PacketSetGhostItem.CODEC);
+		ServerPlayNetworking.registerGlobalReceiver(PacketSetGhostItem.ID, PacketSetGhostItem::handle);
 		PayloadTypeRegistry.playC2S().register(PacketOpenPawsConfig.ID, PacketOpenPawsConfig.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(PacketOpenPawsConfig.ID, PacketOpenPawsConfig::handle);
 

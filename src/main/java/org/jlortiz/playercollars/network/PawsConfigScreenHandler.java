@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends ScreenHandler {
+public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends ScreenHandler implements GhostSlotContainer {
     public static final int BTN_DENY_ALL_ID = 0;
     public static final int BTN_ALLOW_ALL_ID = 1;
     public static final int LIST_ID_OFFSET = 2;
@@ -96,6 +96,16 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
         for(int j = 0; j < 9; ++j) {
             this.addSlot(new Slot(playerInventory, j, 7 + j * 18, 198));
         }
+    }
+
+    @Override
+    public boolean isGhostSlot(int id) {
+        return id == 0;
+    }
+
+    @Override
+    public Stream<Slot> getGhostSlots() {
+        return Stream.of(getSlot(0));
     }
 
     @Override
