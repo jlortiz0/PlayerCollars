@@ -36,10 +36,12 @@ public class OwnershipCraftingRecipe extends SpecialCraftingRecipe {
             if (is.isOf(PlayerCollarsMod.DEED_OF_OWNERSHIP_STAMPED)) {
                 if (seenDeed)
                     return false;
+
                 seenDeed = true;
             } else if (this.base.test(is)) {
                 if (seenBase)
                     return false;
+
                 seenBase = true;
             } else {
                 return false;
@@ -64,18 +66,16 @@ public class OwnershipCraftingRecipe extends SpecialCraftingRecipe {
             }
         }
 
-        if (owner == null || output.isEmpty()) return ItemStack.EMPTY;
+        if (owner == null || output.isEmpty())
+            return ItemStack.EMPTY;
+
         NbtUtil.setOwner(output, owner.uuid(), owner.name());
         return output;
     }
 
     @Override
     public boolean fits(int width, int height) {
-        return true;
-    }
-
-    private Ingredient getBase() {
-        return this.base;
+        return width * height > 2;
     }
 
     @Override
@@ -83,6 +83,7 @@ public class OwnershipCraftingRecipe extends SpecialCraftingRecipe {
         return Serializer.INSTANCE;
     }
 
+    @FunctionalInterface
     public interface RecipeFactory {
         OwnershipCraftingRecipe create(Identifier id, CraftingRecipeCategory category, Ingredient base);
     }
@@ -117,7 +118,7 @@ public class OwnershipCraftingRecipe extends SpecialCraftingRecipe {
         @Override
         public void write(PacketByteBuf buf, OwnershipCraftingRecipe recipe) {
             buf.writeEnumConstant(recipe.getCategory());
-            recipe.getBase().write(buf);
+            recipe.base.write(buf);
         }
     }
 }

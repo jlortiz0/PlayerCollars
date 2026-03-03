@@ -59,11 +59,12 @@ public abstract class PlayerEntityMixin extends LivingEntity {
                 .isPresent();
 
         if (hasPaws) {
-            if (block.isIn(BlockTags.SHOVEL_MINEABLE)) {
+            if (block.isIn(BlockTags.SHOVEL_MINEABLE))
                 return ToolMaterials.IRON.getMiningSpeedMultiplier();
-            }
+
             var originalSpeed = instance.getBlockBreakingSpeed(block);
-            if (originalSpeed == 1)
+            // noinspection FloatingPointEquality
+            if (originalSpeed == 1) // we compare to exactly 1, as that's what the original (unmodified) block breaking speed is
                 return 1.0f;
             return (originalSpeed - 1) * 0.125f + 1;
         } else {
@@ -95,11 +96,13 @@ public abstract class PlayerEntityMixin extends LivingEntity {
                     for (Pair<SlotReference, ItemStack> p : ls) {
                         if (PawsItem.shouldDrop(p.getRight(), this.inventory.getMainHandStack())) {
                             ItemStack stack = this.inventory.dropSelectedItem(true);
-                            if (!stack.isEmpty()) dropItem(stack, true);
+                            if (!stack.isEmpty())
+                                dropItem(stack, true);
                         }
                         if (PawsItem.shouldDrop(p.getRight(), this.inventory.getStack(PlayerInventory.OFF_HAND_SLOT))) {
                             ItemStack stack = this.inventory.removeStack(PlayerInventory.OFF_HAND_SLOT);
-                            if (!stack.isEmpty()) dropItem(stack, true);
+                            if (!stack.isEmpty())
+                                dropItem(stack, true);
                         }
                     }
                 });
@@ -110,12 +113,14 @@ public abstract class PlayerEntityMixin extends LivingEntity {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;setPose(Lnet/minecraft/entity/EntityPose;)V")
     )
     private void playercollars$forceCrawl(PlayerEntity instance, EntityPose entityPose) {
+        var updatedPose = entityPose;
         if (!instance.getAbilities().flying && (entityPose == EntityPose.CROUCHING || entityPose == EntityPose.STANDING)) {
-            if (TrinketsApi.getTrinketComponent(this).map((x) -> x.getEquipped((y) -> y.isIn(PlayerCollarsMod.FOOT_PAWS_TAG)))
-                    .filter((x) -> !x.isEmpty()).isPresent()) {
-                entityPose = EntityPose.SWIMMING;
-            }
+            boolean hasFootPaws = TrinketsApi.getTrinketComponent(this)
+                    .map((x) -> x.getEquipped((y) -> y.isIn(PlayerCollarsMod.FOOT_PAWS_TAG)))
+                    .filter((x) -> !x.isEmpty()).isPresent();
+            if (hasFootPaws)
+                updatedPose = EntityPose.SWIMMING;
         }
-        instance.setPose(entityPose);
+        instance.setPose(updatedPose);
     }
 }

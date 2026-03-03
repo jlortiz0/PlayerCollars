@@ -7,7 +7,6 @@ import dev.emi.trinkets.api.TrinketEnums;
 import dev.emi.trinkets.api.TrinketsApi;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -18,7 +17,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.DyeableItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
@@ -59,8 +57,7 @@ public class CollarItem extends Item implements DyeableItem, Trinket {
 
     @Override
     public int getColor(ItemStack itemStack) {
-        NbtCompound $$1 = itemStack.getSubNbt("display");
-        return $$1 != null && $$1.contains("color", 99) ? $$1.getInt("color") : MapColor.RED.color;
+        return NbtUtil.getColor(itemStack);
     }
 
     @Override

@@ -34,7 +34,10 @@ public class PawSetupItem extends Item {
     @Environment(EnvType.CLIENT)
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         ItemStack is = user.getStackInHand(hand);
-        if (!user.isSneaking() || !world.isClient) return TypedActionResult.pass(is);
+
+        if (!user.isSneaking() || !world.isClient)
+            return TypedActionResult.pass(is);
+
         return switch (useOnEntity(is, user, user, hand)) {
             case SUCCESS -> TypedActionResult.success(is);
             case CONSUME, CONSUME_PARTIAL -> TypedActionResult.consume(is);
@@ -46,9 +49,14 @@ public class PawSetupItem extends Item {
     @Override
     @Environment(EnvType.CLIENT)
     public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
-        if (!(entity instanceof PlayerEntity player) || !user.getWorld().isClient) return ActionResult.PASS;
+        if (!(entity instanceof PlayerEntity player) || !user.getWorld().isClient)
+            return ActionResult.PASS;
+
         Optional<TrinketComponent> optComponent = TrinketsApi.getTrinketComponent(player);
-        if (optComponent.isEmpty()) return ActionResult.PASS;
+
+        if (optComponent.isEmpty())
+            return ActionResult.PASS;
+
         TrinketComponent component = optComponent.get();
 
         ItemStack collarStack = PlayerCollarsMod.filterStacksByOwner(component.getEquipped((y) -> y.isIn(PlayerCollarsMod.COLLAR_TAG)), user.getUuid(), player.getUuid());

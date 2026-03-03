@@ -45,6 +45,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
 
                 EnchantmentHelper.Consumer consumer = (enchantment, level) -> {
                     var adjustedLevel = level;
+                    // at level 7, it's guaranteed for the player to be damaged
                     if (enchantment instanceof ThornsEnchantment)
                         adjustedLevel = level * 2 + 1;
                     enchantment.onUserDamaged(player, attacker, adjustedLevel);

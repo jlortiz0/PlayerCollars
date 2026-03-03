@@ -48,10 +48,6 @@ public record PacketUpdateCollar(OwnerState os, int color, int pawColor) impleme
     }
 
     public enum OwnerState {
-        NOP, DEL, ADD;
-
-        public static OwnerState fromInt(int ind) {
-            return OwnerState.values()[ind];
-        }
+        NOP, DEL, ADD
     }
 }

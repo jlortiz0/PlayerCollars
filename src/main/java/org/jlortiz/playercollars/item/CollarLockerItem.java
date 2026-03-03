@@ -47,9 +47,7 @@ public class CollarLockerItem extends Item {
 
         boolean shouldLock = !EnchantmentHelper.hasBindingCurse(collarStack);
         List<Pair<SlotReference, ItemStack>> ls = component.getEquipped(
-                (y) -> y.isIn(PlayerCollarsMod.COLLAR_TAG) ||
-                       y.isIn(PlayerCollarsMod.PAWS_TAG) ||
-                       y.isIn(PlayerCollarsMod.FOOT_PAWS_TAG)
+                (y) -> y.isIn(PlayerCollarsMod.COLLAR_TAG) || y.isIn(PlayerCollarsMod.PAWS_TAG) || y.isIn(PlayerCollarsMod.FOOT_PAWS_TAG)
         );
 
         for (Pair<SlotReference, ItemStack> p : ls) {

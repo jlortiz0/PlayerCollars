@@ -20,10 +20,9 @@ public class MixinEnchantment {
     )
     boolean isAcceptableItem(EnchantmentTarget instance, Item item, Operation<Boolean> original) {
         var enchantment = (Enchantment) (Object) this;
-        if (item instanceof CollarItem) {
+        if (item instanceof CollarItem)
             if (enchantment instanceof BindingCurseEnchantment || enchantment instanceof LoyaltyEnchantment || enchantment instanceof ThornsEnchantment)
                 return true;
-        }
 
         return original.call(instance, item);
     }

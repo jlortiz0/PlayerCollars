@@ -16,6 +16,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.leash.LeashImpl;
 import org.jlortiz.playercollars.leash.LeashProxyEntity;
@@ -27,6 +28,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -37,9 +39,9 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
     @Shadow
     public ServerPlayNetworkHandler networkHandler;
     @Unique
-    private LeashProxyEntity leashplayers$proxy;
+    private @Nullable LeashProxyEntity leashplayers$proxy;
     @Unique
-    private Entity leashplayers$holder;
+    private @Nullable Entity leashplayers$holder;
     @Unique
     private int leashplayers$lastage;
     @Unique
@@ -57,13 +59,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
 
     @Unique
     private void leashplayers$update() {
-        if (
-                this.leashplayers$holder != null && (
-                        !this.leashplayers$holder.isAlive()
-                        || !isAlive()
-                        || isDisconnected()
-                )
-        ) {
+        if (this.leashplayers$holder != null && (!this.leashplayers$holder.isAlive() || !isAlive() || isDisconnected())) {
             leashplayers$detach();
             leashplayers$drop();
         }
@@ -107,6 +103,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
                     this.leashplayer$loyalty, this.leashplayer$loyalty + 6, (x) -> Math.min(0.15 * (x - this.leashplayer$loyalty), 0.375) / x);
         }
 
+        // noinspection ConstantValue
         if (result == ActionResult.FAIL) {
             if (getServerWorld().getGameRules().getBoolean(PlayerCollarsMod.PLAYER_LEASHES_BREAK_RULE)) {
                 leashplayers$detach();
@@ -114,7 +111,8 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
             } else {
                 // leashplayers$killFireworksOfPlayer(); // Ended up not using this
                 this.setVelocity(Vec3d.ZERO);
-                this.leashplayers$proxy.refreshPositionAndAngles(holder.getBlockPos(), this.leashplayers$proxy.getYaw(), this.leashplayers$proxy.getPitch());
+                Objects.requireNonNull(this.leashplayers$proxy)
+                        .refreshPositionAndAngles(holder.getBlockPos(), this.leashplayers$proxy.getYaw(), this.leashplayers$proxy.getPitch());
                 this.networkHandler.requestTeleport(holder.getX(), holder.getY(), holder.getZ(), getYaw(), getPitch());
             }
         }
@@ -122,11 +120,8 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
 
     @Unique
     private void leashplayers$killFireworksOfPlayer() {
-        for (FireworkRocketEntity rocket : getServerWorld().getEntitiesByClass(
-                FireworkRocketEntity.class,
-                getBoundingBox().expand(FIREWORK_SEARCH_RADIUS),
-                rocket -> true
-        )) {
+        var fireworkRockets = getServerWorld().getEntitiesByClass(FireworkRocketEntity.class, getBoundingBox().expand(FIREWORK_SEARCH_RADIUS), rocket -> true);
+        for (FireworkRocketEntity rocket : fireworkRockets) {
             Entity owner = rocket.getOwner();
             if (owner != null) {
                 UUID ownerUUID = owner.getUuid();
@@ -197,6 +192,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
     public ActionResult leashplayers$interact(PlayerEntity player, Hand hand) {
         ItemStack stack = player.getStackInHand(hand);
         if (stack.getItem() == Items.LEAD && this.leashplayers$holder == null) {
+            // TODO 2026-03-03 (solonovamax): I'm not sure that an atomic here is actually really even useful...
             AtomicBoolean found = new AtomicBoolean(false);
             TrinketsApi.getTrinketComponent(this).map((x) -> x.getEquipped((y) -> y.isIn(PlayerCollarsMod.COLLAR_TAG)))
                     .map((x) -> PlayerCollarsMod.filterStacksByOwner(x, player.getUuid(), getUuid()))

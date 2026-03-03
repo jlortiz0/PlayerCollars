@@ -7,11 +7,9 @@ import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -20,44 +18,37 @@ import org.jlortiz.playercollars.client.screen.DeedItemScreen;
 import org.jlortiz.playercollars.util.NbtUtil;
 
 import java.util.List;
-import java.util.UUID;
 
 public class DeedItem extends Item {
     public DeedItem() {
         super(new Settings().maxCount(1));
     }
 
+    @Environment(EnvType.CLIENT)
+    private static void openTheScreen(ItemStack is, PlayerEntity plr) {
+        MinecraftClient.getInstance().setScreen(new DeedItemScreen(is, plr));
+    }
+
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
         ItemStack is = player.getStackInHand(hand);
 
-        try {
-            if (world.isClient) {
-                OwnerComponent owner = NbtUtil.getDeedOwner(is);
-                if (owner != null && owner.owned().isEmpty()) {
-                    if (owner.uuid().equals(player.getUuid())) {
-                        player.sendMessage(Text.translatable("item.playercollars.deed_of_ownership.no_self_own"), true);
-                        return TypedActionResult.pass(is);
-                    }
-                    openTheScreen(is, player);
-                    return TypedActionResult.success(is);
+        if (world.isClient) {
+            OwnerComponent owner = NbtUtil.getDeedOwner(is);
+            if (owner != null && owner.owned().isEmpty()) {
+                if (owner.uuid().equals(player.getUuid())) {
+                    player.sendMessage(Text.translatable("item.playercollars.deed_of_ownership.no_self_own"), true);
+                    return TypedActionResult.pass(is);
                 }
-            } else if (NbtUtil.getDeedOwner(is) == null) {
-                NbtUtil.setDeedOwner(is, new OwnerComponent(player.getUuid(), player.getName().getString()));
-                player.sendMessage(Text.translatable("item.playercollars.deed_of_ownership.filled_out"), true);
-                return TypedActionResult.consume(is);
+                openTheScreen(is, player);
+                return TypedActionResult.success(is);
             }
-            return TypedActionResult.pass(is);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return TypedActionResult.pass(is);
+        } else if (NbtUtil.getDeedOwner(is) == null) {
+            NbtUtil.setDeedOwner(is, new OwnerComponent(player.getUuid(), player.getName().getString()));
+            player.sendMessage(Text.translatable("item.playercollars.deed_of_ownership.filled_out"), true);
+            return TypedActionResult.consume(is);
         }
-    }
-
-    @Environment(EnvType.CLIENT)
-    private void openTheScreen(ItemStack is, PlayerEntity plr) {
-        MinecraftClient.getInstance().setScreen(new DeedItemScreen(is, plr));
+        return TypedActionResult.pass(is);
     }
 
     @Override

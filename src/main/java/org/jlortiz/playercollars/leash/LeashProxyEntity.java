@@ -5,7 +5,6 @@ import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.passive.TurtleEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.scoreboard.ServerScoreboard;
@@ -69,6 +68,7 @@ public final class LeashProxyEntity extends TurtleEntity {
             case SLEEPING:
                 if (this.target.getSleepingDirection() != null)
                     yield new Vec3d(this.target.getSleepingDirection().getUnitVector().mul(-0.2f)).add(0, 0.1, -0.15);
+                // noinspection fallthrough
             default:
                 yield new Vec3d(0.0D, 1.3D, -0.15D);
         };
@@ -121,11 +121,6 @@ public final class LeashProxyEntity extends TurtleEntity {
     }
 
     @Override
-    public boolean canBeLeashedBy(PlayerEntity player) {
-        return false;
-    }
-
-    @Override
     protected void initGoals() {
     }
 
@@ -141,9 +136,5 @@ public final class LeashProxyEntity extends TurtleEntity {
 
     @Override
     public void pushAwayFrom(Entity entity) {
-    }
-
-    @Override
-    public void onPlayerCollision(PlayerEntity player) {
     }
 }

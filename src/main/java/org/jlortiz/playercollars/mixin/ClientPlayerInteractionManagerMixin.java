@@ -36,9 +36,8 @@ public class ClientPlayerInteractionManagerMixin {
         return TrinketsApi.getTrinketComponent(player).map((x) -> x.getEquipped((y) -> y.isIn(PlayerCollarsMod.PAWS_TAG)))
                 .map((ls) -> {
                     for (Pair<SlotReference, ItemStack> p : ls) {
-                        if (PawsItem.shouldPreventBlockInteraction(p.getRight(), block)) {
+                        if (PawsItem.shouldPreventBlockInteraction(p.getRight(), block))
                             return true;
-                        }
                     }
                     return false;
                 }).orElse(false);
@@ -47,7 +46,10 @@ public class ClientPlayerInteractionManagerMixin {
     @Inject(method = "interactBlock", at = @At("HEAD"), cancellable = true)
     private void playercollars$cancelPawInteractions(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
         assert this.client.world != null;
-        if (player.isSpectator()) return;
+
+        if (player.isSpectator())
+            return;
+
         BlockState block = this.client.world.getBlockState(hitResult.getBlockPos());
 
         if (shouldPawsBlock(player, block))
@@ -57,6 +59,7 @@ public class ClientPlayerInteractionManagerMixin {
     @Inject(method = "attackBlock", at = @At("HEAD"), cancellable = true)
     private void playercollars$cancelPawBreak(BlockPos pos, Direction direction, CallbackInfoReturnable<Boolean> cir) {
         assert this.client.world != null;
+
         BlockState block = this.client.world.getBlockState(pos);
 
         if (shouldPawsBlock(this.client.player, block))

@@ -26,34 +26,41 @@ public class PawsItem extends FootPawsItem {
     }
 
     public static boolean shouldPreventBlockInteraction(ItemStack stack, @NotNull BlockState block) {
-        if (block.isIn(PlayerCollarsMod.PAWS_ALLOW_INTERACT)) return false;
+        if (block.isIn(PlayerCollarsMod.PAWS_ALLOW_INTERACT))
+            return false;
+
         List<Either<TagKey<Block>, RegistryKey<Block>>> allowed = NbtUtil.getCanInteract(stack);
         Optional<RegistryKey<Block>> key = block.getRegistryEntry().getKey();
-        if (allowed == null || key.isEmpty()) return false;
+
+        if (allowed == null || key.isEmpty())
+            return false;
+
         for (Either<TagKey<Block>, RegistryKey<Block>> entry : allowed) {
-            if (entry.map(block::isIn, (y) -> y.equals(key.get()))) return false;
+            if (entry.map(block::isIn, (y) -> y.equals(key.get())))
+                return false;
         }
         return true;
     }
 
     public static boolean shouldDrop(ItemStack pawsStack, ItemStack thing) {
-        if (thing.isEmpty()) return false;
+        if (thing.isEmpty())
+            return false;
+
         List<Either<TagKey<Item>, RegistryKey<Item>>> slippery = NbtUtil.getHeldItems(pawsStack);
         Optional<RegistryKey<Item>> key = thing.getRegistryEntry().getKey();
-        if (slippery == null || key.isEmpty()) return false;
+
+        if (slippery == null || key.isEmpty())
+            return false;
+
         for (Either<TagKey<Item>, RegistryKey<Item>> entry : slippery) {
-            if (entry.map(thing::isIn, (y) -> y.equals(key.get()))) return false;
+            if (entry.map(thing::isIn, (y) -> y.equals(key.get())))
+                return false;
         }
         return true;
     }
 
     public static Identifier getIdentifier(DyeColor c) {
         return Identifier.of(PlayerCollarsMod.MOD_ID, c.getName() + "_paws");
-    }
-
-    @Override
-    public boolean hasGlint(ItemStack stack) {
-        return false;
     }
 
     @Override

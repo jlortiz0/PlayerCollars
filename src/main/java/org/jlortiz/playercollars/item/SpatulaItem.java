@@ -23,8 +23,8 @@ public class SpatulaItem extends Item {
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         if (user.isSneaking()) {
-            ActionResult res = useOnEntity(user.getStackInHand(hand), user, user, hand);
-            if (res.isAccepted()) return TypedActionResult.success(user.getStackInHand(hand));
+            if (useOnEntity(user.getStackInHand(hand), user, user, hand).isAccepted())
+                return TypedActionResult.success(user.getStackInHand(hand));
         }
         return super.use(world, user, hand);
     }
@@ -33,7 +33,9 @@ public class SpatulaItem extends Item {
     public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
         int count = 0;
         for (EquipmentSlot slot : EquipmentSlot.values()) {
-            if (!slot.isArmorSlot()) continue;
+            if (!slot.isArmorSlot())
+                continue;
+
             ItemStack is = entity.getEquippedStack(slot);
             if (EnchantmentHelper.hasBindingCurse(is)) {
                 count++;
@@ -54,7 +56,9 @@ public class SpatulaItem extends Item {
             return count2;
         }).orElse(0);
 
-        if (count == 0) return ActionResult.PASS;
+        if (count == 0)
+            return ActionResult.PASS;
+
         stack.damage(count, user, player -> player.sendToolBreakStatus(hand));
         return ActionResult.SUCCESS;
     }

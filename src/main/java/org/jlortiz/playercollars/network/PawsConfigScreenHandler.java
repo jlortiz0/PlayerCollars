@@ -97,7 +97,10 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
     public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player) {
         if (slotIndex == 0) {
             ItemStack is = this.getCursorStack();
-            if (is == null) is = ItemStack.EMPTY;
+
+            if (is == null)
+                is = ItemStack.EMPTY;
+
             this.inventory.setStack(0, is.copyWithCount(1));
             return;
         }
@@ -106,14 +109,21 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
 
     @Override
     public boolean onButtonClick(PlayerEntity player, int id) {
-        if (id < 0) return false;
+        if (id < 0)
+            return false;
+
         if (this.inventory.getStack(0).isEmpty()) {
-            if (id >= this.data.size()) return false;
+            if (id >= this.data.size())
+                return false;
+
             this.data.remove(id);
         } else {
-            if (id >= this.listToDisplay.size()) return false;
+            if (id >= this.listToDisplay.size())
+                return false;
+
             this.data.add(this.listToDisplay.get(id));
         }
+
         return true;
     }
 
@@ -150,6 +160,7 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
         protected List<Either<TagKey<Block>, RegistryKey<Block>>> genForItem(Item item) {
             if (!(item instanceof BlockItem bi))
                 return List.of();
+
             RegistryEntry<Block> entry = this.world.getRegistryManager().get(RegistryKeys.BLOCK).getEntry(bi.getBlock());
             Stream<Either<TagKey<Block>, RegistryKey<Block>>> tags = entry.streamTags().map(Either::left);
             if (entry.getKey().isPresent()) {

@@ -25,11 +25,6 @@ public class ClickerItem extends Item {
         super(new Item.Settings().maxCount(1));
     }
 
-    // public static int getColor(ItemStack itemStack) {
-    //     DyedColorComponent $$1 = itemStack.get(DataComponentTypes.DYED_COLOR);
-    //     return $$1 != null ? $$1.rgb() : -1;
-    // }
-
     @Override
     public boolean isEnchantable(ItemStack stack) {
         return true;
@@ -58,6 +53,7 @@ public class ClickerItem extends Item {
 
             if (is.getNbt() != null && is.getNbt().getBoolean("force_turning")) {
                 List<ServerPlayerEntity> targets = ((ServerWorld) world).getPlayers((p) -> {
+                    // noinspection CodeBlock2Expr
                     return !p.isPartOf(player) && p.isInRange(player, p.getAttributeValue(PlayerCollarsMod.ATTR_CLICKER_DISTANCE));
                 });
 

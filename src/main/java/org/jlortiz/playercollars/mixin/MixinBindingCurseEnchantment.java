@@ -15,9 +15,6 @@ public class MixinBindingCurseEnchantment {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/enchantment/Enchantment;isAcceptableItem(Lnet/minecraft/item/ItemStack;)Z")
     )
     boolean isAcceptableItem(BindingCurseEnchantment instance, ItemStack stack, Operation<Boolean> original) {
-        if (stack.isOf(PlayerCollarsMod.COLLAR_ITEM))
-            return true;
-        else
-            return original.call(instance, stack);
+        return stack.isOf(PlayerCollarsMod.COLLAR_ITEM) || original.call(instance, stack);
     }
 }

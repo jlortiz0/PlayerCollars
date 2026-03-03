@@ -20,7 +20,10 @@ public class StampedDeedItem extends Item {
     @Override
     public Text getName(ItemStack stack) {
         OwnerComponent owner = NbtUtil.getDeedOwner(stack);
-        if (owner == null || owner.owned().isEmpty()) return Text.translatable("item.playercollars.deed_of_ownership");
+
+        if (owner == null || owner.owned().isEmpty())
+            return Text.translatable("item.playercollars.deed_of_ownership");
+
         return Text.translatable("item.playercollars.stamped_deed_of_ownership", owner.ownedName().get());
     }
 
