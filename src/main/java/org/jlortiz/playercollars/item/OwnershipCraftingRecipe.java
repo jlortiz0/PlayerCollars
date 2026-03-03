@@ -1,36 +1,45 @@
 package org.jlortiz.playercollars.item;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.google.gson.JsonObject;
+import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.recipe.*;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.recipe.Ingredient;
+import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.recipe.book.CraftingRecipeCategory;
-import net.minecraft.recipe.input.CraftingRecipeInput;
-import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
 import net.minecraft.world.World;
 import org.jlortiz.playercollars.OwnerComponent;
 import org.jlortiz.playercollars.PlayerCollarsMod;
+import org.jlortiz.playercollars.util.NbtUtil;
 
 public class OwnershipCraftingRecipe extends SpecialCraftingRecipe {
     private final Ingredient base;
 
-    public OwnershipCraftingRecipe(CraftingRecipeCategory category, Ingredient base) {
-        super(category);
+    public OwnershipCraftingRecipe(Identifier id, CraftingRecipeCategory category, Ingredient base) {
+        super(id, category);
         this.base = base;
     }
 
-    public boolean matches(CraftingRecipeInput craftingRecipeInput, World world) {
+    @Override
+    public boolean matches(RecipeInputInventory inventory, World world) {
         boolean seenDeed = false;
         boolean seenBase = false;
-        for (int i = 0; i < craftingRecipeInput.getSize(); i++) {
-            ItemStack is = craftingRecipeInput.getStackInSlot(i);
+
+        for (int i = 0; i < inventory.size(); i++) {
+            ItemStack is = inventory.getStack(i);
+            if (is.isEmpty())
+                continue;
             if (is.isOf(PlayerCollarsMod.DEED_OF_OWNERSHIP_STAMPED)) {
-                if (seenDeed) return false;
+                if (seenDeed)
+                    return false;
                 seenDeed = true;
-            } else if (base.test(is)) {
-                if (seenBase || is.get(PlayerCollarsMod.OWNER_COMPONENT_TYPE) != null) return false;
+            } else if (this.base.test(is)) {
+                if (seenBase)
+                    return false;
                 seenBase = true;
             } else {
                 return false;
@@ -39,23 +48,24 @@ public class OwnershipCraftingRecipe extends SpecialCraftingRecipe {
         return true;
     }
 
-    public ItemStack craft(CraftingRecipeInput craftingRecipeInput, RegistryWrapper.WrapperLookup wrapperLookup) {
+    @Override
+    public ItemStack craft(RecipeInputInventory inventory, DynamicRegistryManager registryManager) {
         ItemStack output = ItemStack.EMPTY;
         OwnerComponent owner = null;
 
-        for(int j = 0; j < craftingRecipeInput.getSize(); j++) {
-            ItemStack is = craftingRecipeInput.getStackInSlot(j);
+        for (int j = 0; j < inventory.size(); j++) {
+            ItemStack is = inventory.getStack(j);
             if (!is.isEmpty()) {
                 if (is.isOf(PlayerCollarsMod.DEED_OF_OWNERSHIP_STAMPED)) {
-                    owner = is.get(PlayerCollarsMod.OWNER_COMPONENT_TYPE);
-                } else if (base.test(is)) {
+                    owner = NbtUtil.getDeedOwner(is);
+                } else if (this.base.test(is)) {
                     output = is.copy();
                 }
             }
         }
 
         if (owner == null || output.isEmpty()) return ItemStack.EMPTY;
-        output.set(PlayerCollarsMod.OWNER_COMPONENT_TYPE, owner);
+        NbtUtil.setOwner(output, owner.uuid(), owner.name());
         return output;
     }
 
@@ -65,7 +75,7 @@ public class OwnershipCraftingRecipe extends SpecialCraftingRecipe {
     }
 
     private Ingredient getBase() {
-        return base;
+        return this.base;
     }
 
     @Override
@@ -73,24 +83,41 @@ public class OwnershipCraftingRecipe extends SpecialCraftingRecipe {
         return Serializer.INSTANCE;
     }
 
+    public interface RecipeFactory {
+        OwnershipCraftingRecipe create(Identifier id, CraftingRecipeCategory category, Ingredient base);
+    }
+
     public static class Serializer implements RecipeSerializer<OwnershipCraftingRecipe> {
-        public static final Serializer INSTANCE = new Serializer();
+        public static final Serializer INSTANCE = new Serializer(OwnershipCraftingRecipe::new);
 
-        private static final MapCodec<OwnershipCraftingRecipe> CODEC = RecordCodecBuilder.mapCodec((builder) -> builder.group(
-            CraftingRecipeCategory.CODEC.fieldOf("category").orElse(CraftingRecipeCategory.MISC).forGetter(CraftingRecipe::getCategory),
-            Ingredient.DISALLOW_EMPTY_CODEC.fieldOf("base").forGetter(OwnershipCraftingRecipe::getBase)
-        ).apply(builder, OwnershipCraftingRecipe::new));
-        public static final PacketCodec<RegistryByteBuf, OwnershipCraftingRecipe> PACKET_CODEC = PacketCodec.tuple(
-                CraftingRecipeCategory.PACKET_CODEC, CraftingRecipe::getCategory,
-                Ingredient.PACKET_CODEC, OwnershipCraftingRecipe::getBase, OwnershipCraftingRecipe::new
-        );
+        private final RecipeFactory factory;
 
-        public MapCodec<OwnershipCraftingRecipe> codec() {
-            return CODEC;
+        public Serializer(RecipeFactory factory) {
+            this.factory = factory;
         }
 
-        public PacketCodec<RegistryByteBuf, OwnershipCraftingRecipe> packetCodec() {
-            return PACKET_CODEC;
+        @Override
+        public OwnershipCraftingRecipe read(Identifier id, JsonObject json) {
+            CraftingRecipeCategory category = CraftingRecipeCategory.CODEC
+                    .byId(JsonHelper.getString(json, "category", null), CraftingRecipeCategory.MISC);
+
+            Ingredient ingredient = Ingredient.fromJson(json, false);
+
+            return this.factory.create(id, category, ingredient);
+        }
+
+        @Override
+        public OwnershipCraftingRecipe read(Identifier id, PacketByteBuf buf) {
+            CraftingRecipeCategory category = buf.readEnumConstant(CraftingRecipeCategory.class);
+            Ingredient ingredient = Ingredient.fromPacket(buf);
+
+            return this.factory.create(id, category, ingredient);
+        }
+
+        @Override
+        public void write(PacketByteBuf buf, OwnershipCraftingRecipe recipe) {
+            buf.writeEnumConstant(recipe.getCategory());
+            recipe.getBase().write(buf);
         }
     }
 }

@@ -1,33 +1,50 @@
 package org.jlortiz.playercollars.network;
 
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.DyedColorComponent;
-import net.minecraft.component.type.MapColorComponent;
+import net.fabricmc.fabric.api.networking.v1.FabricPacket;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
-import org.jlortiz.playercollars.OwnerComponent;
 import org.jlortiz.playercollars.PlayerCollarsMod;
-import org.jlortiz.playercollars.item.CollarItem;
+import org.jlortiz.playercollars.util.NbtUtil;
 
-public record PacketUpdateCollar(OwnerState os, int pawColor, int color) implements CustomPayload {
-    public static final CustomPayload.Id<PacketUpdateCollar> ID = new CustomPayload.Id<>(Identifier.of(PlayerCollarsMod.MOD_ID, "update_collar"));
-    public static final PacketCodec<RegistryByteBuf, PacketUpdateCollar> CODEC = PacketCodec.tuple(
-            PacketCodecs.indexed(OwnerState::fromInt, OwnerState::ordinal), PacketUpdateCollar::os,
-            PacketCodecs.INTEGER, PacketUpdateCollar::pawColor,
-            PacketCodecs.INTEGER, PacketUpdateCollar::color,
-            PacketUpdateCollar::new);
+public record PacketUpdateCollar(OwnerState os, int color, int pawColor) implements FabricPacket {
+    public static final Identifier ID = Identifier.of(PlayerCollarsMod.MOD_ID, "update_collar");
+    public static final PacketType<PacketUpdateCollar> TYPE = PacketType.create(ID, PacketUpdateCollar::new);
+
     public PacketUpdateCollar(ItemStack is, OwnerState os) {
-        this(os, CollarItem.getPawColor(is), CollarItem.getColor(is));
+        this(os, NbtUtil.getColor(is), NbtUtil.getPawColor(is));
+    }
+
+    public PacketUpdateCollar(PacketByteBuf buf) {
+        this(buf.readEnumConstant(OwnerState.class), buf.readInt(), buf.readInt());
+    }
+
+    public static void handle(PacketUpdateCollar packet, ServerPlayerEntity player, PacketSender responseSender) {
+        ItemStack is = player.getMainHandStack();
+        if (!is.isEmpty() && is.isOf(PlayerCollarsMod.COLLAR_ITEM)) {
+            NbtUtil.setColor(is, packet.color);
+            NbtUtil.setPawColor(is, packet.pawColor);
+            if (packet.os == OwnerState.DEL) {
+                NbtUtil.setOwner(is, null, null);
+            } else if (packet.os == OwnerState.ADD) {
+                NbtUtil.setOwner(is, player.getUuid(), player.getName().getString());
+            }
+        }
     }
 
     @Override
-    public Id<? extends CustomPayload> getId() {
-        return ID;
+    public void write(PacketByteBuf buf) {
+        buf.writeEnumConstant(this.os);
+        buf.writeInt(this.color);
+        buf.writeInt(this.pawColor);
+    }
+
+    @Override
+    public PacketType<?> getType() {
+        return TYPE;
     }
 
     public enum OwnerState {
@@ -36,20 +53,5 @@ public record PacketUpdateCollar(OwnerState os, int pawColor, int color) impleme
         public static OwnerState fromInt(int ind) {
             return OwnerState.values()[ind];
         }
-    }
-
-    public void handle(ServerPlayNetworking.Context context) {
-        context.server().execute(() -> {
-            ItemStack is = context.player().getMainHandStack();
-            if (!is.isEmpty() && is.getItem() instanceof CollarItem) {
-                is.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color, true));
-                is.set(DataComponentTypes.MAP_COLOR, new MapColorComponent(pawColor));
-                if (os == OwnerState.DEL) {
-                    is.remove(PlayerCollarsMod.OWNER_COMPONENT_TYPE);
-                } else if (os == OwnerState.ADD) {
-                    is.set(PlayerCollarsMod.OWNER_COMPONENT_TYPE, new OwnerComponent(context.player().getUuid(), context.player().getName().getString()));
-                }
-            }
-        });
     }
 }

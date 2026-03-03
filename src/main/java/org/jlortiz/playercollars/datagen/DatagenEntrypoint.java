@@ -16,7 +16,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
@@ -29,11 +28,12 @@ import java.util.function.Function;
 public class DatagenEntrypoint implements DataGeneratorEntrypoint {
     public static final BlockItem[] WOOLS = new BlockItem[DyeColor.values().length];
     public static final BlockItem[] TERRACOTTAS = new BlockItem[DyeColor.values().length];
+
     @Override
     public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
         for (DyeColor c : DyeColor.values()) {
-            WOOLS[c.ordinal()] = (BlockItem) Registries.ITEM.get(Identifier.ofVanilla(c.getName() + "_wool"));
-            TERRACOTTAS[c.ordinal()] = (BlockItem) Registries.ITEM.get(Identifier.ofVanilla(c.getName() + "_terracotta"));
+            WOOLS[c.ordinal()] = (BlockItem) Registries.ITEM.get(Identifier.of(Identifier.DEFAULT_NAMESPACE, c.getName() + "_wool"));
+            TERRACOTTAS[c.ordinal()] = (BlockItem) Registries.ITEM.get(Identifier.of(Identifier.DEFAULT_NAMESPACE, c.getName() + "_terracotta"));
         }
 
         FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
@@ -46,8 +46,8 @@ public class DatagenEntrypoint implements DataGeneratorEntrypoint {
     }
 
     private static class LootTableGenerator extends FabricBlockLootTableProvider {
-        protected LootTableGenerator(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
-            super(dataOutput, registryLookup);
+        protected LootTableGenerator(FabricDataOutput dataOutput) {
+            super(dataOutput);
         }
 
         @Override
@@ -67,8 +67,11 @@ public class DatagenEntrypoint implements DataGeneratorEntrypoint {
 
         @Override
         protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
-            getOrCreateTagBuilder(ItemTags.DYEABLE).add(PlayerCollarsMod.COLLAR_ITEM).add(PlayerCollarsMod.CLICKER_ITEM).add(PlayerCollarsMod.TAGLESS_COLLAR_ITEM);
-            getOrCreateTagBuilder(TagKey.of(RegistryKeys.ITEM, Identifier.of(TrinketsMain.MOD_ID, "chest/necklace"))).add(PlayerCollarsMod.COLLAR_ITEM).add(PlayerCollarsMod.TAGLESS_COLLAR_ITEM);
+            // getOrCreateTagBuilder(ItemTags.DYEABLE).add(PlayerCollarsMod.COLLAR_ITEM)
+            //         .add(PlayerCollarsMod.CLICKER_ITEM)
+            //         .add(PlayerCollarsMod.TAGLESS_COLLAR_ITEM);
+            getOrCreateTagBuilder(TagKey.of(RegistryKeys.ITEM, Identifier.of(TrinketsMain.MOD_ID, "chest/necklace"))).add(PlayerCollarsMod.COLLAR_ITEM)
+                    .add(PlayerCollarsMod.TAGLESS_COLLAR_ITEM);
             getOrCreateTagBuilder(PlayerCollarsMod.COLLAR_TAG).add(PlayerCollarsMod.COLLAR_ITEM).add(PlayerCollarsMod.TAGLESS_COLLAR_ITEM)
                     .addOptionalTag(TagKey.of(RegistryKeys.ITEM, Identifier.of("petworks", "collars")));
             getOrCreateTagBuilder(PlayerCollarsMod.PAWS_TAG).add(PlayerCollarsMod.PAWS_ITEMS);
@@ -86,22 +89,22 @@ public class DatagenEntrypoint implements DataGeneratorEntrypoint {
         @Override
         protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
             getOrCreateTagBuilder(BlockTags.BEDS).add(PlayerCollarsMod.DOG_BEDS);
-//            getOrCreateTagBuilder(PlayerCollarsMod.PAWS_ALLOW_INTERACT).addTag(BlockTags.BUTTONS)
-//                    .add(Blocks.LEVER).addTag(BlockTags.CROPS).addTag(BlockTags.BEDS)
-//                    .addTag(BlockTags.GEODE_INVALID_BLOCKS).addTag(BlockTags.CAULDRONS);
+            // getOrCreateTagBuilder(PlayerCollarsMod.PAWS_ALLOW_INTERACT).addTag(BlockTags.BUTTONS)
+            //         .add(Blocks.LEVER).addTag(BlockTags.CROPS).addTag(BlockTags.BEDS)
+            //         .addTag(BlockTags.GEODE_INVALID_BLOCKS).addTag(BlockTags.CAULDRONS);
             getOrCreateTagBuilder(BlockTags.FENCES).add(PlayerCollarsMod.INVISIBLE_FENCE_BLOCK);
         }
     }
 
     private static class EnglishLangProvider extends FabricLanguageProvider {
-        protected EnglishLangProvider(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
-            super(dataOutput, registryLookup);
+        protected EnglishLangProvider(FabricDataOutput dataOutput) {
+            super(dataOutput);
         }
 
         private static void generateColorNames(TranslationBuilder translationBuilder, String suffix, Function<Integer, DyeColor> getColor, Item... items) {
             for (int i = 0; i < items.length; i++) {
                 String pre = getColor.apply(i).getName();
-                char []buf = new char[pre.length() + suffix.length()];
+                char[] buf = new char[pre.length() + suffix.length()];
                 boolean newWord = true;
                 for (int j = 0; j < pre.length(); j++) {
                     char c = pre.charAt(j);
@@ -120,14 +123,14 @@ public class DatagenEntrypoint implements DataGeneratorEntrypoint {
         }
 
         @Override
-        public void generateTranslations(RegistryWrapper.WrapperLookup registryLookup, TranslationBuilder translationBuilder) {
+        public void generateTranslations(TranslationBuilder translationBuilder) {
             generateColorNames(translationBuilder, " Human-Sized Dog Bed", DyeColor::byId, PlayerCollarsMod.DOG_BED_ITEMS);
             generateColorNames(translationBuilder, " Paws", (i) -> PlayerCollarsMod.PAWS_DYE_COLORS[i], PlayerCollarsMod.PAWS_ITEMS);
             generateColorNames(translationBuilder, " Foot Paws", (i) -> PlayerCollarsMod.PAWS_DYE_COLORS[i], PlayerCollarsMod.FOOT_PAWS_ITEMS);
             generateColorNames(translationBuilder, " Dog Bowl", DyeColor::byId, PlayerCollarsMod.DOG_BOWL_ITEMS);
 
             try {
-                Path existingFilePath = dataOutput.getModContainer().findPath("assets/" + PlayerCollarsMod.MOD_ID + "/lang/en_us.existing.json").get();
+                Path existingFilePath = this.dataOutput.getModContainer().findPath("assets/" + PlayerCollarsMod.MOD_ID + "/lang/en_us.existing.json").get();
                 translationBuilder.add(existingFilePath);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to add existing language file!", e);

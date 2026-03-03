@@ -10,6 +10,7 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -21,6 +22,7 @@ import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.world.World;
 import org.jlortiz.playercollars.PlayerCollarsMod;
+import org.jlortiz.playercollars.util.NbtUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,26 +32,26 @@ import java.util.stream.Stream;
 public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends ScreenHandler {
     private final Inventory inventory;
     public final List<Either<TagKey<T>, RegistryKey<T>>> data;
+    protected final World world;
     public List<Either<TagKey<T>, RegistryKey<T>>> listToDisplay;
     protected ItemStack[] pawsStacks;
-    protected final World world;
 
-    public PawsConfigScreenHandler(ScreenHandlerType<? extends PawsConfigScreenHandler<T>> id, int syncId,
-                                   PlayerInventory playerInventory, List<Either<TagKey<T>, RegistryKey<T>>> data) {
+    protected PawsConfigScreenHandler(ScreenHandlerType<? extends PawsConfigScreenHandler<T>> id, int syncId,
+                                      PlayerInventory playerInventory, List<Either<TagKey<T>, RegistryKey<T>>> data) {
         super(id, syncId);
         this.inventory = new SimpleInventory(1) {
             @Override
             public void markDirty() {
                 super.markDirty();
-                PawsConfigScreenHandler.this.onContentChanged(this);
+                onContentChanged(this);
             }
         };
         this.data = (data == null) ? new ArrayList<>() : new ArrayList<>(data);
         this.listToDisplay = data;
         this.world = playerInventory.player.getWorld();
-        inventory.onOpen(playerInventory.player);
+        this.inventory.onOpen(playerInventory.player);
 
-        this.addSlot(new Slot(inventory, 0, 175, 108) {
+        this.addSlot(new Slot(this.inventory, 0, 175, 108) {
             @Override
             public boolean canTakePartial(PlayerEntity playerEntity) {
                 return false;
@@ -74,13 +76,13 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
             }
         });
 
-        for(int j = 0; j < 3; ++j) {
-            for(int k = 0; k < 9; ++k) {
+        for (int j = 0; j < 3; ++j) {
+            for (int k = 0; k < 9; ++k) {
                 this.addSlot(new Slot(playerInventory, k + j * 9 + 9, 7 + k * 18, 140 + j * 18));
             }
         }
 
-        for(int j = 0; j < 9; ++j) {
+        for (int j = 0; j < 9; ++j) {
             this.addSlot(new Slot(playerInventory, j, 7 + j * 18, 198));
         }
     }
@@ -105,19 +107,19 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
     @Override
     public boolean onButtonClick(PlayerEntity player, int id) {
         if (id < 0) return false;
-        if (inventory.getStack(0).isEmpty()) {
-            if (id >= data.size()) return false;
-            data.remove(id);
+        if (this.inventory.getStack(0).isEmpty()) {
+            if (id >= this.data.size()) return false;
+            this.data.remove(id);
         } else {
-            if (id >= listToDisplay.size()) return false;
-            data.add(listToDisplay.get(id));
+            if (id >= this.listToDisplay.size()) return false;
+            this.data.add(this.listToDisplay.get(id));
         }
         return true;
     }
 
     public void setPawsStack(ItemStack[] is) {
-        if (pawsStacks == null)
-            pawsStacks = is;
+        if (this.pawsStacks == null)
+            this.pawsStacks = is;
     }
 
     @Override
@@ -129,7 +131,7 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
     public void onContentChanged(Inventory inventory) {
         super.onContentChanged(inventory);
         ItemStack is = inventory.getStack(0);
-        this.listToDisplay = is.isEmpty() ? data : genForItem(is.getItem());
+        this.listToDisplay = is.isEmpty() ? this.data : genForItem(is.getItem());
     }
 
     protected abstract List<Either<TagKey<T>, RegistryKey<T>>> genForItem(Item item);
@@ -141,9 +143,14 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
             super(PlayerCollarsMod.PAWS_BLOCK_CONFIG_SCREEN_HANDLER, syncId, playerInventory, data);
         }
 
+        public PawsBlockConfigScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
+            this(syncId, playerInventory, NbtUtil.readCanInteract(buf));
+        }
+
         protected List<Either<TagKey<Block>, RegistryKey<Block>>> genForItem(Item item) {
-            if (!(item instanceof BlockItem bi)) return List.of();
-            RegistryEntry<Block> entry = world.getRegistryManager().get(RegistryKeys.BLOCK).getEntry(bi.getBlock());
+            if (!(item instanceof BlockItem bi))
+                return List.of();
+            RegistryEntry<Block> entry = this.world.getRegistryManager().get(RegistryKeys.BLOCK).getEntry(bi.getBlock());
             Stream<Either<TagKey<Block>, RegistryKey<Block>>> tags = entry.streamTags().map(Either::left);
             if (entry.getKey().isPresent()) {
                 tags = Stream.concat(Stream.of(Either.right(entry.getKey().get())), tags);
@@ -159,9 +166,11 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
         @Override
         public void onClosed(PlayerEntity player) {
             super.onClosed(player);
-            if (pawsStacks != null)
-                for (ItemStack ps : pawsStacks)
-                    ps.set(PlayerCollarsMod.CAN_INTERACT_COMPONENT_TYPE, data.isEmpty() ? null : data);
+            if (this.pawsStacks != null) {
+                for (ItemStack ps : this.pawsStacks) {
+                    NbtUtil.setCanInteract(ps, this.data);
+                }
+            }
         }
     }
 
@@ -170,8 +179,12 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
             super(PlayerCollarsMod.PAWS_ITEM_CONFIG_SCREEN_HANDLER, syncId, playerInventory, data);
         }
 
+        public PawsItemConfigScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
+            this(syncId, playerInventory, NbtUtil.readHeldItems(buf));
+        }
+
         protected List<Either<TagKey<Item>, RegistryKey<Item>>> genForItem(Item item) {
-            RegistryEntry<Item> entry = world.getRegistryManager().get(RegistryKeys.ITEM).getEntry(item);
+            RegistryEntry<Item> entry = this.world.getRegistryManager().get(RegistryKeys.ITEM).getEntry(item);
             Stream<Either<TagKey<Item>, RegistryKey<Item>>> tags = entry.streamTags().map(Either::left);
             if (entry.getKey().isPresent()) {
                 tags = Stream.concat(Stream.of(Either.right(entry.getKey().get())), tags);
@@ -187,9 +200,11 @@ public abstract class PawsConfigScreenHandler<T extends ItemConvertible> extends
         @Override
         public void onClosed(PlayerEntity player) {
             super.onClosed(player);
-            if (pawsStacks != null)
-                for (ItemStack ps : pawsStacks)
-                    ps.set(PlayerCollarsMod.HELD_ITEMS_COMPONENT_TYPE, data.isEmpty() ? null : data);
+            if (this.pawsStacks != null) {
+                for (ItemStack ps : this.pawsStacks) {
+                    NbtUtil.setHeldItems(ps, this.data);
+                }
+            }
         }
     }
 }

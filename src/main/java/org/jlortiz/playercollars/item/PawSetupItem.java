@@ -36,7 +36,7 @@ public class PawSetupItem extends Item {
         ItemStack is = user.getStackInHand(hand);
         if (!user.isSneaking() || !world.isClient) return TypedActionResult.pass(is);
         return switch (useOnEntity(is, user, user, hand)) {
-            case SUCCESS, SUCCESS_NO_ITEM_USED -> TypedActionResult.success(is);
+            case SUCCESS -> TypedActionResult.success(is);
             case CONSUME, CONSUME_PARTIAL -> TypedActionResult.consume(is);
             case PASS -> TypedActionResult.pass(is);
             case FAIL -> TypedActionResult.fail(is);

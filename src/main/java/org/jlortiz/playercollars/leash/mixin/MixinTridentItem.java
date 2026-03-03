@@ -11,14 +11,12 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(TridentItem.class)
 public class MixinTridentItem {
     /**
-     * Prevent Riptide boosting when the player is leashed.
-     * This lets the normal "use" (throwing) still proceed, but cancels the riptide branch
-     * in onStoppedUsing by returning false when the trident has Riptide (f > 0.0F).
+     * Prevent Riptide boosting when the player is leashed. This lets the normal "use" (throwing) still proceed, but cancels the riptide branch in
+     * onStoppedUsing by returning false when the trident has Riptide (f > 0.0F).
      */
     @Inject(
             method = "onStoppedUsing",
@@ -29,7 +27,7 @@ public class MixinTridentItem {
         if (!(user instanceof PlayerEntity player)) return;
 
         if (player instanceof LeashImpl leash && leash.leashplayers$getProxyLeashHolder() != null) {
-            float f = EnchantmentHelper.getTridentSpinAttackStrength(stack, player);
+            float f = EnchantmentHelper.getRiptide(stack);
             if (f > 0.0F) {
                 ci.cancel();
             }

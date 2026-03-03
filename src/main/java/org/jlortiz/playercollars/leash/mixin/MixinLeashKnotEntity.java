@@ -1,5 +1,7 @@
 package org.jlortiz.playercollars.leash.mixin;
 
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.decoration.AbstractDecorationEntity;
 import net.minecraft.entity.decoration.LeashKnotEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ActionResult;
@@ -12,7 +14,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LeashKnotEntity.class)
-public abstract class MixinLeashKnotEntity extends BlockAttachedEntity {
+public abstract class MixinLeashKnotEntity extends AbstractDecorationEntity {
+    protected MixinLeashKnotEntity(EntityType<? extends AbstractDecorationEntity> entityType, World world) {
+        super(entityType, world);
+    }
+
     @Inject(method = "interact", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/decoration/LeashKnotEntity;discard()V"), cancellable = true)
     private void preventBreakKnot(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         World world = getWorld();

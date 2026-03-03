@@ -1,41 +1,54 @@
 package org.jlortiz.playercollars.network;
 
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.FabricPacket;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.PacketType;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.jlortiz.playercollars.OwnerComponent;
 import org.jlortiz.playercollars.PlayerCollarsMod;
+import org.jlortiz.playercollars.util.NbtUtil;
 
 import java.util.Optional;
 
-public class PacketStampDeed implements CustomPayload {
+public final class PacketStampDeed implements FabricPacket {
     public static final PacketStampDeed INSTANCE = new PacketStampDeed();
-    public static final CustomPayload.Id<PacketStampDeed> ID = new CustomPayload.Id<>(Identifier.of(PlayerCollarsMod.MOD_ID, "stamp_deed"));
-    public static final PacketCodec<RegistryByteBuf, PacketStampDeed> CODEC = PacketCodec.unit(INSTANCE);
+    public static final Identifier ID = Identifier.of(PlayerCollarsMod.MOD_ID, "stamp_deed");
+    public static final PacketType<PacketStampDeed> TYPE = PacketType.create(ID, PacketStampDeed::new);
 
-    private PacketStampDeed() {}
-
-    @Override
-    public Id<? extends CustomPayload> getId() {
-        return ID;
+    private PacketStampDeed(PacketByteBuf buf) {
     }
 
-    public void handle(ServerPlayNetworking.Context context) {
-        context.server().execute(() -> {
-            ItemStack is = context.player().getMainHandStack();
-            if (!is.isEmpty() && is.isOf(PlayerCollarsMod.DEED_OF_OWNERSHIP)) {
-                OwnerComponent owner = is.get(PlayerCollarsMod.OWNER_COMPONENT_TYPE);
-                if (owner == null || owner.owned().isPresent()) return;
-                String plrName = context.player().getName().getString();
-                is = new ItemStack(PlayerCollarsMod.DEED_OF_OWNERSHIP_STAMPED);
-                is.set(PlayerCollarsMod.OWNER_COMPONENT_TYPE, new OwnerComponent(
-                   owner.uuid(), owner.name(), Optional.of(context.player().getUuid()), Optional.of(plrName)
-                ));
-                context.player().getInventory().setStack(context.player().getInventory().selectedSlot, is);
-            }
-        });
+    private PacketStampDeed() {
+    }
+
+    public static void handle(PacketStampDeed packet, ServerPlayerEntity player, PacketSender responseSender) {
+        ItemStack is = player.getMainHandStack();
+        if (!is.isEmpty() && is.isOf(PlayerCollarsMod.DEED_OF_OWNERSHIP)) {
+            var owner = NbtUtil.getDeedOwner(is);
+
+            if (owner == null)
+                return;
+
+            owner = new OwnerComponent(
+                    owner.uuid(), owner.name(), Optional.of(player.getUuid()), Optional.of(player.getName().getString())
+            );
+
+            is = PlayerCollarsMod.DEED_OF_OWNERSHIP_STAMPED.getDefaultStack();
+            NbtUtil.setDeedOwner(is, owner);
+            player.equipStack(EquipmentSlot.MAINHAND, is);
+        }
+    }
+
+    @Override
+    public void write(PacketByteBuf buf) {
+    }
+
+    @Override
+    public PacketType<?> getType() {
+        return TYPE;
     }
 }

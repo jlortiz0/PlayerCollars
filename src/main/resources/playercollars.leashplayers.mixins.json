@@ -1,18 +1,18 @@
 {
-  "minVersion": "0.8",
-  "compatibilityLevel": "JAVA_17",
-  "package": "org.jlortiz.playercollars.leash.mixin",
-  "required": true,
-  "injectors": {
-    "defaultRequire": 1
-  },
-  "refmap": "PlayerCollars-refmap.json",
-  "mixins": [
-    "MixinFireworkRocketItem",
-    "MixinLeashKnotEntity",
-    "MixinPlayerEntity",
-    "MixinServerPlayerEntity",
-    "MixinTridentItem",
-    "MixinTurtleEntity"
-  ]
+    "minVersion": "0.8",
+    "compatibilityLevel": "JAVA_17",
+    "package": "org.jlortiz.playercollars.leash.mixin",
+    "required": true,
+    "injectors": {
+        "defaultRequire": 1
+    },
+    "refmap": "PlayerCollars-refmap.json",
+    "mixins": [
+        "MixinFireworkRocketItem",
+        "MixinLeashKnotEntity",
+        "MixinPlayerEntity",
+        "MixinServerPlayerEntity",
+        "MixinTridentItem",
+        "MixinTurtleEntity"
+    ]
 }

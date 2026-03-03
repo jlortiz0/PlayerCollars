@@ -72,6 +72,7 @@
   "item.playercollars.collar_locker.no_set_non_owner": "Must be owner to lock",
   "item.playercollars.collar_locker.unlocked": "Collar unlocked",
   "item.playercollars.deed_of_ownership": "Blank Deed of Ownership",
+    "item.playercollars.deed_of_ownership.partial": "Deed of Ownership",
   "item.playercollars.deed_of_ownership.filled": "Unsigned Deed of Ownership",
   "item.playercollars.deed_of_ownership.filled_out": "Give the deed to your pet to sign",
   "item.playercollars.deed_of_ownership.line1": "By stamping this contact, I, %s, accept %s as my OWNER.",

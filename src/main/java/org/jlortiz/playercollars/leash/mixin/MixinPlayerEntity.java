@@ -24,6 +24,7 @@ public abstract class MixinPlayerEntity {
     @Inject(method = "interact", at = @At("RETURN"), cancellable = true)
     private void leashplayers$onInteract(Entity entity, Hand hand, CallbackInfoReturnable<ActionResult> info) {
         if (info.getReturnValue() != ActionResult.PASS) return;
+        // noinspection ConstantValue
         if (((Object) this) instanceof ServerPlayerEntity player && entity instanceof LeashImpl impl) {
             info.setReturnValue(impl.leashplayers$interact(player, hand));
             info.cancel();

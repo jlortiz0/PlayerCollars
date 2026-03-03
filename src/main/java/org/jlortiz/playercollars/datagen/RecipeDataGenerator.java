@@ -2,30 +2,29 @@ package org.jlortiz.playercollars.datagen;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
-import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
-import net.minecraft.data.server.recipe.RecipeExporter;
+import net.fabricmc.fabric.api.tag.convention.v1.ConventionalItemTags;
+import net.minecraft.data.server.recipe.RecipeJsonProvider;
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder;
 import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder;
 import net.minecraft.item.BedItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.book.RecipeCategory;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.util.DyeColor;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.item.FootPawsItem;
 import org.jlortiz.playercollars.item.PawsItem;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 public class RecipeDataGenerator extends FabricRecipeProvider {
-    public RecipeDataGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
-        super(output, registriesFuture);
+    public RecipeDataGenerator(FabricDataOutput output) {
+        super(output);
     }
 
     @Override
-    public void generate(RecipeExporter exporter) {
+    public void generate(Consumer<RecipeJsonProvider> exporter) {
         ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, PlayerCollarsMod.COLLAR_ITEM).pattern(" l ").pattern("lil").pattern(" d ")
                 .input('l', Items.LEATHER)
                 .input('i', ConventionalItemTags.GOLD_INGOTS)
@@ -89,7 +88,7 @@ public class RecipeDataGenerator extends FabricRecipeProvider {
         }
     }
 
-    private void generateBed(RecipeExporter exporter, BedItem output, Item input) {
+    private void generateBed(Consumer<RecipeJsonProvider> exporter, BedItem output, Item input) {
         ShapedRecipeJsonBuilder.create(RecipeCategory.DECORATIONS, output).pattern("w w").pattern("www")
                 .input('w', input)
                 .criterion(FabricRecipeProvider.hasItem(input),
@@ -98,7 +97,7 @@ public class RecipeDataGenerator extends FabricRecipeProvider {
                 .offerTo(exporter);
     }
 
-    private void generatePaws(RecipeExporter exporter, PawsItem output, Item input) {
+    private void generatePaws(Consumer<RecipeJsonProvider> exporter, PawsItem output, Item input) {
         ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, output).pattern(" w ").pattern("wlw").pattern(" w ")
                 .input('w', input)
                 .input('l', Items.LEATHER)
@@ -108,7 +107,7 @@ public class RecipeDataGenerator extends FabricRecipeProvider {
                 .offerTo(exporter);
     }
 
-    private void generateFootPaws(RecipeExporter exporter, FootPawsItem output, Item input) {
+    private void generateFootPaws(Consumer<RecipeJsonProvider> exporter, FootPawsItem output, Item input) {
         ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, output).pattern(" w ").pattern(" w ").pattern("wlw")
                 .input('w', input)
                 .input('l', Items.LEATHER)
@@ -118,7 +117,7 @@ public class RecipeDataGenerator extends FabricRecipeProvider {
                 .offerTo(exporter);
     }
 
-    private void generateBowl(RecipeExporter exporter, Item output, Item input) {
+    private void generateBowl(Consumer<RecipeJsonProvider> exporter, Item output, Item input) {
         ShapedRecipeJsonBuilder.create(RecipeCategory.DECORATIONS, output).pattern("w w").pattern("www")
                 .input('w', input)
                 .criterion(FabricRecipeProvider.hasItem(input),

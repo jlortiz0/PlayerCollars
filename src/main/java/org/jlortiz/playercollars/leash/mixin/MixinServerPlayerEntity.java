@@ -16,9 +16,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.leash.LeashImpl;
 import org.jlortiz.playercollars.leash.LeashProxyEntity;
@@ -31,62 +28,57 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.UUID;
-
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mixin(ServerPlayerEntity.class)
 public abstract class MixinServerPlayerEntity extends PlayerEntity implements LeashImpl {
-    @Shadow public abstract boolean isDisconnected();
-
-    @Shadow public abstract ServerWorld getServerWorld();
-
-    @Shadow public ServerPlayNetworkHandler networkHandler;
-
+    @Unique
+    private static final double FIREWORK_SEARCH_RADIUS = 128.0;
+    @Shadow
+    public ServerPlayNetworkHandler networkHandler;
     @Unique
     private LeashProxyEntity leashplayers$proxy;
-
     @Unique
     private Entity leashplayers$holder;
-
     @Unique
     private int leashplayers$lastage;
-
     @Unique
     private double leashplayer$loyalty;
 
-    @Unique
-    private static final double FIREWORK_SEARCH_RADIUS = 128.0;
-
-    public MixinServerPlayerEntity(World world, BlockPos pos, float yaw, GameProfile gameProfile) {
+    protected MixinServerPlayerEntity(World world, BlockPos pos, float yaw, GameProfile gameProfile) {
         super(world, pos, yaw, gameProfile);
     }
+
+    @Shadow
+    public abstract boolean isDisconnected();
+
+    @Shadow
+    public abstract ServerWorld getServerWorld();
 
     @Unique
     private void leashplayers$update() {
         if (
-                leashplayers$holder != null && (
-                        !leashplayers$holder.isAlive()
-                                || !isAlive()
-                                || isDisconnected()
+                this.leashplayers$holder != null && (
+                        !this.leashplayers$holder.isAlive()
+                        || !isAlive()
+                        || isDisconnected()
                 )
         ) {
             leashplayers$detach();
             leashplayers$drop();
         }
 
-        if (leashplayers$proxy != null) {
-            if (leashplayers$proxy.proxyIsRemoved()) {
-                leashplayers$proxy = null;
-            }
-            else {
-                Entity holderActual = leashplayers$holder;
-                Entity holderTarget = leashplayers$proxy.getLeashHolder();
+        if (this.leashplayers$proxy != null) {
+            if (this.leashplayers$proxy.proxyIsRemoved()) {
+                this.leashplayers$proxy = null;
+            } else {
+                Entity holderActual = this.leashplayers$holder;
+                Entity holderTarget = this.leashplayers$proxy.getHoldingEntity();
 
                 if (holderTarget == null && holderActual != null) {
                     leashplayers$detach();
                     leashplayers$drop();
-                }
-                else if (holderTarget != holderActual) {
+                } else if (holderTarget != holderActual) {
                     leashplayers$attach(holderTarget);
                 }
             }
@@ -97,7 +89,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
 
     @Unique
     private void leashplayers$apply() {
-        Entity holder = leashplayers$holder;
+        Entity holder = this.leashplayers$holder;
         if (holder == null) return;
         if (holder.getWorld() != getWorld()) {
             leashplayers$detach();
@@ -106,13 +98,13 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
         }
 
         ActionResult result;
-        if (Math.abs(getY() - holder.getY()) > 6 + leashplayer$loyalty) {
+        if (Math.abs(getY() - holder.getY()) > 6 + this.leashplayer$loyalty) {
             result = ActionResult.FAIL;
         } else {
             // Don't pull on the Y axis - it'll make the unfortunate player fly all over the place
             Vec3d pos = new Vec3d(holder.getX(), getY(), holder.getZ());
             result = PlayerCollarsMod.pullPlayerTowards((ServerPlayerEntity) (Object) this, pos,
-                    leashplayer$loyalty, leashplayer$loyalty + 6, (x) -> Math.min(0.15 * (x - leashplayer$loyalty), 0.375) / x);
+                    this.leashplayer$loyalty, this.leashplayer$loyalty + 6, (x) -> Math.min(0.15 * (x - this.leashplayer$loyalty), 0.375) / x);
         }
 
         if (result == ActionResult.FAIL) {
@@ -122,8 +114,8 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
             } else {
                 // leashplayers$killFireworksOfPlayer(); // Ended up not using this
                 this.setVelocity(Vec3d.ZERO);
-                leashplayers$proxy.refreshPositionAndAngles(holder.getPos(), leashplayers$proxy.getYaw(), leashplayers$proxy.getPitch());
-                networkHandler.requestTeleport(holder.getX(), holder.getY(), holder.getZ(), getYaw(), getPitch());
+                this.leashplayers$proxy.refreshPositionAndAngles(holder.getBlockPos(), this.leashplayers$proxy.getYaw(), this.leashplayers$proxy.getPitch());
+                this.networkHandler.requestTeleport(holder.getX(), holder.getY(), holder.getZ(), getYaw(), getPitch());
             }
         }
     }
@@ -147,30 +139,30 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
 
     @Unique
     private void leashplayers$attach(Entity entity) {
-        leashplayers$holder = entity;
+        this.leashplayers$holder = entity;
 
-        if (leashplayers$proxy == null) {
-            leashplayers$proxy = new LeashProxyEntity(this);
-            getWorld().spawnEntity(leashplayers$proxy);
+        if (this.leashplayers$proxy == null) {
+            this.leashplayers$proxy = new LeashProxyEntity(this);
+            getWorld().spawnEntity(this.leashplayers$proxy);
         }
-        leashplayers$proxy.attachLeash(leashplayers$holder, true);
+        this.leashplayers$proxy.attachLeash(this.leashplayers$holder, true);
 
         if (hasVehicle() && getServerWorld().getGameRules().getBoolean(PlayerCollarsMod.PLAYER_LEASHES_BREAK_RULE)) {
             stopRiding();
         }
 
-        leashplayers$lastage = age;
+        this.leashplayers$lastage = this.age;
     }
 
     @Unique
     private void leashplayers$detach() {
-        leashplayers$holder = null;
+        this.leashplayers$holder = null;
 
-        if (leashplayers$proxy != null) {
-            if (leashplayers$proxy.isAlive() || !leashplayers$proxy.proxyIsRemoved()) {
-                leashplayers$proxy.proxyRemove();
+        if (this.leashplayers$proxy != null) {
+            if (this.leashplayers$proxy.isAlive() || !this.leashplayers$proxy.proxyIsRemoved()) {
+                this.leashplayers$proxy.proxyRemove();
             }
-            leashplayers$proxy = null;
+            this.leashplayers$proxy = null;
         }
     }
 
@@ -198,19 +190,19 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
 
     @Override
     public Entity leashplayers$getProxyLeashHolder() {
-        return leashplayers$proxy == null ? null : leashplayers$proxy.getLeashHolder();
+        return this.leashplayers$proxy == null ? null : this.leashplayers$proxy.getHoldingEntity();
     }
 
     @Override
     public ActionResult leashplayers$interact(PlayerEntity player, Hand hand) {
         ItemStack stack = player.getStackInHand(hand);
-        if (stack.getItem() == Items.LEAD && leashplayers$holder == null) {
+        if (stack.getItem() == Items.LEAD && this.leashplayers$holder == null) {
             AtomicBoolean found = new AtomicBoolean(false);
             TrinketsApi.getTrinketComponent(this).map((x) -> x.getEquipped((y) -> y.isIn(PlayerCollarsMod.COLLAR_TAG)))
                     .map((x) -> PlayerCollarsMod.filterStacksByOwner(x, player.getUuid(), getUuid()))
                     .ifPresent((stack1) -> {
                         found.set(true);
-                        leashplayer$loyalty = getAttributeValue(PlayerCollarsMod.ATTR_LEASH_DISTANCE);
+                        this.leashplayer$loyalty = getAttributeValue(PlayerCollarsMod.ATTR_LEASH_DISTANCE);
                     });
             if (!found.get()) return ActionResult.PASS;
             if (!player.isCreative()) {
@@ -220,7 +212,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
             return ActionResult.SUCCESS;
         }
 
-        if (leashplayers$holder == player && leashplayers$lastage + 20 < age) {
+        if (this.leashplayers$holder == player && this.leashplayers$lastage + 20 < this.age) {
             if (!player.isCreative()) {
                 leashplayers$drop();
             }

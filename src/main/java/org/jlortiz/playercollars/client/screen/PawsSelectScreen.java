@@ -21,7 +21,7 @@ public class PawsSelectScreen extends Screen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
-        context.drawCenteredTextWithShadow(client.textRenderer, title, this.width / 2, this.height / 2 - 20, -1);
+        context.drawCenteredTextWithShadow(this.client.textRenderer, this.title, this.width / 2, this.height / 2 - 20, -1);
     }
 
     @Override
@@ -30,11 +30,11 @@ public class PawsSelectScreen extends Screen {
         int y = this.height / 2;
 
         this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.playercollars.paw_configurator.block.open"), (btn) -> {
-            ClientPlayNetworking.send(new PacketOpenPawsConfig(plr, false));
+            ClientPlayNetworking.send(new PacketOpenPawsConfig(this.plr, false));
             close();
         }).dimensions(x - 80, y, 160, 20).build());
         this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.playercollars.paw_configurator.item.open"), (btn) -> {
-            ClientPlayNetworking.send(new PacketOpenPawsConfig(plr, true));
+            ClientPlayNetworking.send(new PacketOpenPawsConfig(this.plr, true));
             close();
         }).dimensions(x - 80, y + 22, 160, 20).build());
     }

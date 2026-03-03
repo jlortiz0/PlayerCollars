@@ -3,9 +3,6 @@ package org.jlortiz.playercollars.item;
 import dev.emi.trinkets.api.SlotReference;
 import dev.emi.trinkets.api.Trinket;
 import dev.emi.trinkets.api.TrinketEnums;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.DyedColorComponent;
-import net.minecraft.component.type.MapColorComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -14,21 +11,13 @@ import net.minecraft.util.Identifier;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 
 public class FootPawsItem extends Item implements Trinket {
+    private final int color;
+    private final int pawColor;
+
     public FootPawsItem(int color, int pawColor) {
-        super(new Settings().maxCount(1)
-                .component(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color | 0xFF000000, false))
-                .component(DataComponentTypes.MAP_COLOR, new MapColorComponent(pawColor))
-        );
-    }
-
-    public static int getColor(ItemStack is) {
-        DyedColorComponent color = is.get(DataComponentTypes.DYED_COLOR);
-        return color != null ? color.rgb() | 0xFF000000 : 0xFFFFFFFF;
-    }
-
-    public static int getBeanColor(ItemStack is) {
-        MapColorComponent color = is.get(DataComponentTypes.MAP_COLOR);
-        return color != null ? color.rgb() | 0xFF000000 : 0xFFF196CF;
+        super(new Settings().maxCount(1));
+        this.color = color;
+        this.pawColor = pawColor;
     }
 
     public static Identifier getIdentifier(DyeColor c) {
@@ -38,5 +27,13 @@ public class FootPawsItem extends Item implements Trinket {
     @Override
     public TrinketEnums.DropRule getDropRule(ItemStack stack, SlotReference slot, LivingEntity entity) {
         return TrinketEnums.DropRule.KEEP;
+    }
+
+    public int getColor() {
+        return this.color;
+    }
+
+    public int getPawColor() {
+        return this.pawColor;
     }
 }

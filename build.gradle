@@ -1,3 +1,5 @@
+import net.fabricmc.loom.configuration.ide.RunConfigSettings
+
 plugins {
     id 'fabric-loom' version '1.6-SNAPSHOT'
     id 'maven-publish'
@@ -61,7 +63,7 @@ dependencies {
 
     modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-base:5.2.2"
     modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:5.2.2"
-    modImplementation "curse.maven:trinkets-341284:4573009"
+    modImplementation "dev.emi:trinkets:${project.trinkets_version}"
     // modImplementation "com.github.apace100:origins-fabric:v1.10.0"
 }
 
@@ -72,12 +74,48 @@ processResources {
         expand "version": project.version
     }
 }
+
 fabricApi {
     configureDataGeneration()
 }
 
 loom {
     accessWidenerPath = file("src/main/resources/playercollars.accesswidener")
+
+    runs {
+        configureEach {
+            // property("mixin.debug", "true")
+            // property("mixin.debug.verbose", "true")
+            property("mixin.dumpTargetOnFailure", "true")
+            property("mixin.debug.export", "true")
+            property("mixin.hotSwap", "true")
+
+            // vmArg("-XX:+AllowEnhancedClassRedefinition")
+        }
+        named { !it.contains("Two") && !it.contains("datagen") }.all { RunConfigSettings parent ->
+            def name = "${parent.name}Two"
+            loom.runConfigs.create(name) {
+                inherit(parent)
+                runDir("run2")
+            }
+        }
+    }
+}
+
+afterEvaluate {
+    loom {
+        runs {
+            configureEach {
+                def runtimeClasspath = project.configurations.named("runtimeClasspath")
+                def mixinJarFile = runtimeClasspath.get().resolvedConfiguration.resolvedArtifacts.find {
+                    def module = it.moduleVersion.id
+                    return module.group == "net.fabricmc" && module.name == "sponge-mixin"
+                }
+                if (mixinJarFile != null)
+                    vmArg("-javaagent:${mixinJarFile.file}")
+            }
+        }
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -96,7 +134,7 @@ java {
 
 jar {
     from("LICENSE") {
-        rename { "${it}_${project.base.archivesName.get()}"}
+        rename { "${it}_${project.base.archivesName.get()}" }
     }
     exclude('org/jlortiz/playercollars/datagen/**')
     exclude('assets/playercollars/lang/en_us.existing.json')

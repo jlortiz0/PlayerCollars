@@ -20,34 +20,34 @@ public class PawsConfigScreen<T extends ItemConvertible> extends AbstractInvento
 
     public PawsConfigScreen(PawsConfigScreenHandler<T> screenHandler, PlayerInventory playerInventory, Text text) {
         super(screenHandler, playerInventory, text);
-        stack = ItemStack.EMPTY;
+        this.stack = ItemStack.EMPTY;
     }
 
     @Override
     protected void init() {
-        backgroundWidth = 174;
-        backgroundHeight = 222;
-        playerInventoryTitleY = backgroundHeight - 94;
+        this.backgroundWidth = 174;
+        this.backgroundHeight = 222;
+        this.playerInventoryTitleY = this.backgroundHeight - 94;
         super.init();
-        listWidget = addDrawableChild(new TagLikeListWidget<>(160, 106, x + 7, y + 18,
-                client.textRenderer.fontHeight, handler.getRegistryKey(), this::handleButtonClick));
-        listWidget.setList(handler.listToDisplay);
+        this.listWidget = addDrawableChild(new TagLikeListWidget<>(160, 106, this.x + 7, this.y + 18,
+                this.client.textRenderer.fontHeight, this.handler.getRegistryKey(), this::handleButtonClick));
+        this.listWidget.setList(this.handler.listToDisplay);
     }
 
     private void handleButtonClick(int id) {
         // Call the local function first to prevent a race where the list could be cleared before we update the payload.
-        handler.onButtonClick(client.player, id);
-        client.interactionManager.clickButton(handler.syncId, id);
-        handler.getSlot(0).setStack(ItemStack.EMPTY);
-        if (stack.isEmpty())
-            listWidget.setList(handler.listToDisplay);
+        this.handler.onButtonClick(this.client.player, id);
+        this.client.interactionManager.clickButton(this.handler.syncId, id);
+        this.handler.getSlot(0).setStack(ItemStack.EMPTY);
+        if (this.stack.isEmpty())
+            this.listWidget.setList(this.handler.listToDisplay);
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        if (!ItemStack.areEqual(handler.getSlot(0).getStack(), stack)) {
-            stack = handler.getSlot(0).getStack();
-            listWidget.setList(handler.listToDisplay);
+        if (!ItemStack.areEqual(this.handler.getSlot(0).getStack(), this.stack)) {
+            this.stack = this.handler.getSlot(0).getStack();
+            this.listWidget.setList(this.handler.listToDisplay);
         }
         super.render(context, mouseX, mouseY, delta);
         drawMouseoverTooltip(context, mouseX, mouseY);
@@ -58,9 +58,9 @@ public class PawsConfigScreen<T extends ItemConvertible> extends AbstractInvento
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, TEXTURE);
-        int x = (width - backgroundWidth - 50) / 2;
-        int y = (height - backgroundHeight) / 2;
-        context.drawTexture(TEXTURE, x, y, 0, 0, backgroundWidth + 50, backgroundHeight);
-        context.drawTexture(WIDGETS_TEXTURE, x + 7, y + 108, stack.isEmpty() ? 16 : 0, 0, 16, 16, 32, 16);
+        int x = (this.width - this.backgroundWidth - 50) / 2;
+        int y = (this.height - this.backgroundHeight) / 2;
+        context.drawTexture(TEXTURE, x, y, 0, 0, this.backgroundWidth + 50, this.backgroundHeight);
+        context.drawTexture(WIDGETS_TEXTURE, x + 7, y + 108, this.stack.isEmpty() ? 16 : 0, 0, 16, 16, 32, 16);
     }
 }

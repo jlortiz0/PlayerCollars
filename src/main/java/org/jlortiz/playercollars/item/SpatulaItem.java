@@ -3,14 +3,16 @@ package org.jlortiz.playercollars.item;
 import dev.emi.trinkets.api.SlotReference;
 import dev.emi.trinkets.api.TrinketComponent;
 import dev.emi.trinkets.api.TrinketsApi;
-import net.minecraft.component.EnchantmentEffectComponentTypes;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.*;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.*;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 
 public class SpatulaItem extends Item {
@@ -33,7 +35,7 @@ public class SpatulaItem extends Item {
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             if (!slot.isArmorSlot()) continue;
             ItemStack is = entity.getEquippedStack(slot);
-            if (EnchantmentHelper.hasAnyEnchantmentsWith(is, EnchantmentEffectComponentTypes.PREVENT_ARMOR_CHANGE)) {
+            if (EnchantmentHelper.hasBindingCurse(is)) {
                 count++;
                 entity.dropStack(is);
                 entity.equipStack(slot, ItemStack.EMPTY);
@@ -43,7 +45,7 @@ public class SpatulaItem extends Item {
         count += TrinketsApi.getTrinketComponent(entity).map(TrinketComponent::getAllEquipped).map((x) -> {
             int count2 = 0;
             for (Pair<SlotReference, ItemStack> p : x) {
-                if (EnchantmentHelper.hasAnyEnchantmentsWith(p.getRight(), EnchantmentEffectComponentTypes.PREVENT_ARMOR_CHANGE)) {
+                if (EnchantmentHelper.hasBindingCurse(p.getRight())) {
                     count2++;
                     entity.dropStack(p.getRight());
                     p.getLeft().inventory().removeStack(p.getLeft().index());
@@ -53,8 +55,7 @@ public class SpatulaItem extends Item {
         }).orElse(0);
 
         if (count == 0) return ActionResult.PASS;
-        stack.damage(count, user, LivingEntity.getSlotForHand(hand));
-        entity.playSound(SoundEvents.ITEM_WOLF_ARMOR_BREAK);
+        stack.damage(count, user, player -> player.sendToolBreakStatus(hand));
         return ActionResult.SUCCESS;
     }
 }

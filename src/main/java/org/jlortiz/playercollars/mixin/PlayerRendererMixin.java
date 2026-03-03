@@ -21,7 +21,8 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 @Mixin(PlayerEntityRenderer.class)
 public class PlayerRendererMixin {
     @Inject(method = "renderArm", at = @At("TAIL"), locals = LocalCapture.CAPTURE_FAILSOFT)
-    private void playercollars$renderGloveTrinket(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, AbstractClientPlayerEntity player, ModelPart arm, ModelPart sleeve, CallbackInfo ci, PlayerEntityModel<AbstractClientPlayerEntity> model) {
+    private void playercollars$renderGloveTrinket(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, AbstractClientPlayerEntity player,
+                                                  ModelPart arm, ModelPart sleeve, CallbackInfo ci, PlayerEntityModel<AbstractClientPlayerEntity> model) {
         TrinketsApi.getTrinketComponent(player).map((x) -> x.getEquipped((y) -> y.isIn(PlayerCollarsMod.PAWS_TAG)))
                 .ifPresent((ls) -> {
                     for (Pair<SlotReference, ItemStack> p : ls) {

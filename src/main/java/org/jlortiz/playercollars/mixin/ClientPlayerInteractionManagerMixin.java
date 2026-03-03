@@ -3,7 +3,6 @@ package org.jlortiz.playercollars.mixin;
 import dev.emi.trinkets.api.SlotReference;
 import dev.emi.trinkets.api.TrinketsApi;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
@@ -24,12 +23,13 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(ClientPlayerInteractionManager.class)
 public class ClientPlayerInteractionManagerMixin {
 
-    @Shadow @Final private MinecraftClient client;
+    @Shadow
+    @Final
+    private MinecraftClient client;
 
     @Unique
     private static boolean shouldPawsBlock(LivingEntity player, BlockState block) {
@@ -44,16 +44,22 @@ public class ClientPlayerInteractionManagerMixin {
                 }).orElse(false);
     }
 
-    @Inject(method="interactBlock", at=@At("HEAD"), cancellable = true)
+    @Inject(method = "interactBlock", at = @At("HEAD"), cancellable = true)
     private void playercollars$cancelPawInteractions(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
+        assert this.client.world != null;
         if (player.isSpectator()) return;
         BlockState block = this.client.world.getBlockState(hitResult.getBlockPos());
-        if (shouldPawsBlock(player, block)) cir.setReturnValue(ActionResult.PASS);
+
+        if (shouldPawsBlock(player, block))
+            cir.setReturnValue(ActionResult.PASS);
     }
 
-    @Inject(method = "attackBlock", at = @At(value = "HEAD"), cancellable = true)
+    @Inject(method = "attackBlock", at = @At("HEAD"), cancellable = true)
     private void playercollars$cancelPawBreak(BlockPos pos, Direction direction, CallbackInfoReturnable<Boolean> cir) {
+        assert this.client.world != null;
         BlockState block = this.client.world.getBlockState(pos);
-        if (shouldPawsBlock(client.player, block)) cir.setReturnValue(false);
+
+        if (shouldPawsBlock(this.client.player, block))
+            cir.setReturnValue(false);
     }
 }

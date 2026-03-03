@@ -2,13 +2,18 @@ package org.jlortiz.playercollars.block;
 
 import dev.emi.trinkets.api.TrinketComponent;
 import dev.emi.trinkets.api.TrinketsApi;
-import net.minecraft.block.*;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockRenderType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.EntityShapeContext;
+import net.minecraft.block.FenceBlock;
+import net.minecraft.block.ShapeContext;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.particle.DustParticleEffect;
-import net.minecraft.particle.ParticleUtil;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.state.StateManager;
@@ -17,6 +22,7 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -43,7 +49,7 @@ public class InvisibleFenceBlock extends FenceBlock {
     }
 
     @Override
-    protected BlockRenderType getRenderType(BlockState state) {
+    public BlockRenderType getRenderType(BlockState state) {
         return BlockRenderType.INVISIBLE;
     }
 
@@ -53,7 +59,8 @@ public class InvisibleFenceBlock extends FenceBlock {
     }
 
     @Override
-    protected BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
+    public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos,
+                                                BlockPos neighborPos) {
         state = super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
         if (neighborState.isOf(this) && neighborState.get(POWERED) != state.get(POWERED)) {
             state = state.with(POWERED, neighborState.get(POWERED));
@@ -62,7 +69,7 @@ public class InvisibleFenceBlock extends FenceBlock {
     }
 
     @Override
-    protected VoxelShape getCameraCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+    public VoxelShape getCameraCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
         return VoxelShapes.empty();
     }
 
@@ -72,15 +79,15 @@ public class InvisibleFenceBlock extends FenceBlock {
         BlockState neighbor = ctx.getWorld().getBlockState(ctx.getBlockPos().north());
         boolean shouldPower = neighbor.isOf(this) && neighbor.get(POWERED);
         if (!shouldPower) {
-            neighbor =  ctx.getWorld().getBlockState(ctx.getBlockPos().east());
+            neighbor = ctx.getWorld().getBlockState(ctx.getBlockPos().east());
             shouldPower = neighbor.isOf(this) && neighbor.get(POWERED);
         }
         if (!shouldPower) {
-            neighbor =  ctx.getWorld().getBlockState(ctx.getBlockPos().south());
+            neighbor = ctx.getWorld().getBlockState(ctx.getBlockPos().south());
             shouldPower = neighbor.isOf(this) && neighbor.get(POWERED);
         }
         if (!shouldPower) {
-            neighbor =  ctx.getWorld().getBlockState(ctx.getBlockPos().west());
+            neighbor = ctx.getWorld().getBlockState(ctx.getBlockPos().west());
             shouldPower = neighbor.isOf(this) && neighbor.get(POWERED);
         }
         if (shouldPower) state = state.with(POWERED, true);
@@ -88,7 +95,7 @@ public class InvisibleFenceBlock extends FenceBlock {
     }
 
     @Override
-    protected VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+    public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
         if (context instanceof EntityShapeContext e) {
             if (state.get(POWERED) && e.getEntity() instanceof LivingEntity livingEntity) {
                 Optional<TrinketComponent> optComponent = TrinketsApi.getTrinketComponent(livingEntity);
@@ -109,12 +116,16 @@ public class InvisibleFenceBlock extends FenceBlock {
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
         super.randomDisplayTick(state, world, pos, random);
-        if (state.get(POWERED) && random.nextFloat() < 0.25)
-            ParticleUtil.spawnParticlesAround(world, pos, 1, 0.5, 0.5, true, DustParticleEffect.DEFAULT);
+        if (state.get(POWERED) && random.nextFloat() < 0.25) {
+            double rx = random.nextFloat() * 1;
+            double ry = random.nextFloat() * 0.5;
+            double rz = random.nextFloat() * 0.5;
+            world.addParticle(DustParticleEffect.DEFAULT, pos.getX() + rx, pos.getY() + ry, pos.getZ() + rz, 0.0, 0.0, 0.0);
+        }
     }
 
     @Override
-    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         if (world.isClient()) return ActionResult.PASS;
         if (!TrinketsApi.getTrinketComponent(player).map((x) -> x.getEquipped((y) -> y.isIn(PlayerCollarsMod.COLLAR_TAG)))
                 .map(List::isEmpty).orElse(true)) {
@@ -124,8 +135,8 @@ public class InvisibleFenceBlock extends FenceBlock {
         state = state.with(POWERED, !state.get(POWERED));
         world.setBlockState(pos, state, 7);
         player.sendMessage(Text.translatable(
-                state.get(POWERED) ? "block.playercollars.invisible_fence.toggle_on"
-                        : "block.playercollars.invisible_fence.toggle_off")
+                        state.get(POWERED) ? "block.playercollars.invisible_fence.toggle_on"
+                                : "block.playercollars.invisible_fence.toggle_off")
                 .formatted(Formatting.GREEN), true);
         return ActionResult.SUCCESS;
     }
