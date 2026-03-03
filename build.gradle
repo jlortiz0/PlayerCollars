@@ -84,14 +84,11 @@ loom {
 
     runs {
         configureEach {
-            // property("mixin.debug", "true")
-            // property("mixin.debug.verbose", "true")
             property("mixin.dumpTargetOnFailure", "true")
             property("mixin.debug.export", "true")
             property("mixin.hotSwap", "true")
-
-            // vmArg("-XX:+AllowEnhancedClassRedefinition")
         }
+
         named { !it.contains("Two") && !it.contains("datagen") }.all { RunConfigSettings parent ->
             def name = "${parent.name}Two"
             loom.runConfigs.create(name) {
@@ -102,6 +99,7 @@ loom {
     }
 }
 
+// necessary for mixin hotswapping
 afterEvaluate {
     loom {
         runs {
