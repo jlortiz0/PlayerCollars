@@ -20,6 +20,11 @@ public class FootPawsItem extends Item implements Trinket {
         this.pawColor = pawColor;
     }
 
+    @Override
+    public boolean hasGlint(ItemStack stack) {
+        return false;
+    }
+
     public static Identifier getIdentifier(DyeColor c) {
         return Identifier.of(PlayerCollarsMod.MOD_ID, c.getName() + "_foot_paws");
     }

@@ -53,6 +53,11 @@ public class PawsItem extends FootPawsItem {
     }
 
     @Override
+    public boolean hasGlint(ItemStack stack) {
+        return false;
+    }
+
+    @Override
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, @NotNull TooltipContext context) {
         super.appendTooltip(stack, world, tooltip, context);
         if (!NbtUtil.getHeldItems(stack).isEmpty()) tooltip.add(Text.translatable("item.playercollars.paws.slippery"));

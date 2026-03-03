@@ -49,6 +49,11 @@ public class CollarItem extends Item implements DyeableItem, Trinket {
     }
 
     @Override
+    public boolean hasGlint(ItemStack stack) {
+        return false;
+    }
+
+    @Override
     public void tick(ItemStack stack, SlotReference slot, LivingEntity entity) {
     }
 

@@ -12,7 +12,6 @@
         "LivingEntityMixin",
         "MixinBindingCurseEnchantment",
         "MixinEnchantment",
-        "MixinItem",
         "PlayerEntityMixin",
         "ServerPlayerEntityMixin"
     ],
