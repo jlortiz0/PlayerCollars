@@ -27,7 +27,6 @@ public class PawsItem extends FootPawsItem {
 
     public static boolean shouldPreventBlockInteraction(ItemStack stack, @NotNull BlockState block) {
         if (block.isIn(PlayerCollarsMod.PAWS_ALLOW_INTERACT)) return false;
-        // TODO 2026-02-12 (solonovamax): finish this
         List<Either<TagKey<Block>, RegistryKey<Block>>> allowed = NbtUtil.getCanInteract(stack);
         Optional<RegistryKey<Block>> key = block.getRegistryEntry().getKey();
         if (allowed == null || key.isEmpty()) return false;
