@@ -126,6 +126,10 @@ public class InvisibleFenceBlock extends FenceBlock {
 
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+        var result = super.onUse(state, world, pos, player, hand, hit);
+        if (result != ActionResult.PASS)
+            return result;
+
         if (world.isClient()) return ActionResult.SUCCESS;
         if (!TrinketsApi.getTrinketComponent(player).map((x) -> x.getEquipped((y) -> y.isIn(PlayerCollarsMod.COLLAR_TAG)))
                 .map(List::isEmpty).orElse(true)) {
