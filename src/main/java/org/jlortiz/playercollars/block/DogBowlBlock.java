@@ -12,6 +12,7 @@ import net.minecraft.item.FoodComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
@@ -82,29 +83,34 @@ public class DogBowlBlock extends Block implements BlockEntityProvider {
         return (level < 0 || level > 3) ? SHAPE_BASE : SHAPE[level];
     }
 
-    // @Override
-    // protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-    //     if (stack.isEmpty()) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-    //     if (!(world.getBlockEntity(pos) instanceof DogBowlBlockEntity be)) return ItemActionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
-    //     if (stack.isOf(Items.MILK_BUCKET) && be.getCount() == 0) {
-    //         be.insert(stack);
-    //         state = state.with(MILK, true);
-    //         world.setBlockState(pos, state, 2);
-    //         if (!player.isCreative()) player.setStackInHand(hand, new ItemStack(Items.BUCKET));
-    //         player.playSound(SoundEvents.ITEM_BUCKET_EMPTY);
-    //         return ItemActionResult.SUCCESS;
-    //     }
-    //
-    //     if (stack.get(DataComponentTypes.FOOD) == null) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-    //     int decr = be.insert(stack);
-    //     if (decr > 0) {
-    //         stack.decrement(decr);
-    //         state = state.with(LEVEL, Math.min((be.getCount() + 20) / 21, 3));
-    //         world.setBlockState(pos, state, 2);
-    //         return ItemActionResult.SUCCESS;
-    //     }
-    //     return ItemActionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
-    // }
+    protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+        if (stack.isEmpty())
+            return ActionResult.PASS;
+        if (!(world.getBlockEntity(pos) instanceof DogBowlBlockEntity be))
+            return ActionResult.CONSUME_PARTIAL;
+
+        if (stack.isOf(Items.MILK_BUCKET) && be.getCount() == 0) {
+            be.insert(stack);
+            state = state.with(MILK, true);
+            world.setBlockState(pos, state, 2);
+            if (!player.isCreative()) player.setStackInHand(hand, new ItemStack(Items.BUCKET));
+            player.playSound(SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
+            return ActionResult.SUCCESS;
+        }
+
+        if (stack.getItem().getFoodComponent() == null)
+            return ActionResult.PASS;
+
+        int decr = be.insert(stack);
+        if (decr > 0) {
+            stack.decrement(decr);
+
+            state = state.with(LEVEL, Math.min((be.getCount() + 20) / 21, 3));
+            world.setBlockState(pos, state, 2);
+            return ActionResult.SUCCESS;
+        }
+        return ActionResult.CONSUME_PARTIAL;
+    }
 
     @Override
     public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
@@ -114,14 +120,24 @@ public class DogBowlBlock extends Block implements BlockEntityProvider {
 
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        if (!(world.getBlockEntity(pos) instanceof DogBowlBlockEntity be)) return ActionResult.PASS;
+        var item = player.getStackInHand(hand);
+        var result = onUseWithItem(item, state, world, pos, player, hand, hit);
+
+        if (result != ActionResult.PASS)
+            return result;
+
+        if (!(world.getBlockEntity(pos) instanceof DogBowlBlockEntity be))
+            return ActionResult.PASS;
 
         ItemStack is = be.take();
         if (is.isEmpty()) return ActionResult.PASS;
         if (is.isOf(Items.MILK_BUCKET)) {
             state = state.with(MILK, false);
             world.setBlockState(pos, state, 2);
-            if (!world.isClient()) player.clearStatusEffects();
+
+            if (!world.isClient())
+                player.clearStatusEffects();
+
             player.playSound(SoundEvents.ENTITY_GENERIC_DRINK, 1.0f, 1.0f);
             return ActionResult.SUCCESS;
         }
