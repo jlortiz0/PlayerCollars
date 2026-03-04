@@ -126,7 +126,7 @@ public class InvisibleFenceBlock extends FenceBlock {
 
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        if (world.isClient()) return ActionResult.PASS;
+        if (world.isClient()) return ActionResult.SUCCESS;
         if (!TrinketsApi.getTrinketComponent(player).map((x) -> x.getEquipped((y) -> y.isIn(PlayerCollarsMod.COLLAR_TAG)))
                 .map(List::isEmpty).orElse(true)) {
             player.sendMessage(Text.translatable("block.playercollars.invisible_fence.toggle_fail").formatted(Formatting.RED), true);
