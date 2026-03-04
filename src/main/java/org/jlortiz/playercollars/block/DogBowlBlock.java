@@ -90,7 +90,7 @@ public class DogBowlBlock extends Block implements BlockEntityProvider {
             return ActionResult.CONSUME_PARTIAL;
 
         if (stack.isOf(Items.MILK_BUCKET) && be.getCount() == 0) {
-            be.insert(stack);
+            be.insert(stack, false);
             state = state.with(MILK, true);
             world.setBlockState(pos, state, 2);
             if (!player.isCreative()) player.setStackInHand(hand, new ItemStack(Items.BUCKET));
@@ -101,7 +101,7 @@ public class DogBowlBlock extends Block implements BlockEntityProvider {
         if (stack.getItem().getFoodComponent() == null)
             return ActionResult.PASS;
 
-        int decr = be.insert(stack);
+        int decr = be.insert(stack, player.isSneaking());
         if (decr > 0) {
             if (!player.isCreative())
                 stack.decrement(decr);
@@ -188,18 +188,23 @@ public class DogBowlBlock extends Block implements BlockEntityProvider {
             return this.inBowl.getCount();
         }
 
-        protected int insert(ItemStack is) {
+        protected int insert(ItemStack is, boolean moveAll) {
             if (this.inBowl.isEmpty()) {
                 this.inBowl = is.copy();
+                if (!moveAll)
+                    this.inBowl.setCount(1);
                 markDirty();
-                return is.getCount();
+                return moveAll ? is.getCount() : 1;
             }
-            if (is.isOf(this.inBowl.getItem())) {
-                int count = Math.min(is.getCount(), this.inBowl.getMaxCount() - this.inBowl.getCount());
-                this.inBowl.increment(count);
+
+            var remaining = this.inBowl.getMaxCount() - this.inBowl.getCount();
+            if (is.isOf(this.inBowl.getItem()) && remaining > 0) {
+                var amount = moveAll ? Math.min(is.getCount(), remaining) : 1;
+                this.inBowl.increment(amount);
                 markDirty();
-                return count;
+                return amount;
             }
+
             return 0;
         }
 
