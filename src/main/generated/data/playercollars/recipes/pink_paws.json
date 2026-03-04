@@ -1,0 +1,22 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "group": "paws",
+    "key": {
+        "l": {
+            "item": "minecraft:leather"
+        },
+        "w": {
+            "item": "minecraft:pink_wool"
+        }
+    },
+    "pattern": [
+        " w ",
+        "wlw",
+        " w "
+    ],
+    "result": {
+        "item": "playercollars:pink_paws"
+    },
+    "show_notification": true
+}

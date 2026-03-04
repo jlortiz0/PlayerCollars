@@ -2,11 +2,20 @@
     "replace": false,
   "values": [
     "playercollars:white_paws",
-    "playercollars:light_gray_paws",
+      "playercollars:orange_paws",
+      "playercollars:magenta_paws",
+      "playercollars:light_blue_paws",
+      "playercollars:yellow_paws",
+      "playercollars:lime_paws",
+      "playercollars:pink_paws",
     "playercollars:gray_paws",
-    "playercollars:black_paws",
+      "playercollars:light_gray_paws",
+      "playercollars:cyan_paws",
+      "playercollars:purple_paws",
     "playercollars:blue_paws",
+      "playercollars:brown_paws",
+      "playercollars:green_paws",
     "playercollars:red_paws",
-    "playercollars:purple_paws"
+      "playercollars:black_paws"
   ]
 }

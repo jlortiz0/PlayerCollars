@@ -82,13 +82,18 @@ public class ModelDataGenerator extends FabricModelProvider {
         for (Item i : PlayerCollarsMod.DOG_BED_ITEMS)
             itemModelGenerator.register(i, whiteBed, Models.GENERATED);
 
-        Model basePaws = new Model(Optional.of(Identifier.of(PlayerCollarsMod.MOD_ID, "item/white_paws")), Optional.empty());
+        Model basePaws = new Model(Optional.of(Identifier.of(PlayerCollarsMod.MOD_ID, "item/white_paws")), Optional.empty(), TextureKey.LAYER0, TextureKey.PARTICLE);
         for (int i = 1; i < PlayerCollarsMod.PAWS_ITEMS.length; i++) {
-            itemModelGenerator.register(PlayerCollarsMod.PAWS_ITEMS[i], basePaws);
+            TextureMap textureMap = TextureMap.layer0(DatagenEntrypoint.WOOLS[i].getBlock())
+                    .put(TextureKey.PARTICLE, TextureMap.getId(DatagenEntrypoint.WOOLS[i].getBlock()));
+            basePaws.upload(ModelIds.getItemModelId(PlayerCollarsMod.PAWS_ITEMS[i]), textureMap, itemModelGenerator.writer);
         }
-        basePaws = new Model(Optional.of(Identifier.of(PlayerCollarsMod.MOD_ID, "item/white_foot_paws")), Optional.empty());
+
+        basePaws = new Model(Optional.of(Identifier.of(PlayerCollarsMod.MOD_ID, "item/white_foot_paws")), Optional.empty(), TextureKey.LAYER0, TextureKey.PARTICLE);
         for (int i = 1; i < PlayerCollarsMod.FOOT_PAWS_ITEMS.length; i++) {
-            itemModelGenerator.register(PlayerCollarsMod.FOOT_PAWS_ITEMS[i], basePaws);
+            TextureMap textureMap = TextureMap.layer0(DatagenEntrypoint.WOOLS[i].getBlock())
+                    .put(TextureKey.PARTICLE, TextureMap.getId(DatagenEntrypoint.WOOLS[i].getBlock()));
+            basePaws.upload(ModelIds.getItemModelId(PlayerCollarsMod.FOOT_PAWS_ITEMS[i]), textureMap, itemModelGenerator.writer);
         }
 
         itemModelGenerator.register(PlayerCollarsMod.DEED_OF_OWNERSHIP, Models.GENERATED);

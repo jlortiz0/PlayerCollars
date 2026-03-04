@@ -28,12 +28,14 @@ import java.util.function.Function;
 public class DatagenEntrypoint implements DataGeneratorEntrypoint {
     public static final BlockItem[] WOOLS = new BlockItem[DyeColor.values().length];
     public static final BlockItem[] TERRACOTTAS = new BlockItem[DyeColor.values().length];
+    public static final BlockItem[] CONCRETES = new BlockItem[DyeColor.values().length];
 
     @Override
     public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
         for (DyeColor c : DyeColor.values()) {
             WOOLS[c.ordinal()] = (BlockItem) Registries.ITEM.get(Identifier.of(Identifier.DEFAULT_NAMESPACE, c.getName() + "_wool"));
             TERRACOTTAS[c.ordinal()] = (BlockItem) Registries.ITEM.get(Identifier.of(Identifier.DEFAULT_NAMESPACE, c.getName() + "_terracotta"));
+            CONCRETES[c.ordinal()] = (BlockItem) Registries.ITEM.get(Identifier.of(Identifier.DEFAULT_NAMESPACE, c.getName() + "_concrete"));
         }
 
         FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();

@@ -1,7 +1,7 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "playercollars:item/paws",
+      "model": "playercollars:item/white_paws",
     "tints": [
       {
         "type": "minecraft:dye",

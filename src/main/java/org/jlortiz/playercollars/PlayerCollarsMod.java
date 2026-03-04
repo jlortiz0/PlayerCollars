@@ -182,12 +182,7 @@ public class PlayerCollarsMod implements ModInitializer {
     public static final BedItem[] DOG_BED_ITEMS = new BedItem[DyeColor.values().length];
     public static final TagKey<Item> COLLAR_TAG = TagKey.of(RegistryKeys.ITEM, Identifier.of("c", "collars"));
 
-    public static final DyeColor[] PAWS_DYE_COLORS = {
-            DyeColor.WHITE, DyeColor.LIGHT_GRAY,
-            DyeColor.GRAY, DyeColor.BLACK,
-            DyeColor.BLUE, DyeColor.RED,
-            DyeColor.PURPLE
-    };
+    public static final DyeColor[] PAWS_DYE_COLORS = DyeColor.values();
     public static final PawsItem[] PAWS_ITEMS = new PawsItem[PAWS_DYE_COLORS.length];
     public static final TagKey<Block> PAWS_ALLOW_INTERACT = TagKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, "paws_allow_interact"));
     public static final TagKey<Item> PAWS_TAG = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID, "paws"));
