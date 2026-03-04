@@ -103,7 +103,8 @@ public class DogBowlBlock extends Block implements BlockEntityProvider {
 
         int decr = be.insert(stack);
         if (decr > 0) {
-            stack.decrement(decr);
+            if (!player.isCreative())
+                stack.decrement(decr);
 
             state = state.with(LEVEL, Math.min((be.getCount() + 20) / 21, 3));
             world.setBlockState(pos, state, 2);
