@@ -10,9 +10,12 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.DyeableItem;
 import net.minecraft.item.Item;
@@ -53,6 +56,19 @@ public class CollarItem extends Item implements DyeableItem, Trinket {
 
     @Override
     public void tick(ItemStack stack, SlotReference slot, LivingEntity entity) {
+        if (entity.getWorld().isClient) return;
+        if (EnchantmentHelper.getLevel(Enchantments.MENDING, stack) > 0) {
+            var owner = NbtUtil.getDeedOwner(stack);
+
+            // TODO 2026-03-04 (solonovamax): why is there a check for if the owner is equal to the entity here?
+            if (owner == null || owner.uuid().equals(entity.getUuid()))
+                return;
+
+            PlayerEntity own = entity.getWorld().getPlayerByUuid(owner.uuid());
+            if (own != null && own.squaredDistanceTo(entity) < 256 /* 16^2 */) {
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 40, 0, false, false, false));
+            }
+        }
     }
 
     @Override

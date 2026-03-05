@@ -6,6 +6,7 @@ import net.minecraft.enchantment.BindingCurseEnchantment;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentTarget;
 import net.minecraft.enchantment.LoyaltyEnchantment;
+import net.minecraft.enchantment.MendingEnchantment;
 import net.minecraft.enchantment.ThornsEnchantment;
 import net.minecraft.item.Item;
 import org.jlortiz.playercollars.item.CollarItem;
@@ -21,8 +22,13 @@ public class MixinEnchantment {
     boolean isAcceptableItem(EnchantmentTarget instance, Item item, Operation<Boolean> original) {
         var enchantment = (Enchantment) (Object) this;
         if (item instanceof CollarItem)
-            if (enchantment instanceof BindingCurseEnchantment || enchantment instanceof LoyaltyEnchantment || enchantment instanceof ThornsEnchantment)
-                return true;
+            return original.call(instance, item) ||
+                   item instanceof CollarItem && (
+                           enchantment instanceof BindingCurseEnchantment ||
+                           enchantment instanceof LoyaltyEnchantment ||
+                           enchantment instanceof ThornsEnchantment ||
+                           enchantment instanceof MendingEnchantment
+                   );
 
         return original.call(instance, item);
     }
