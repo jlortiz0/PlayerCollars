@@ -13,8 +13,7 @@
         "MixinBindingCurseEnchantment",
         "MixinEnchantment",
         "MixinEnchantmentHelper",
-        "PlayerEntityMixin",
-        "ServerPlayerEntityMixin"
+        "PlayerEntityMixin"
     ],
     "client": [
         "ClientPlayerInteractionManagerMixin",
