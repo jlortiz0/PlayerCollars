@@ -69,7 +69,7 @@ public class OwnershipCraftingRecipe extends SpecialCraftingRecipe {
         if (owner == null || output.isEmpty())
             return ItemStack.EMPTY;
 
-        NbtUtil.setOwner(output, owner.uuid(), owner.name());
+        NbtUtil.setDeedOwner(output, owner);
         return output;
     }
 
