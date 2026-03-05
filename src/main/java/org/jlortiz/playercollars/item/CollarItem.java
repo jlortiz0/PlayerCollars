@@ -101,9 +101,9 @@ public class CollarItem extends Item implements DyeableItem, Trinket {
 
     @Override
     public Text getName(ItemStack stack) {
-        var owner = NbtUtil.getOwner(stack);
-        if (owner != null)
-            return Text.translatable("item.playercollars.collar.named", owner.getRight());
+        var owner = NbtUtil.getDeedOwner(stack);
+        if (owner != null && owner.ownedName().isPresent())
+            return Text.translatable("item.playercollars.collar.named", owner.ownedName().get());
         return super.getName(stack);
     }
 
