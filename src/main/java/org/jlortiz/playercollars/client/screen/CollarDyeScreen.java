@@ -28,9 +28,9 @@ public class CollarDyeScreen extends Screen {
         this.initColor = NbtUtil.getColor(is);
         this.initPaw = NbtUtil.getPawColor(is);
         this.shouldPaw = is.getItem() instanceof CollarItem ci && !ci.tagless;
-        var owner = NbtUtil.getOwner(is);
-        this.ownerUUID = owner == null ? null : owner.getLeft();
-        this.ownerName = owner == null ? null : owner.getRight();
+        var owner = NbtUtil.getDeedOwner(is);
+        this.ownerUUID = owner == null ? null : owner.uuid();
+        this.ownerName = owner == null ? null : owner.name();
     }
 
     @Override

@@ -12,7 +12,6 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 import org.jlortiz.playercollars.OwnerComponent;
 import org.jlortiz.playercollars.PlayerCollarsMod;
@@ -20,21 +19,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.UUID;
 
 public final class NbtUtil {
     private static final Logger logger = LoggerFactory.getLogger(NbtUtil.class);
 
     private NbtUtil() {
-    }
-
-    public static @Nullable Pair<UUID, String> getOwner(ItemStack is) {
-        var deedOwner = getDeedOwner(is);
-
-        if (deedOwner == null)
-            return null;
-
-        return new Pair<>(deedOwner.uuid(), deedOwner.name());
     }
 
     public static @Nullable OwnerComponent getDeedOwner(ItemStack is) {
@@ -59,14 +48,6 @@ public final class NbtUtil {
                 .orElse(null);
 
         is.setSubNbt("owner", ownerCompound);
-    }
-
-    public static void setOwner(ItemStack is, @Nullable UUID uuid, @Nullable String name) {
-        if (uuid == null || name == null) {
-            is.removeSubNbt("owner");
-            return;
-        }
-        NbtUtil.setDeedOwner(is, new OwnerComponent(uuid, name));
     }
 
     public static int getColor(ItemStack itemStack) {

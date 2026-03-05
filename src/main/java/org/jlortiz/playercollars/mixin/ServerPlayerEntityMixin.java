@@ -38,8 +38,8 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
 
             for (Pair<SlotReference, ItemStack> p : trinkets) {
                 var stack = p.getRight();
-                var owner = NbtUtil.getOwner(stack);
-                if (owner != null && !player.getUuid().equals(owner.getLeft())) {
+                var owner = NbtUtil.getDeedOwner(stack);
+                if (owner != null && !player.getUuid().equals(owner.uuid())) {
                     continue;
                 }
 

@@ -83,6 +83,7 @@ public class CollarItem extends Item implements DyeableItem, Trinket {
         }
     }
 
+    // TODO 2026-03-04 (solonovamax): why do we override getColor() but not hasColor(), removeColor(), or setColor()?
     @Override
     public int getColor(ItemStack itemStack) {
         return NbtUtil.getColor(itemStack);
@@ -114,9 +115,9 @@ public class CollarItem extends Item implements DyeableItem, Trinket {
             tooltip.add(Text.translatable("item.playercollars.collar.paw_color", Integer.toHexString(NbtUtil.getPawColor(stack)))
                     .setStyle(Style.EMPTY.withColor(Colors.GRAY)));
         }
-        var owner = NbtUtil.getOwner(stack);
+        var owner = NbtUtil.getDeedOwner(stack);
         if (owner != null) {
-            tooltip.add(Text.translatable("item.playercollars.collar.owner", owner.getRight()).setStyle(Style.EMPTY.withColor(Colors.GRAY)));
+            tooltip.add(Text.translatable("item.playercollars.collar.owner", owner.name()).setStyle(Style.EMPTY.withColor(Colors.GRAY)));
         }
     }
 

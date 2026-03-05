@@ -7,6 +7,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
+import org.jlortiz.playercollars.OwnerComponent;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.util.NbtUtil;
 
@@ -28,9 +29,9 @@ public record PacketUpdateCollar(OwnerState os, int color, int pawColor) impleme
             NbtUtil.setColor(is, packet.color);
             NbtUtil.setPawColor(is, packet.pawColor);
             if (packet.os == OwnerState.DEL) {
-                NbtUtil.setOwner(is, null, null);
+                NbtUtil.setDeedOwner(is, new OwnerComponent(null, null));
             } else if (packet.os == OwnerState.ADD) {
-                NbtUtil.setOwner(is, player.getUuid(), player.getName().getString());
+                NbtUtil.setDeedOwner(is, new OwnerComponent(player.getUuid(), player.getName().getString()));
             }
         }
     }

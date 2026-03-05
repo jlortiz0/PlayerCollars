@@ -77,11 +77,11 @@ import org.jlortiz.playercollars.network.PawsConfigScreenHandler;
 import org.jlortiz.playercollars.util.LeashedUtil;
 import org.jlortiz.playercollars.util.NbtUtil;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
-import java.util.stream.Stream;
 
 public class PlayerCollarsMod implements ModInitializer {
     public static final String MOD_ID = "playercollars";
@@ -279,16 +279,14 @@ public class PlayerCollarsMod implements ModInitializer {
             for (MobEntity l : list) {
                 if (!(l instanceof LeashProxyEntity le)) continue;
                 LivingEntity leashTarget = le.getLeashTarget();
-                Stream<Pair<UUID, String>> collars = TrinketsApi.getTrinketComponent(leashTarget)
+                var collars = TrinketsApi.getTrinketComponent(leashTarget)
                         .map((x) -> x.getEquipped((y) -> y.isIn(PlayerCollarsMod.COLLAR_TAG)))
                         .stream()
-                        .flatMap(x ->
-                                x.stream()
-                                        .map((p) -> NbtUtil.getOwner(p.getRight()))
-                                        .filter(Objects::nonNull)
-                                        .filter((c) -> c.getLeft().equals(leashTarget.getUuid()))
-                        );
-                if (!collars.allMatch((c) -> player.getUuid().equals(c.getLeft()))) {
+                        .flatMap(Collection::stream)
+                        .map((p) -> NbtUtil.getDeedOwner(p.getRight()))
+                        .filter(Objects::nonNull)
+                        .filter((c) -> c.owned().orElseGet(leashTarget::getUuid).equals(leashTarget.getUuid()));
+                if (!collars.allMatch((c) -> player.getUuid().equals(c.uuid()))) {
                     player.sendMessage(Text.translatable("message.playercollars.no_break_fence_other", le.getLeashTarget().getName())
                             .formatted(Formatting.RED), true);
                     return true;
@@ -365,4 +363,6 @@ public class PlayerCollarsMod implements ModInitializer {
             return ActionResult.PASS;
         });
     }
+
+
 }
