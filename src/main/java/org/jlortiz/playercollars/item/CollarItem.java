@@ -123,8 +123,8 @@ public class CollarItem extends Item implements DyeableItem, Trinket {
     @Override
     public Multimap<EntityAttribute, EntityAttributeModifier> getModifiers(ItemStack stack, SlotReference slot, LivingEntity entity, UUID uuid) {
         Multimap<EntityAttribute, EntityAttributeModifier> modifiers = Trinket.super.getModifiers(stack, slot, entity, uuid);
-        int loyalty = EnchantmentHelper.getLoyalty(stack);
-        modifiers.put(PlayerCollarsMod.ATTR_LEASH_DISTANCE, new EntityAttributeModifier(getTranslationKey(), -loyalty, EntityAttributeModifier.Operation.ADDITION));
+        var loyalty = EnchantmentHelper.getLoyalty(stack);
+        modifiers.put(PlayerCollarsMod.ATTR_LEASH_DISTANCE, new EntityAttributeModifier(uuid, getTranslationKey(), -loyalty, EntityAttributeModifier.Operation.ADDITION));
         modifiers.put(PlayerCollarsMod.ATTR_CLICKER_DISTANCE, new EntityAttributeModifier(getTranslationKey(), loyalty, EntityAttributeModifier.Operation.ADDITION));
         return modifiers;
     }
