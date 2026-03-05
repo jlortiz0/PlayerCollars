@@ -248,8 +248,8 @@ public class PlayerCollarsMod implements ModInitializer {
         for (Pair<SlotReference, ItemStack> p : stacks) {
             ItemStack is = p.getRight();
             if (is.getItem() instanceof CollarItem) {
-                Pair<UUID, String> owner = NbtUtil.getOwner(is);
-                if (owner != null && owner.getLeft().equals(ownerUuid)) {
+                var owner = NbtUtil.getDeedOwner(is);
+                if (owner != null && owner.uuid().equals(ownerUuid) && (owner.owned().isEmpty() || owner.owned().get().equals(entity))) {
                     return is;
                 }
             }
