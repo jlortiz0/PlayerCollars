@@ -9,8 +9,13 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.TooltipContext;
+import net.minecraft.enchantment.BindingCurseEnchantment;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.enchantment.LoyaltyEnchantment;
+import net.minecraft.enchantment.MendingEnchantment;
+import net.minecraft.enchantment.ThornsEnchantment;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -42,6 +47,13 @@ public class CollarItem extends Item implements DyeableItem, Trinket {
         super(new Item.Settings().maxCount(1));
         this.tagless = tagless;
         TrinketsApi.registerTrinket(this, this);
+    }
+
+    public static boolean isAcceptableEnchantment(Enchantment enchantment) {
+        return enchantment instanceof BindingCurseEnchantment ||
+               enchantment instanceof LoyaltyEnchantment ||
+               enchantment instanceof ThornsEnchantment ||
+               enchantment instanceof MendingEnchantment;
     }
 
     @Override
