@@ -19,9 +19,6 @@ import net.minecraft.util.Pair;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.util.NbtUtil;
 
-import java.util.List;
-import java.util.Optional;
-
 public class CollarLockerItem extends Item {
     public CollarLockerItem() {
         super(new Settings().maxCount(1));
@@ -29,9 +26,13 @@ public class CollarLockerItem extends Item {
 
     @Override
     public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity targetEntity, Hand hand) {
-        if (!(targetEntity instanceof PlayerEntity targetPlayer) || user.getWorld().isClient) return ActionResult.PASS;
-        Optional<TrinketComponent> optComponent = TrinketsApi.getTrinketComponent(targetPlayer);
-        if (optComponent.isEmpty()) return ActionResult.PASS;
+        if (!(targetEntity instanceof PlayerEntity targetPlayer) || user.getWorld().isClient)
+            return ActionResult.PASS;
+
+        var optComponent = TrinketsApi.getTrinketComponent(targetPlayer);
+        if (optComponent.isEmpty())
+            return ActionResult.PASS;
+
         TrinketComponent component = optComponent.get();
 
         ItemStack collarStack = PlayerCollarsMod.filterStacksByOwner(component.getEquipped((y) -> y.isIn(PlayerCollarsMod.COLLAR_TAG)), user.getUuid(), targetPlayer.getUuid());
@@ -46,12 +47,13 @@ public class CollarLockerItem extends Item {
         }
 
         boolean shouldLock = !EnchantmentHelper.hasBindingCurse(collarStack);
-        List<Pair<SlotReference, ItemStack>> ls = component.getEquipped(
-                (y) -> y.isIn(PlayerCollarsMod.COLLAR_TAG) || y.isIn(PlayerCollarsMod.PAWS_TAG) || y.isIn(PlayerCollarsMod.FOOT_PAWS_TAG)
-        );
+        var trinkets = component.getEquipped((y) -> {
+            // noinspection CodeBlock2Expr
+            return y.isIn(PlayerCollarsMod.COLLAR_TAG) || y.isIn(PlayerCollarsMod.PAWS_TAG) || y.isIn(PlayerCollarsMod.FOOT_PAWS_TAG);
+        });
 
-        for (Pair<SlotReference, ItemStack> p : ls) {
-            ItemStack is = p.getRight();
+        for (Pair<SlotReference, ItemStack> pair : trinkets) {
+            ItemStack is = pair.getRight();
             var enchantments = EnchantmentHelper.get(is);
             if (shouldLock)
                 enchantments.put(Enchantments.BINDING_CURSE, 1);
@@ -59,8 +61,10 @@ public class CollarLockerItem extends Item {
                 enchantments.remove(Enchantments.BINDING_CURSE);
             EnchantmentHelper.set(enchantments, is);
         }
-        targetPlayer.sendMessage(Text.translatable(shouldLock ? "item.playercollars.collar_locker.locked" : "item.playercollars.collar_locker.unlocked"), true);
-        user.sendMessage(Text.translatable(shouldLock ? "item.playercollars.collar_locker.locked" : "item.playercollars.collar_locker.unlocked"), true);
+        var text = Text.translatable(shouldLock ? "item.playercollars.collar_locker.locked" : "item.playercollars.collar_locker.unlocked");
+
+        targetPlayer.sendMessage(text, true);
+        user.sendMessage(text, true);
 
         targetPlayer.getWorld()
                 .playSound(null, targetEntity.getBlockPos(), SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, SoundCategory.PLAYERS);

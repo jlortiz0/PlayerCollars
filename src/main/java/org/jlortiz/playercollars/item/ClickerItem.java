@@ -27,6 +27,14 @@ public class ClickerItem extends Item implements DyeableItem {
         super(new Item.Settings().maxCount(1));
     }
 
+    public boolean getForceTurning(ItemStack stack) {
+        return stack.getNbt() != null && stack.getNbt().getBoolean("force_turning");
+    }
+
+    public void setForceTurning(ItemStack stack, boolean forceTurning) {
+        stack.getOrCreateNbt().putBoolean("force_turning", !forceTurning);
+    }
+
     @Override
     public int getColor(ItemStack stack) {
         return NbtUtil.getColor(stack, 0xFFFFFF);
@@ -46,19 +54,18 @@ public class ClickerItem extends Item implements DyeableItem {
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
         player.setCurrentHand(hand);
         if (!world.isClient) {
-            ItemStack is = player.getStackInHand(hand);
+            ItemStack stack = player.getStackInHand(hand);
+            var forceTurning = getForceTurning(stack);
+
             if (player.isSneaking()) {
-                if (is.getNbt() != null && is.getNbt().getBoolean("force_turning")) {
-                    is.getOrCreateNbt().putBoolean("force_turning", false);
-                    player.sendMessage(Text.translatable("item.playercollars.clicker.turn_disable"), true);
-                } else {
-                    is.getOrCreateNbt().putBoolean("force_turning", true);
-                    player.sendMessage(Text.translatable("item.playercollars.clicker.turn_enable"), true);
-                }
-                return TypedActionResult.consume(is);
+                setForceTurning(stack, !forceTurning);
+                player.sendMessage(Text.translatable(forceTurning ? "item.playercollars.clicker.turn_disable" : "item.playercollars.clicker.turn_enable"), true);
+                return TypedActionResult.consume(stack);
             }
 
-            if (is.getNbt() != null && is.getNbt().getBoolean("force_turning")) {
+            world.playSoundFromEntity(null, player, PlayerCollarsMod.CLICKER_ON, SoundCategory.PLAYERS, 1, 1);
+
+            if (forceTurning) {
                 List<ServerPlayerEntity> targets = ((ServerWorld) world).getPlayers((p) -> {
                     // noinspection CodeBlock2Expr
                     return !p.isPartOf(player) && p.isInRange(player, p.getAttributeValue(PlayerCollarsMod.ATTR_CLICKER_DISTANCE));
@@ -72,7 +79,6 @@ public class ClickerItem extends Item implements DyeableItem {
                             .ifPresent((x) -> ServerPlayNetworking.send(target, packet));
                 }
             }
-            world.playSoundFromEntity(null, player, PlayerCollarsMod.CLICKER_ON, SoundCategory.PLAYERS, 1, 1);
         }
         return TypedActionResult.fail(player.getStackInHand(hand));
     }
@@ -92,7 +98,7 @@ public class ClickerItem extends Item implements DyeableItem {
     @Override
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
         super.appendTooltip(stack, world, tooltip, context);
-        if (stack.getNbt() != null && stack.getNbt().getBoolean("force_turning"))
+        if (getForceTurning(stack))
             tooltip.add(Text.translatable("item.playercollars.clicker.turn"));
     }
 }

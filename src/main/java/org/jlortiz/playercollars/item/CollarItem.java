@@ -71,7 +71,9 @@ public class CollarItem extends Item implements DyeableItem, Trinket {
 
     @Override
     public void tick(ItemStack stack, SlotReference slot, LivingEntity entity) {
-        if (entity.getWorld().isClient) return;
+        if (entity.getWorld().isClient)
+            return;
+
         if (EnchantmentHelper.getLevel(Enchantments.MENDING, stack) > 0) {
             var owner = NbtUtil.getDeedOwner(stack);
 

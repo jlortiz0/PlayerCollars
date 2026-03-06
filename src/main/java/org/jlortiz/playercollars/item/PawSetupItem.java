@@ -18,8 +18,6 @@ import net.minecraft.world.World;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.client.screen.PawsSelectScreen;
 
-import java.util.Optional;
-
 public class PawSetupItem extends Item {
     public PawSetupItem() {
         super(new Settings().maxCount(1));
@@ -52,7 +50,7 @@ public class PawSetupItem extends Item {
         if (!(entity instanceof PlayerEntity player) || !user.getWorld().isClient)
             return ActionResult.PASS;
 
-        Optional<TrinketComponent> optComponent = TrinketsApi.getTrinketComponent(player);
+        var optComponent = TrinketsApi.getTrinketComponent(player);
 
         if (optComponent.isEmpty())
             return ActionResult.PASS;
