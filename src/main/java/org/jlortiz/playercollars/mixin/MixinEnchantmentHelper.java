@@ -42,8 +42,6 @@ public class MixinEnchantmentHelper {
                 .map(Pair::getRight)
                 .toList();
 
-        System.out.println("is player, checking thorns...");
-
         EnchantmentHelper.forEachEnchantment(consumer, stacks);
     }
 }
