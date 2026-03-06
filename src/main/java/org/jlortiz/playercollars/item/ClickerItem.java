@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.DyeableItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -17,12 +18,18 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.network.PacketLookAtLerped;
+import org.jlortiz.playercollars.util.NbtUtil;
 
 import java.util.List;
 
-public class ClickerItem extends Item {
+public class ClickerItem extends Item implements DyeableItem {
     public ClickerItem() {
         super(new Item.Settings().maxCount(1));
+    }
+
+    @Override
+    public int getColor(ItemStack stack) {
+        return NbtUtil.getColor(stack, 0xFFFFFF);
     }
 
     @Override

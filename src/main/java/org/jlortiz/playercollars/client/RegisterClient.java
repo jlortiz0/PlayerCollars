@@ -12,45 +12,46 @@ import net.minecraft.block.Block;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.item.BedItem;
+import net.minecraft.item.DyeableItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.util.Identifier;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.client.screen.PawsConfigScreen;
+import org.jlortiz.playercollars.item.CollarItem;
 import org.jlortiz.playercollars.item.FootPawsItem;
 import org.jlortiz.playercollars.item.PawsItem;
 import org.jlortiz.playercollars.network.PacketLookAtLerped;
-import org.jlortiz.playercollars.util.NbtUtil;
 
 @Environment(EnvType.CLIENT)
 public class RegisterClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ColorProviderRegistry.ITEM.register((stack, tintIndex) -> switch (tintIndex) {
-            case 0 -> NbtUtil.getColor(stack) | 0xff000000;
-            case 1 -> NbtUtil.getPawColor(stack) | 0xff000000;
+            case 0 -> ((DyeableItem) stack.getItem()).getColor(stack) | 0xFF000000;
+            case 1 -> ((CollarItem) stack.getItem()).getPawColor(stack) | 0xFF000000;
             default -> -1;
         }, PlayerCollarsMod.COLLAR_ITEM);
         ColorProviderRegistry.ITEM.register((stack, tintIndex) -> {
             // noinspection CodeBlock2Expr
-            return tintIndex == 0 ? NbtUtil.getColor(stack) | 0xff000000 : -1;
+            return tintIndex == 0 ? ((DyeableItem) stack.getItem()).getColor(stack) | 0xFF000000 : -1;
         }, PlayerCollarsMod.TAGLESS_COLLAR_ITEM);
         ColorProviderRegistry.ITEM.register((stack, tintIndex) -> {
             // noinspection CodeBlock2Expr
-            return tintIndex == 0 ? NbtUtil.getColor(stack) | 0xff000000 : -1;
+            return tintIndex == 0 ? ((DyeableItem) stack.getItem()).getColor(stack) | 0xFF000000 : -1;
         }, PlayerCollarsMod.CLICKER_ITEM);
         ColorProviderRegistry.ITEM.register((stack, tintIndex) -> {
             BedItem item = (BedItem) stack.getItem();
             BedBlock block = (BedBlock) item.getBlock();
-            return tintIndex == 0 ? block.getColor().getFireworkColor() | 0xff000000 : -1;
+            return tintIndex == 0 ? block.getColor().getFireworkColor() | 0xFF000000 : -1;
         }, PlayerCollarsMod.DOG_BED_ITEMS);
 
         ItemConvertible[] paws = new ItemConvertible[PlayerCollarsMod.PAWS_ITEMS.length + PlayerCollarsMod.FOOT_PAWS_ITEMS.length];
         System.arraycopy(PlayerCollarsMod.PAWS_ITEMS, 0, paws, 0, PlayerCollarsMod.PAWS_ITEMS.length);
         System.arraycopy(PlayerCollarsMod.FOOT_PAWS_ITEMS, 0, paws, PlayerCollarsMod.PAWS_ITEMS.length, PlayerCollarsMod.FOOT_PAWS_ITEMS.length);
         ColorProviderRegistry.ITEM.register((stack, tintIndex) -> switch (tintIndex) {
-            case 0 -> NbtUtil.getColor(stack);
-            case 1 -> NbtUtil.getBeanColor(stack);
+            case 0 -> ((FootPawsItem) stack.getItem()).getColor();
+            case 1 -> ((FootPawsItem) stack.getItem()).getPawColor();
             default -> -1;
         }, paws);
 

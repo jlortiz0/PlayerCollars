@@ -7,6 +7,7 @@ import dev.emi.trinkets.api.TrinketEnums;
 import dev.emi.trinkets.api.TrinketsApi;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.enchantment.BindingCurseEnchantment;
@@ -41,6 +42,8 @@ import java.util.List;
 import java.util.UUID;
 
 public class CollarItem extends Item implements DyeableItem, Trinket {
+    private static final int DEFAULT_COLOR = MapColor.RED.color;
+    private static final int DEFAULT_PAW_COLOR = MapColor.BLUE.color;
     public final boolean tagless;
 
     public CollarItem(boolean tagless) {
@@ -83,10 +86,13 @@ public class CollarItem extends Item implements DyeableItem, Trinket {
         }
     }
 
-    // TODO 2026-03-04 (solonovamax): why do we override getColor() but not hasColor(), removeColor(), or setColor()?
     @Override
     public int getColor(ItemStack itemStack) {
-        return NbtUtil.getColor(itemStack);
+        return NbtUtil.getColor(itemStack, CollarItem.DEFAULT_COLOR);
+    }
+
+    public int getPawColor(ItemStack stack) {
+        return NbtUtil.getPawColor(stack, CollarItem.DEFAULT_PAW_COLOR);
     }
 
     @Override
@@ -112,7 +118,7 @@ public class CollarItem extends Item implements DyeableItem, Trinket {
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, @NotNull TooltipContext context) {
         super.appendTooltip(stack, world, tooltip, context);
         if (context.isAdvanced() && !this.tagless) {
-            tooltip.add(Text.translatable("item.playercollars.collar.paw_color", Integer.toHexString(NbtUtil.getPawColor(stack)))
+            tooltip.add(Text.translatable("item.playercollars.collar.paw_color", Integer.toHexString(getPawColor(stack)))
                     .setStyle(Style.EMPTY.withColor(Colors.GRAY)));
         }
         var owner = NbtUtil.getDeedOwner(stack);

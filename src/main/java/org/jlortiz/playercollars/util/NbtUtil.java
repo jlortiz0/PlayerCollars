@@ -2,7 +2,6 @@ package org.jlortiz.playercollars.util;
 
 import com.mojang.datafixers.util.Either;
 import net.minecraft.block.Block;
-import net.minecraft.block.MapColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -50,10 +49,10 @@ public final class NbtUtil {
         is.setSubNbt("owner", ownerCompound);
     }
 
-    public static int getColor(ItemStack itemStack) {
+    public static int getColor(ItemStack itemStack, int defaultColor) {
         NbtCompound diplayCompound = itemStack.getSubNbt("display");
 
-        return diplayCompound != null && diplayCompound.contains("color", NbtElement.NUMBER_TYPE) ? diplayCompound.getInt("color") : MapColor.RED.color;
+        return diplayCompound != null && diplayCompound.contains("color", NbtElement.NUMBER_TYPE) ? diplayCompound.getInt("color") : defaultColor;
     }
 
     public static void setColor(ItemStack itemStack, int color) {
@@ -61,9 +60,9 @@ public final class NbtUtil {
         displayCoumpound.putInt("color", color);
     }
 
-    public static int getPawColor(ItemStack itemStack) {
+    public static int getPawColor(ItemStack itemStack, int defaultColor) {
         NbtCompound displayCompound = itemStack.getSubNbt("display");
-        return displayCompound != null && displayCompound.contains("paw", NbtElement.NUMBER_TYPE) ? displayCompound.getInt("paw") : MapColor.BLUE.color;
+        return displayCompound != null && displayCompound.contains("paw", NbtElement.NUMBER_TYPE) ? displayCompound.getInt("paw") : defaultColor;
     }
 
     public static void setPawColor(ItemStack itemStack, int color) {

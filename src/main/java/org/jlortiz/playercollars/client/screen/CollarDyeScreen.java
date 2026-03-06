@@ -5,6 +5,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.item.DyeableItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import org.jlortiz.playercollars.item.CollarItem;
@@ -25,8 +26,8 @@ public class CollarDyeScreen extends Screen {
         super(is.getName());
         this.is = is;
         this.ownUUID = player;
-        this.initColor = NbtUtil.getColor(is);
-        this.initPaw = NbtUtil.getPawColor(is);
+        this.initColor = ((DyeableItem) is.getItem()).getColor(is);
+        this.initPaw = ((CollarItem) is.getItem()).getPawColor(is);
         this.shouldPaw = is.getItem() instanceof CollarItem ci && !ci.tagless;
         var owner = NbtUtil.getDeedOwner(is);
         this.ownerUUID = owner == null ? null : owner.uuid();

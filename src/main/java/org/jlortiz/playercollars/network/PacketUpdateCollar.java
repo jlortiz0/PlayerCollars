@@ -3,12 +3,14 @@ package org.jlortiz.playercollars.network;
 import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.PacketType;
+import net.minecraft.item.DyeableItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.jlortiz.playercollars.OwnerComponent;
 import org.jlortiz.playercollars.PlayerCollarsMod;
+import org.jlortiz.playercollars.item.CollarItem;
 import org.jlortiz.playercollars.util.NbtUtil;
 
 public record PacketUpdateCollar(OwnerState os, int color, int pawColor) implements FabricPacket {
@@ -16,7 +18,7 @@ public record PacketUpdateCollar(OwnerState os, int color, int pawColor) impleme
     public static final PacketType<PacketUpdateCollar> TYPE = PacketType.create(ID, PacketUpdateCollar::new);
 
     public PacketUpdateCollar(ItemStack is, OwnerState os) {
-        this(os, NbtUtil.getColor(is), NbtUtil.getPawColor(is));
+        this(os, ((DyeableItem) is.getItem()).getColor(is), ((CollarItem) is.getItem()).getPawColor(is));
     }
 
     public PacketUpdateCollar(PacketByteBuf buf) {
