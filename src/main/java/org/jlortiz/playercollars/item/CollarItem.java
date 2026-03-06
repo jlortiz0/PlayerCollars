@@ -132,7 +132,6 @@ public class CollarItem extends TrinketItem implements DyeableItem {
         var modifiers = super.getModifiers(stack, slot, entity, uuid);
         var loyalty = EnchantmentHelper.getLoyalty(stack);
         modifiers.put(PlayerCollarsMod.ATTR_LEASH_DISTANCE, new EntityAttributeModifier(uuid, getTranslationKey(), -loyalty, EntityAttributeModifier.Operation.ADDITION));
-        modifiers.put(PlayerCollarsMod.ATTR_CLICKER_DISTANCE, new EntityAttributeModifier(getTranslationKey(), loyalty, EntityAttributeModifier.Operation.ADDITION));
         return modifiers;
     }
 

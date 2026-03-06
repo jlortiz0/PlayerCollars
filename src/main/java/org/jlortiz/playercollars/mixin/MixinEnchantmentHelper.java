@@ -10,7 +10,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Pair;
 import org.jlortiz.playercollars.PlayerCollarsMod;
-import org.jlortiz.playercollars.item.CollarItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -25,7 +24,7 @@ public class MixinEnchantmentHelper {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/enchantment/EnchantmentTarget;isAcceptableItem(Lnet/minecraft/item/Item;)Z")
     )
     private static boolean isAcceptableItem(boolean original, int power, ItemStack stack, boolean treasureAllowed, @Local Enchantment enchantment) {
-        return original || ((stack.getItem() instanceof CollarItem) && CollarItem.isAcceptableEnchantment(enchantment));
+        return original || PlayerCollarsMod.isAcceptableEnchant(stack.getItem(), enchantment);
     }
 
     @Inject(

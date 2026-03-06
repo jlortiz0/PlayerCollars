@@ -19,6 +19,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.piston.PistonBehavior;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.ClampedEntityAttribute;
@@ -242,6 +243,11 @@ public class PlayerCollarsMod implements ModInitializer {
 
         Registry.register(Registries.SCREEN_HANDLER, Identifier.of(MOD_ID, "paws_block_config"), PAWS_BLOCK_CONFIG_SCREEN_HANDLER);
         Registry.register(Registries.SCREEN_HANDLER, Identifier.of(MOD_ID, "paws_item_config"), PAWS_ITEM_CONFIG_SCREEN_HANDLER);
+    }
+
+    public static boolean isAcceptableEnchant(Item item, Enchantment enchantment) {
+        return (item instanceof CollarItem && CollarItem.isAcceptableEnchantment(enchantment)) ||
+               (item instanceof ClickerItem && ClickerItem.isAcceptableEnchantment(enchantment));
     }
 
     public static ItemStack filterStacksByOwner(List<Pair<SlotReference, ItemStack>> stacks, UUID ownerUuid, UUID entity) {
