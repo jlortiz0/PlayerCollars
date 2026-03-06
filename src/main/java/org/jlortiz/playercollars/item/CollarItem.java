@@ -2,9 +2,8 @@ package org.jlortiz.playercollars.item;
 
 import com.google.common.collect.Multimap;
 import dev.emi.trinkets.api.SlotReference;
-import dev.emi.trinkets.api.Trinket;
 import dev.emi.trinkets.api.TrinketEnums;
-import dev.emi.trinkets.api.TrinketsApi;
+import dev.emi.trinkets.api.TrinketItem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.MapColor;
@@ -41,7 +40,7 @@ import org.jlortiz.playercollars.util.NbtUtil;
 import java.util.List;
 import java.util.UUID;
 
-public class CollarItem extends Item implements DyeableItem, Trinket {
+public class CollarItem extends TrinketItem implements DyeableItem {
     private static final int DEFAULT_COLOR = MapColor.RED.color;
     private static final int DEFAULT_PAW_COLOR = MapColor.BLUE.color;
     public final boolean tagless;
@@ -49,7 +48,6 @@ public class CollarItem extends Item implements DyeableItem, Trinket {
     public CollarItem(boolean tagless) {
         super(new Item.Settings().maxCount(1));
         this.tagless = tagless;
-        TrinketsApi.registerTrinket(this, this);
     }
 
     public static boolean isAcceptableEnchantment(Enchantment enchantment) {
@@ -93,19 +91,19 @@ public class CollarItem extends Item implements DyeableItem, Trinket {
         return NbtUtil.getColor(itemStack, CollarItem.DEFAULT_COLOR);
     }
 
-    public int getPawColor(ItemStack stack) {
-        return NbtUtil.getPawColor(stack, CollarItem.DEFAULT_PAW_COLOR);
+    public int getTagColor(ItemStack stack) {
+        return NbtUtil.getTagColor(stack, CollarItem.DEFAULT_PAW_COLOR);
     }
 
     @Override
     @Environment(EnvType.CLIENT)
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
-        ItemStack is = player.getStackInHand(hand);
+        ItemStack stack = player.getStackInHand(hand);
         if (player.isSneaking() && world.isClient) {
-            MinecraftClient.getInstance().setScreen(new CollarDyeScreen(is, player.getUuid()));
-            return TypedActionResult.success(is, false);
+            MinecraftClient.getInstance().setScreen(new CollarDyeScreen(stack, player.getUuid()));
+            return TypedActionResult.success(stack, false);
         }
-        return TypedActionResult.pass(is);
+        return super.use(world, player, hand);
     }
 
     @Override
@@ -120,7 +118,7 @@ public class CollarItem extends Item implements DyeableItem, Trinket {
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, @NotNull TooltipContext context) {
         super.appendTooltip(stack, world, tooltip, context);
         if (context.isAdvanced() && !this.tagless) {
-            tooltip.add(Text.translatable("item.playercollars.collar.paw_color", Integer.toHexString(getPawColor(stack)))
+            tooltip.add(Text.translatable("item.playercollars.collar.paw_color", Integer.toHexString(getTagColor(stack)))
                     .setStyle(Style.EMPTY.withColor(Colors.GRAY)));
         }
         var owner = NbtUtil.getDeedOwner(stack);
@@ -131,7 +129,7 @@ public class CollarItem extends Item implements DyeableItem, Trinket {
 
     @Override
     public Multimap<EntityAttribute, EntityAttributeModifier> getModifiers(ItemStack stack, SlotReference slot, LivingEntity entity, UUID uuid) {
-        Multimap<EntityAttribute, EntityAttributeModifier> modifiers = Trinket.super.getModifiers(stack, slot, entity, uuid);
+        var modifiers = super.getModifiers(stack, slot, entity, uuid);
         var loyalty = EnchantmentHelper.getLoyalty(stack);
         modifiers.put(PlayerCollarsMod.ATTR_LEASH_DISTANCE, new EntityAttributeModifier(uuid, getTranslationKey(), -loyalty, EntityAttributeModifier.Operation.ADDITION));
         modifiers.put(PlayerCollarsMod.ATTR_CLICKER_DISTANCE, new EntityAttributeModifier(getTranslationKey(), loyalty, EntityAttributeModifier.Operation.ADDITION));

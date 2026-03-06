@@ -60,24 +60,14 @@ public final class NbtUtil {
         displayCoumpound.putInt("color", color);
     }
 
-    public static int getPawColor(ItemStack itemStack, int defaultColor) {
+    public static int getTagColor(ItemStack itemStack, int defaultColor) {
         NbtCompound displayCompound = itemStack.getSubNbt("display");
-        return displayCompound != null && displayCompound.contains("paw", NbtElement.NUMBER_TYPE) ? displayCompound.getInt("paw") : defaultColor;
+        return displayCompound != null && displayCompound.contains("tag", NbtElement.NUMBER_TYPE) ? displayCompound.getInt("tag") : defaultColor;
     }
 
-    public static void setPawColor(ItemStack itemStack, int color) {
+    public static void setTagColor(ItemStack itemStack, int color) {
         NbtCompound displayCoumpound = itemStack.getOrCreateSubNbt("display");
-        displayCoumpound.putInt("paw", color);
-    }
-
-    public static int getBeanColor(ItemStack itemStack) {
-        NbtCompound diplayCompound = itemStack.getSubNbt("display");
-        return diplayCompound != null && diplayCompound.contains("bean", NbtElement.NUMBER_TYPE) ? diplayCompound.getInt("bean") : 0xFFF196CF;
-    }
-
-    public static void setBeanColor(ItemStack itemStack, int color) {
-        NbtCompound displayCoumpound = itemStack.getOrCreateSubNbt("display");
-        displayCoumpound.putInt("bean", color);
+        displayCoumpound.putInt("tag", color);
     }
 
     public static List<Either<TagKey<Item>, RegistryKey<Item>>> getHeldItems(ItemStack itemStack) {

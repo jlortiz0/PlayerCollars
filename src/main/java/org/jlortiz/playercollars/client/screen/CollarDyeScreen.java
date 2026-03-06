@@ -27,7 +27,7 @@ public class CollarDyeScreen extends Screen {
         this.is = is;
         this.ownUUID = player;
         this.initColor = ((DyeableItem) is.getItem()).getColor(is);
-        this.initPaw = ((CollarItem) is.getItem()).getPawColor(is);
+        this.initPaw = ((CollarItem) is.getItem()).getTagColor(is);
         this.shouldPaw = is.getItem() instanceof CollarItem ci && !ci.tagless;
         var owner = NbtUtil.getDeedOwner(is);
         this.ownerUUID = owner == null ? null : owner.uuid();
@@ -80,7 +80,7 @@ public class CollarDyeScreen extends Screen {
 
         this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.cancel"), (btn) -> {
             NbtUtil.setColor(this.is, this.initColor);
-            NbtUtil.setPawColor(this.is, this.initPaw);
+            NbtUtil.setTagColor(this.is, this.initPaw);
             close();
         }).dimensions(x - 80, y + 50, 75, 20).build());
 
@@ -115,7 +115,7 @@ public class CollarDyeScreen extends Screen {
         }
 
         if (paw) {
-            NbtUtil.setPawColor(this.is, col);
+            NbtUtil.setTagColor(this.is, col);
         } else {
             NbtUtil.setColor(this.is, col);
         }

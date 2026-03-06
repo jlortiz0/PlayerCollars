@@ -29,7 +29,7 @@ public class RegisterClient implements ClientModInitializer {
     public void onInitializeClient() {
         ColorProviderRegistry.ITEM.register((stack, tintIndex) -> switch (tintIndex) {
             case 0 -> ((DyeableItem) stack.getItem()).getColor(stack) | 0xFF000000;
-            case 1 -> ((CollarItem) stack.getItem()).getPawColor(stack) | 0xFF000000;
+            case 1 -> ((CollarItem) stack.getItem()).getTagColor(stack) | 0xFF000000;
             default -> -1;
         }, PlayerCollarsMod.COLLAR_ITEM);
         ColorProviderRegistry.ITEM.register((stack, tintIndex) -> {

@@ -304,7 +304,7 @@ public class PlayerCollarsMod implements ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(PacketOpenPawsConfig.TYPE, PacketOpenPawsConfig::handle);
 
         TrinketsApi.registerTrinket(PlayerCollarsMod.COLLAR_ITEM, PlayerCollarsMod.COLLAR_ITEM);
-        TrinketsApi.registerTrinket(PlayerCollarsMod.TAGLESS_COLLAR_ITEM, PlayerCollarsMod.COLLAR_ITEM);
+        TrinketsApi.registerTrinket(PlayerCollarsMod.TAGLESS_COLLAR_ITEM, PlayerCollarsMod.TAGLESS_COLLAR_ITEM);
 
         for (int i = 0; i < PAWS_DYE_COLORS.length; i++) {
             DyeColor c = PAWS_DYE_COLORS[i];
