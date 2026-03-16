@@ -32,7 +32,7 @@ public class PawsItem extends FootPawsItem {
         List<Either<TagKey<Block>, RegistryKey<Block>>> allowed = NbtUtil.getCanInteract(stack);
         Optional<RegistryKey<Block>> key = block.getRegistryEntry().getKey();
 
-        if (allowed == null || key.isEmpty())
+        if (allowed == null || allowed.isEmpty() || key.isEmpty())
             return false;
 
         for (Either<TagKey<Block>, RegistryKey<Block>> entry : allowed) {
@@ -49,7 +49,7 @@ public class PawsItem extends FootPawsItem {
         List<Either<TagKey<Item>, RegistryKey<Item>>> slippery = NbtUtil.getHeldItems(pawsStack);
         Optional<RegistryKey<Item>> key = thing.getRegistryEntry().getKey();
 
-        if (slippery == null || key.isEmpty())
+        if (slippery == null || slippery.isEmpty() || key.isEmpty())
             return false;
 
         for (Either<TagKey<Item>, RegistryKey<Item>> entry : slippery) {
