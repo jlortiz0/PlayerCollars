@@ -41,7 +41,7 @@ public class CollarLockerItem extends Item {
             return ActionResult.FAIL;
         }
         var deedOwner = NbtUtil.getDeedOwner(collarStack);
-        if (deedOwner == null) {
+        if (deedOwner == null || deedOwner.owned().isEmpty()) {
             user.sendMessage(Text.translatable("item.playercollars.collar_locker.no_set_non_deed").formatted(Formatting.RED), true);
             return ActionResult.FAIL;
         }
