@@ -54,10 +54,8 @@ public class DeedItem extends Item {
     @Override
     public Text getName(ItemStack stack) {
         OwnerComponent owner = NbtUtil.getDeedOwner(stack);
-        if (owner == null)
+        if (owner != null)
             return Text.translatable(getTranslationKey(stack) + ".filled");
-        else if (owner.owned().isEmpty())
-            return Text.translatable(getTranslationKey(stack) + ".partial", owner.name());
         else
             return super.getName(stack);
     }
