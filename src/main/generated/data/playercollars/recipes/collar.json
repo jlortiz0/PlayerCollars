@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "d": {
+      "tag": "c:dyes"
+    },
+    "i": {
+        "tag": "c:gold_ingots"
+    },
+    "l": {
+      "item": "minecraft:leather"
+    }
+  },
+  "pattern": [
+    " l ",
+    "lil",
+    " d "
+  ],
+  "result": {
+      "item": "playercollars:collar"
+  },
+    "show_notification": true
+}

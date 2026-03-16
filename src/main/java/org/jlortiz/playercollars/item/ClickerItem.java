@@ -1,36 +1,61 @@
 package org.jlortiz.playercollars.item;
 
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import dev.emi.trinkets.api.TrinketsApi;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
+import net.minecraft.enchantment.LureEnchantment;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.DyeableItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
-import org.jlortiz.playercollars.PacketLookAtLerped;
+import org.jetbrains.annotations.Nullable;
 import org.jlortiz.playercollars.PlayerCollarsMod;
+import org.jlortiz.playercollars.network.PacketLookAtLerped;
+import org.jlortiz.playercollars.util.NbtUtil;
 
 import java.util.List;
+import java.util.UUID;
 
 public class ClickerItem extends Item implements DyeableItem {
+    private static final UUID LURE_CLICKER_DISTANCE_ATTRIBUTE = UUID.fromString("c60e705d-bd9b-40bd-af81-28c7ad15d8d3");
     public ClickerItem() {
         super(new Item.Settings().maxCount(1));
     }
 
+    public static boolean isAcceptableEnchantment(Enchantment enchantment) {
+        return enchantment instanceof LureEnchantment;
+    }
+
+    public boolean getForceTurning(ItemStack stack) {
+        return stack.getNbt() != null && stack.getNbt().getBoolean("force_turning");
+    }
+
+    public void setForceTurning(ItemStack stack, boolean forceTurning) {
+        stack.getOrCreateNbt().putBoolean("force_turning", forceTurning);
+    }
+
     @Override
-    public boolean isEnchantable(ItemStack p_41456_) {
+    public int getColor(ItemStack stack) {
+        return NbtUtil.getColor(stack, 0xFFFFFF);
+    }
+
+    @Override
+    public boolean isEnchantable(ItemStack stack) {
         return true;
     }
 
@@ -40,44 +65,73 @@ public class ClickerItem extends Item implements DyeableItem {
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World p_41432_, PlayerEntity p_41433_, Hand p_41434_) {
-        p_41433_.setCurrentHand(p_41434_);
-        if (!p_41432_.isClient) {
-            int level = EnchantmentHelper.getLevel(Enchantments.LURE, p_41433_.getStackInHand(p_41434_));
-            if (level > 0) {
-                final int trueLevel = 4 << level;
-                List<ServerPlayerEntity> plrs = ((ServerWorld) p_41432_).getPlayers((p) -> !p.isPartOf(p_41433_) && p.isInRange(p_41433_, trueLevel));
-                for (ServerPlayerEntity p : plrs) {
-                    TrinketsApi.getTrinketComponent(p).map((x) -> x.getEquipped(PlayerCollarsMod.COLLAR_ITEM))
-                            .map((x) -> PlayerCollarsMod.filterStacksByOwner(x, p_41433_.getUuid()))
-                            .ifPresent((x) -> {
-                                PacketLookAtLerped packet = new PacketLookAtLerped(p_41433_);
-                                PacketByteBuf buffer = PacketByteBufs.create();
-                                packet.write(buffer);
-                                ServerPlayNetworking.send(p, new Identifier(PlayerCollarsMod.MOD_ID, "look_at"), buffer);
-                            });
+    public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+        player.setCurrentHand(hand);
+        if (!world.isClient) {
+            ItemStack stack = player.getStackInHand(hand);
+            var forceTurning = getForceTurning(stack);
+
+            if (player.isSneaking()) {
+                setForceTurning(stack, !forceTurning);
+                player.sendMessage(Text.translatable(forceTurning ? "item.playercollars.clicker.turn_disable" : "item.playercollars.clicker.turn_enable"), true);
+                return TypedActionResult.consume(stack);
+            }
+
+            world.playSoundFromEntity(null, player, PlayerCollarsMod.CLICKER_ON, SoundCategory.PLAYERS, 1, 1);
+
+            if (forceTurning) {
+                var clickerDistance = player.getAttributeValue(PlayerCollarsMod.ATTR_CLICKER_DISTANCE);
+                System.out.println("clicker distance = " + clickerDistance);
+                var targets = ((ServerWorld) world).getPlayers((p) -> !p.isPartOf(player) && p.isInRange(player, clickerDistance));
+
+                PacketLookAtLerped packet = new PacketLookAtLerped(player);
+                for (ServerPlayerEntity target : targets) {
+                    System.out.println("maybe sending look packet for " + target.getEntityName());
+                    TrinketsApi.getTrinketComponent(target)
+                            .map((x) -> x.getEquipped((y) -> y.isIn(PlayerCollarsMod.COLLAR_TAG)))
+                            .map((x) -> PlayerCollarsMod.filterStacksByOwner(x, player.getUuid(), target.getUuid()))
+                            .ifPresent((x) -> ServerPlayNetworking.send(target, packet));
                 }
             }
-            p_41432_.playSoundFromEntity(null, p_41433_, PlayerCollarsMod.CLICKER_ON, SoundCategory.PLAYERS, 1, 1);
         }
-        return TypedActionResult.fail(p_41433_.getStackInHand(p_41434_));
+        return TypedActionResult.fail(player.getStackInHand(hand));
     }
 
     @Override
-    public int getMaxUseTime(ItemStack p_41454_) {
+    public int getMaxUseTime(ItemStack stack) {
         return Integer.MAX_VALUE;
     }
 
     @Override
-    public void onStoppedUsing(ItemStack p_41412_, World p_41413_, LivingEntity p_41414_, int p_41415_) {
-        if (!p_41413_.isClient) {
-            p_41413_.playSoundFromEntity(null, p_41414_, PlayerCollarsMod.CLICKER_OFF, SoundCategory.PLAYERS, 1, 1);
+    public void onStoppedUsing(ItemStack stack, World world, LivingEntity user, int remainingUseTicks) {
+        if (!world.isClient) {
+            world.playSoundFromEntity(null, user, PlayerCollarsMod.CLICKER_OFF, SoundCategory.PLAYERS, 1, 1);
         }
     }
 
     @Override
-    public int getColor(ItemStack itemStack) {
-        NbtCompound $$1 = itemStack.getSubNbt("display");
-        return $$1 != null && $$1.contains("color", 99) ? $$1.getInt("color") : 0xFFFFFF;
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+        super.appendTooltip(stack, world, tooltip, context);
+        if (getForceTurning(stack))
+            tooltip.add(Text.translatable("item.playercollars.clicker.turn"));
+    }
+
+    @Override
+    public Multimap<EntityAttribute, EntityAttributeModifier> getAttributeModifiers(ItemStack stack, EquipmentSlot slot) {
+        if (slot != EquipmentSlot.MAINHAND)
+            return ImmutableMultimap.of();
+
+        var lure = EnchantmentHelper.getLure(stack);
+        if (lure == 0)
+            return ImmutableMultimap.of();
+
+        EntityAttributeModifier attribute = new EntityAttributeModifier(
+                LURE_CLICKER_DISTANCE_ATTRIBUTE,
+                getTranslationKey(),
+                lure * 4,
+                EntityAttributeModifier.Operation.ADDITION
+        );
+
+        return ImmutableMultimap.of(PlayerCollarsMod.ATTR_CLICKER_DISTANCE, attribute);
     }
 }

@@ -1,18 +1,22 @@
 {
-  "minVersion": "0.8",
-  "compatibilityLevel": "JAVA_17",
-  "package": "org.jlortiz.playercollars.leash.mixin",
-  "required": true,
-  "injectors": {
-    "defaultRequire": 1
-  },
-  "refmap": "PlayerCollars-refmap.json",
-  "mixins": [
-    "MixinEnchantmentTarget",
-    "MixinLeashKnotEntity",
-    "MixinPlayerEntity",
-    "MixinServerPlayerEntity",
-    "MixinServerWorld",
-    "MixinTurtleEntity"
-  ]
+    "minVersion": "0.8",
+    "compatibilityLevel": "JAVA_17",
+    "package": "org.jlortiz.playercollars.mixin",
+    "required": true,
+    "injectors": {
+        "defaultRequire": 1
+    },
+    "refmap": "PlayerCollars-refmap.json",
+    "mixins": [
+        "BoneItemMixin",
+        "LivingEntityMixin",
+        "MixinBindingCurseEnchantment",
+        "MixinEnchantment",
+        "MixinEnchantmentHelper",
+        "PlayerEntityMixin"
+    ],
+    "client": [
+        "ClientPlayerInteractionManagerMixin",
+        "PlayerRendererMixin"
+    ]
 }

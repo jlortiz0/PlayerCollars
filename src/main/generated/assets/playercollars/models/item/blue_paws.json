@@ -1,0 +1,7 @@
+{
+    "parent": "playercollars:item/white_paws",
+    "textures": {
+        "layer0": "minecraft:block/blue_wool",
+        "particle": "minecraft:block/blue_wool"
+    }
+}

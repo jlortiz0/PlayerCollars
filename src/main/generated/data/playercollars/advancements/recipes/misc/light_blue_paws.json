@@ -1,0 +1,35 @@
+{
+    "parent": "minecraft:recipes/root",
+    "criteria": {
+        "has_light_blue_wool": {
+            "conditions": {
+                "items": [
+                    {
+                        "items": [
+                            "minecraft:light_blue_wool"
+                        ]
+                    }
+                ]
+            },
+            "trigger": "minecraft:inventory_changed"
+        },
+        "has_the_recipe": {
+            "conditions": {
+                "recipe": "playercollars:light_blue_paws"
+            },
+            "trigger": "minecraft:recipe_unlocked"
+        }
+    },
+    "requirements": [
+        [
+            "has_light_blue_wool",
+            "has_the_recipe"
+        ]
+    ],
+    "rewards": {
+        "recipes": [
+            "playercollars:light_blue_paws"
+        ]
+    },
+    "sends_telemetry_event": false
+}

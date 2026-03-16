@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "g": {
+      "item": "minecraft:glass_pane"
+    },
+    "r": {
+      "item": "minecraft:redstone"
+    },
+    "s": {
+      "item": "minecraft:stone"
+    }
+  },
+  "pattern": [
+    "grg",
+    "srs"
+  ],
+  "result": {
+    "count": 3,
+      "item": "playercollars:invisible_fence"
+  },
+    "show_notification": true
+}

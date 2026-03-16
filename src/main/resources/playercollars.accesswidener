@@ -1,0 +1,7 @@
+accessWidener v2 named
+
+accessible field net/minecraft/client/render/entity/model/PlayerEntityModel thinArms Z
+
+accessible method net/minecraft/enchantment/EnchantmentHelper forEachEnchantment (Lnet/minecraft/enchantment/EnchantmentHelper$Consumer;Ljava/lang/Iterable;)V
+accessible method net/minecraft/enchantment/EnchantmentHelper forEachEnchantment (Lnet/minecraft/enchantment/EnchantmentHelper$Consumer;Lnet/minecraft/item/ItemStack;)V
+accessible class net/minecraft/enchantment/EnchantmentHelper$Consumer

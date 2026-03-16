@@ -1,0 +1,44 @@
+{
+  "variants": {
+    "facing=east,part=foot": {
+      "model": "playercollars:block/lime_dog_bed",
+      "x": 0,
+      "y": 270
+    },
+    "facing=east,part=head": {
+      "model": "playercollars:block/lime_dog_bed",
+      "x": 0,
+      "y": 90
+    },
+    "facing=north,part=foot": {
+      "model": "playercollars:block/lime_dog_bed",
+      "x": 0,
+      "y": 180
+    },
+    "facing=north,part=head": {
+      "model": "playercollars:block/lime_dog_bed",
+      "x": 0,
+      "y": 0
+    },
+    "facing=south,part=foot": {
+      "model": "playercollars:block/lime_dog_bed",
+      "x": 0,
+      "y": 0
+    },
+    "facing=south,part=head": {
+      "model": "playercollars:block/lime_dog_bed",
+      "x": 0,
+      "y": 180
+    },
+    "facing=west,part=foot": {
+      "model": "playercollars:block/lime_dog_bed",
+      "x": 0,
+      "y": 90
+    },
+    "facing=west,part=head": {
+      "model": "playercollars:block/lime_dog_bed",
+      "x": 0,
+      "y": 270
+    }
+  }
+}

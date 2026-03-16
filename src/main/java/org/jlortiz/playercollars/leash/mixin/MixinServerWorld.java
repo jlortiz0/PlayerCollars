@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerWorld.class)
+// TODO 2026-03-03 (solonovamax): why is this unused?
 public abstract class MixinServerWorld {
     @Inject(method = "shouldCancelSpawn", at = @At("HEAD"), cancellable = true, require = 0)
     private void leashplayers$onShouldCancelSpawn(Entity entity, CallbackInfoReturnable<Boolean> info) {
