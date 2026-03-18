@@ -1,0 +1,7 @@
+{
+    "type": "playercollars:owner_transfer",
+    "category": "misc",
+    "ingredient": {
+        "tag": "c:collars"
+    }
+}

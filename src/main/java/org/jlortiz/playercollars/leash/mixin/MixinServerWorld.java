@@ -10,11 +10,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerLevel.class)
 public abstract class MixinServerWorld {
-    @Inject(method = "shouldDiscardEntity", at = @At("HEAD"), cancellable = true, require = 0)
-    private void leashplayers$onShouldCancelSpawn(Entity entity, CallbackInfoReturnable<Boolean> info) {
+    @Inject(method = "addEntity", at = @At("HEAD"), cancellable = true, require = 0)
+    private void leashplayers$onAddEntity(Entity entity, CallbackInfoReturnable<Boolean> info) {
+        // ServerLevel.addEntity returns boolean; just ensure proxy always gets added
         if (entity instanceof LeashProxyEntity) {
-            info.setReturnValue(false);
-            info.cancel();
+            // Don't cancel — we *want* the proxy to spawn
         }
     }
 }

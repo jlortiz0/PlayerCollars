@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "playercollars:white_dog_bowl"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_white_terracotta": {
+      "conditions": {
+        "items": [
+          {
+              "items": [
+                  "minecraft:white_terracotta"
+              ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+        "has_white_terracotta",
+        "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "playercollars:white_dog_bowl"
+    ]
+  },
+    "sends_telemetry_event": false
+}

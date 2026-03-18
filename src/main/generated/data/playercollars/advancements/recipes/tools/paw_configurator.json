@@ -1,0 +1,33 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "playercollars:paw_configurator"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_white_paws": {
+      "conditions": {
+        "items": [
+          {
+              "tag": "playercollars:paws"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+        "has_white_paws",
+        "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "playercollars:paw_configurator"
+    ]
+  },
+    "sends_telemetry_event": false
+}
