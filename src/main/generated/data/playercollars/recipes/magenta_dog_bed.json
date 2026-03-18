@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "dog_bed",
+  "key": {
+    "w": {
+      "item": "minecraft:magenta_wool"
+    }
+  },
+  "pattern": [
+    "w w",
+    "www"
+  ],
+  "result": {
+      "item": "playercollars:magenta_dog_bed"
+  },
+    "show_notification": true
+}

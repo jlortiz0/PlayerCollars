@@ -1,0 +1,6 @@
+{
+  "parent": "playercollars:block/red_dog_bowl_2",
+  "textures": {
+    "0": "minecraft:block/white_concrete"
+  }
+}

@@ -1,0 +1,22 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "group": "foot_paws",
+    "key": {
+        "l": {
+            "item": "minecraft:leather"
+        },
+        "w": {
+            "item": "minecraft:lime_wool"
+        }
+    },
+    "pattern": [
+        " w ",
+        " w ",
+        "wlw"
+    ],
+    "result": {
+        "item": "playercollars:lime_foot_paws"
+    },
+    "show_notification": true
+}

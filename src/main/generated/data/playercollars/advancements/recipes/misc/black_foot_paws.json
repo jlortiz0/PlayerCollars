@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_leather": {
+      "conditions": {
+        "items": [
+          {
+              "items": [
+                  "minecraft:leather"
+              ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "playercollars:black_foot_paws"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+        "has_leather",
+        "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "playercollars:black_foot_paws"
+    ]
+  },
+    "sends_telemetry_event": false
+}

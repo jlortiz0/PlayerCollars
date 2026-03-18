@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+        "tag": "forge:dusts/redstone"
+    },
+    {
+        "tag": "forge:ingots/copper"
+    },
+    {
+      "item": "playercollars:collar_locker"
+    }
+  ],
+  "result": {
+      "item": "playercollars:paw_configurator"
+  }
+}

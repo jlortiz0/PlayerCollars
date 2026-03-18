@@ -1,6 +1,7 @@
 {
-  "values": [
-    "playercollars:collar"
-  ],
-  "replace": false
+    "replace": false,
+    "values": [
+        "playercollars:collar",
+        "playercollars:tagless_collar"
+    ]
 }

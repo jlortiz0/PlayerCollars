@@ -1,0 +1,6 @@
+{
+  "parent": "playercollars:block/red_dog_bowl_0",
+  "textures": {
+    "particle": "minecraft:block/magenta_terracotta"
+  }
+}

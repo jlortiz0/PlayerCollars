@@ -1,0 +1,7 @@
+{
+    "parent": "playercollars:item/white_foot_paws",
+    "textures": {
+        "layer0": "minecraft:block/yellow_wool",
+        "particle": "minecraft:block/yellow_wool"
+    }
+}
