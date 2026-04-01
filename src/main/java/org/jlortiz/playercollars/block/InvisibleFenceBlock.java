@@ -1,7 +1,9 @@
 package org.jlortiz.playercollars.block;
 
-import io.wispforest.accessories.api.AccessoriesCapability;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.block.*;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -28,9 +30,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 import net.minecraft.world.tick.ScheduledTickView;
 import org.jlortiz.playercollars.PlayerCollarsMod;
-
-import java.util.List;
-import java.util.Optional;
 
 public class InvisibleFenceBlock extends FenceBlock {
     public static final RegistryKey<Block> REGISTRY_KEY = RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(PlayerCollarsMod.MOD_ID, "invisible_fence"));
@@ -91,11 +90,7 @@ public class InvisibleFenceBlock extends FenceBlock {
     protected VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
         if (context instanceof EntityShapeContext e) {
             if (state.get(POWERED) && e.getEntity() instanceof LivingEntity livingEntity) {
-                AccessoriesCapability cap = AccessoriesCapability.get(livingEntity);
-                if (cap == null) return VoxelShapes.empty();
-
-                return cap.getEquipped((y) -> y.isIn(PlayerCollarsMod.COLLAR_TAG)).isEmpty() ?
-                        VoxelShapes.empty() : super.getCollisionShape(state, world, pos, context);
+                return PlayerCollarsMod.isPet(livingEntity) ? super.getCollisionShape(state, world, pos, context) : VoxelShapes.empty();
             }
             // Vertical collision is cached using EntityShapeContext.ABSENT.
             // This will be re-checked if something actually lands on the fence, so this is safe for players.
@@ -106,17 +101,38 @@ public class InvisibleFenceBlock extends FenceBlock {
     }
 
     @Override
+    protected float calcBlockBreakingDelta(BlockState state, PlayerEntity player, BlockView world, BlockPos pos) {
+        if (PlayerCollarsMod.isPet(player)) return 0;
+        return super.calcBlockBreakingDelta(state, player, world, pos);
+    }
+
+    @Override
+    protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+        if (context instanceof EntityShapeContext e && e.getEntity() instanceof LivingEntity livingEntity) {
+            if (PlayerCollarsMod.isPet(livingEntity)) return VoxelShapes.empty();
+        }
+        return super.getOutlineShape(state, world, pos, context);
+    }
+
+    @Override
+    @Environment(EnvType.CLIENT)
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
         super.randomDisplayTick(state, world, pos, random);
-        if (state.get(POWERED) && random.nextFloat() < 0.25)
+        if (state.get(POWERED) && random.nextFloat() < 0.25 && !isLocalPlayerAPet(world))
             ParticleUtil.spawnParticlesAround(world, pos, 1, 0.5, 0.5, true, DustParticleEffect.DEFAULT);
+    }
+
+    @Environment(EnvType.CLIENT)
+    private boolean isLocalPlayerAPet(World world) {
+        if (!world.isClient) return false;
+        var localPlayer = MinecraftClient.getInstance().player;
+        return localPlayer != null && PlayerCollarsMod.isPet(localPlayer);
     }
 
     @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         if (world.isClient()) return ActionResult.PASS;
-        if (!Optional.ofNullable(AccessoriesCapability.get(player)).map((x) -> x.getEquipped((y) -> y.isIn(PlayerCollarsMod.COLLAR_TAG)))
-                .map(List::isEmpty).orElse(true)) {
+        if (PlayerCollarsMod.isPet(player)) {
             player.sendMessage(Text.translatable("block.playercollars.invisible_fence.toggle_fail").formatted(Formatting.RED), true);
             return ActionResult.FAIL;
         }

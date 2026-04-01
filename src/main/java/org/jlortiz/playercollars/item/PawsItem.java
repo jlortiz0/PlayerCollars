@@ -23,9 +23,9 @@ public class PawsItem extends FootPawsItem {
         super(key, color, pawColor);
     }
 
-    public static boolean shouldPreventBlockInteraction(ItemStack stack, @NotNull BlockState block) {
-        if (block.isIn(PlayerCollarsMod.PAWS_ALLOW_INTERACT)) return false;
-        List<Either<TagKey<Block>, RegistryKey<Block>>> allowed = stack.get(PlayerCollarsMod.CAN_INTERACT_COMPONENT_TYPE);
+    public static boolean shouldPreventBlockInteraction(ItemStack stack, @NotNull BlockState block, boolean isBreak) {
+        if (block.isIn(isBreak ? PlayerCollarsMod.PAWS_ALLOW_BREAK : PlayerCollarsMod.PAWS_ALLOW_INTERACT)) return false;
+        List<Either<TagKey<Block>, RegistryKey<Block>>> allowed = stack.get(isBreak ? PlayerCollarsMod.CAN_BREAK_COMPONENT_TYPE : PlayerCollarsMod.CAN_INTERACT_COMPONENT_TYPE);
         Optional<RegistryKey<Block>> key = block.getRegistryEntry().getKey();
         if (allowed == null || key.isEmpty()) return false;
         for (Either<TagKey<Block>, RegistryKey<Block>> entry : allowed) {
@@ -49,7 +49,7 @@ public class PawsItem extends FootPawsItem {
     public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
         super.appendTooltip(stack, context, tooltip, type);
         if (stack.get(PlayerCollarsMod.HELD_ITEMS_COMPONENT_TYPE) != null) tooltip.add(Text.translatable("item.playercollars.paws.slippery"));
-        if (stack.get(PlayerCollarsMod.CAN_INTERACT_COMPONENT_TYPE) != null) tooltip.add(Text.translatable("item.playercollars.paws.interaction"));
+        if (stack.get(PlayerCollarsMod.CAN_INTERACT_COMPONENT_TYPE) != null || stack.get(PlayerCollarsMod.CAN_BREAK_COMPONENT_TYPE) != null) tooltip.add(Text.translatable("item.playercollars.paws.interaction"));
     }
 
     public static RegistryKey<Item> getRegistryKey(DyeColor c) {

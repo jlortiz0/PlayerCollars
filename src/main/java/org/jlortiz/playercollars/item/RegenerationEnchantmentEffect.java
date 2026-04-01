@@ -27,9 +27,7 @@ public record RegenerationEnchantmentEffect(EnchantmentLevelBasedValue level) im
     @Override
     public void apply(ServerWorld world, int level, EnchantmentEffectContext context, Entity user, Vec3d pos) {
         if (context.owner() == null) return;
-        AccessoriesCapability cap = AccessoriesCapability.get(context.owner());
-        if (cap == null) return;
-        List<SlotEntryReference> ls = cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG));
+        List<SlotEntryReference> ls = PlayerCollarsMod.getEquippedCollars(context.owner());
         for (SlotEntryReference p : ls) {
             OwnerComponent oc = p.stack().get(PlayerCollarsMod.OWNER_COMPONENT_TYPE);
             if (oc != null) {

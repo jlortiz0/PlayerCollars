@@ -43,6 +43,9 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     modImplementation("io.wispforest:accessories-fabric:1.2.16-beta+1.21.4")
+    modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-fabric:18.0.808") {
+        exclude group: "net.fabricmc.fabric-api"
+    }
 }
 
 processResources {

@@ -13,6 +13,7 @@ import org.jlortiz.playercollars.PlayerCollarsMod;
 import org.jlortiz.playercollars.client.screen.PawsConfigScreen;
 import org.jlortiz.playercollars.item.FootPawsItem;
 import org.jlortiz.playercollars.network.PacketLookAtLerped;
+import org.jlortiz.playercollars.network.PacketUpdatePawsConfig;
 
 @Environment(EnvType.CLIENT)
 public class RegisterClient implements ClientModInitializer {
@@ -28,8 +29,10 @@ public class RegisterClient implements ClientModInitializer {
             AccessoriesRendererRegistry.registerRenderer(p, () -> renderer2);
         ClientPlayNetworking.registerGlobalReceiver(PacketLookAtLerped.ID, (payload, context) ->
                 context.client().execute(() -> RotationLerpHandler.beginClickTurn(payload.vec())));
+        ClientPlayNetworking.registerGlobalReceiver(PacketUpdatePawsConfig.ID, PacketUpdatePawsConfig::handle);
         WorldRenderEvents.END.register(RotationLerpHandler::turnTowardsClick);
-        HandledScreens.register(PlayerCollarsMod.PAWS_BLOCK_CONFIG_SCREEN_HANDLER, PawsConfigScreen<Block>::new);
+        HandledScreens.register(PlayerCollarsMod.PAWS_BLOCK_BREAK_CONFIG_SCREEN_HANDLER, PawsConfigScreen<Block>::new);
+        HandledScreens.register(PlayerCollarsMod.PAWS_BLOCK_INTERACTION_CONFIG_SCREEN_HANDLER, PawsConfigScreen<Block>::new);
         HandledScreens.register(PlayerCollarsMod.PAWS_ITEM_CONFIG_SCREEN_HANDLER, PawsConfigScreen<Item>::new);
     }
 }

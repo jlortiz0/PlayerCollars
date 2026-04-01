@@ -1,18 +1,26 @@
 package org.jlortiz.playercollars.leash.mixin;
 
 import com.mojang.authlib.GameProfile;
-import io.wispforest.accessories.api.AccessoriesCapability;
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.decoration.LeashKnotEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Uuids;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -31,7 +39,11 @@ import java.util.UUID;
 
 @Mixin(ServerPlayerEntity.class)
 public abstract class MixinServerPlayerEntity extends PlayerEntity implements LeashImpl {
-    @Shadow public abstract boolean isDisconnected();
+    @Unique
+    private static final String playerCollars$LEASH_HOLDER_TAG = "playercollars:leash_holder";
+
+    @Unique
+    private static final Codec<Either<UUID, BlockPos>> leashplayers$LEASH_HOLDER_CODEC = Codec.either(Uuids.CODEC, BlockPos.CODEC);
 
     @Shadow public abstract ServerWorld getServerWorld();
 
@@ -55,9 +67,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
     private void leashplayers$update() {
         if (
                 leashplayers$holder != null && (
-                        !leashplayers$holder.isAlive()
-                                || !isAlive()
-                                || isDisconnected()
+                        !leashplayers$holder.isAlive() || !isAlive() || !PlayerCollarsMod.isPet(this)
                 )
         ) {
             leashplayers$detach();
@@ -136,7 +146,16 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
     }
 
     @Unique
+    private void leashplayers$attachToBlock(BlockPos pos) {
+        var world = getServerWorld();
+        var leashKnotEntity = LeashKnotEntity.getOrCreate(world, pos);
+        leashKnotEntity.onPlace();
+        leashplayers$attach(leashKnotEntity);
+    }
+
+    @Unique
     private void leashplayers$attach(Entity entity) {
+        leashplayer$loyalty = getAttributeValue(PlayerCollarsMod.ATTR_LEASH_DISTANCE);
         leashplayers$holder = entity;
 
         if (leashplayers$proxy == null) {
@@ -186,6 +205,45 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
         }
     }
 
+    @Unique
+    private static boolean leashplayers$isLeashableBlock(BlockState blockState) {
+        return blockState.isIn(BlockTags.FENCES);
+    }
+
+    @Inject(method = "readCustomDataFromNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
+    public void leashplayers$readCustomDataFromNbt(NbtCompound nbt, CallbackInfo ci) {
+        NbtElement leashHolderNbt = nbt.get(playerCollars$LEASH_HOLDER_TAG);
+        if (leashHolderNbt != null) {
+            leashplayers$LEASH_HOLDER_CODEC.parse(NbtOps.INSTANCE, leashHolderNbt).ifSuccess(newHolder ->
+                    newHolder.ifLeft(uuid -> {
+                        var oldHolder = getServerWorld().getPlayerByUuid(uuid);
+                        if (isAlive() && oldHolder != null && oldHolder.isAlive()) {
+                            leashplayers$attach(oldHolder);
+                        } else {
+                            leashplayers$drop();
+                        }
+                    }).ifRight(blockPos -> {
+                        if (leashplayers$isLeashableBlock(getServerWorld().getBlockState(blockPos))) {
+                            leashplayers$attachToBlock(blockPos);
+                        } else {
+                            leashplayers$drop();
+                        }
+                    }));
+        }
+    }
+
+    @Inject(method = "writeCustomDataToNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
+    public void leashplayers$writeCustomDataToNbt(NbtCompound nbt, CallbackInfo ci) {
+        Entity leashHolder = leashplayers$holder;
+        if (leashHolder instanceof LeashKnotEntity knot) {
+            nbt.put(playerCollars$LEASH_HOLDER_TAG,
+                    leashplayers$LEASH_HOLDER_CODEC.encodeStart(NbtOps.INSTANCE, Either.right(knot.getAttachedBlockPos())).getOrThrow());
+        } else if (leashHolder != null) {
+            nbt.put(playerCollars$LEASH_HOLDER_TAG,
+                    leashplayers$LEASH_HOLDER_CODEC.encodeStart(NbtOps.INSTANCE, Either.left(leashHolder.getUuid())).getOrThrow());
+        }
+    }
+
     @Override
     public Entity leashplayers$getProxyLeashHolder() {
         return leashplayers$proxy == null ? null : leashplayers$proxy.getLeashHolder();
@@ -195,11 +253,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Le
     public ActionResult leashplayers$interact(PlayerEntity player, Hand hand) {
         ItemStack stack = player.getStackInHand(hand);
         if (stack.getItem() == Items.LEAD && leashplayers$holder == null) {
-            AccessoriesCapability cap = AccessoriesCapability.get(this);
-            if (cap == null) return ActionResult.PASS;
-            ItemStack is = PlayerCollarsMod.filterStacksByOwner(cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG)), player.getUuid(), getUuid());
-            if (is == null) return ActionResult.PASS;
-            leashplayer$loyalty = getAttributeValue(PlayerCollarsMod.ATTR_LEASH_DISTANCE);
+            if (!PlayerCollarsMod.getOwnershipLevel(this, player).isOwned()) return ActionResult.PASS;
             if (!player.isCreative()) {
                 stack.decrement(1);
             }

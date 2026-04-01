@@ -83,6 +83,10 @@ public class CollarItem extends AccessoryItem {
         if (owner != null) {
             tooltip.add(Text.translatable("item.playercollars.collar.owner", owner.name()).formatted(Formatting.GRAY));
         }
+        Text nameTag = stack.get(PlayerCollarsMod.NAME_TAG_COMPONENT_TYPE);
+        if (nameTag != null) {
+            tooltip.add(Text.translatable("item.playercollars.collar.name_tag", nameTag).formatted(Formatting.GRAY));
+        }
     }
 
     @Override

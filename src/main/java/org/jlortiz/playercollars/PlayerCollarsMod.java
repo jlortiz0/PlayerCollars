@@ -48,6 +48,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
 import net.minecraft.util.*;
 import net.minecraft.util.dynamic.Codecs;
 import net.minecraft.util.hit.EntityHitResult;
@@ -55,16 +56,19 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jlortiz.playercollars.block.DogBedBlock;
 import org.jlortiz.playercollars.block.DogBowlBlock;
 import org.jlortiz.playercollars.block.InvisibleFenceBlock;
+import org.jlortiz.playercollars.event.PawsEventHandler;
 import org.jlortiz.playercollars.item.*;
 import org.jlortiz.playercollars.leash.LeashImpl;
 import org.jlortiz.playercollars.leash.LeashProxyEntity;
 import org.jlortiz.playercollars.network.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
@@ -79,7 +83,7 @@ public class PlayerCollarsMod implements ModInitializer {
     public static final InvisibleFenceBlock INVISIBLE_FENCE_BLOCK = Registry.register(Registries.BLOCK, InvisibleFenceBlock.REGISTRY_KEY,
             new InvisibleFenceBlock(AbstractBlock.Settings.create().breakInstantly().sounds(BlockSoundGroup.GLASS).nonOpaque().dynamicBounds()));
     public static final BlockItem INVISIBLE_FENCE_BLOCK_ITEM = Registry.register(Registries.ITEM, InvisibleFenceBlock.ITEM_REGISTRY_KEY,
-			new BlockItem(INVISIBLE_FENCE_BLOCK, new Item.Settings().registryKey(InvisibleFenceBlock.ITEM_REGISTRY_KEY)));
+			new InvisibleFenceBlockItem(INVISIBLE_FENCE_BLOCK, new Item.Settings().registryKey(InvisibleFenceBlock.ITEM_REGISTRY_KEY)));
     public static final PawSetupItem PAW_CONFIGURATION_ITEM = Registry.register(Registries.ITEM, PawSetupItem.REGISTRY_KEY, new PawSetupItem());
     public static final CollarLockerItem COLLAR_LOCKER_ITEM = Registry.register(Registries.ITEM, CollarLockerItem.REGISTRY_KEY, new CollarLockerItem());
 	public static final SpatulaItem SPATULA_ITEM = Registry.register(Registries.ITEM, Identifier.of(MOD_ID, "golden_spatula"), new SpatulaItem());
@@ -100,6 +104,11 @@ public class PlayerCollarsMod implements ModInitializer {
 			Identifier.of(MOD_ID, "owner_component"),
 			ComponentType.<OwnerComponent>builder().codec(OWNER_COMPONENT_CODEC).build());
 
+	public static final ComponentType<Text> NAME_TAG_COMPONENT_TYPE = Registry.register(
+			Registries.DATA_COMPONENT_TYPE,
+			Identifier.of(MOD_ID, "name_tag_component"),
+			ComponentType.<Text>builder().codec(TextCodecs.CODEC).build());
+
 	private static final Codec<List<Either<TagKey<Block>, RegistryKey<Block>>>> CAN_INTERACT_COMPONENT_CODEC = Codec.withAlternative(
 			new ListCodec<>(new EitherCodec<>(TagKey.codec(RegistryKeys.BLOCK), RegistryKey.createCodec(RegistryKeys.BLOCK)), 0, 1024),
 			Codec.of(Encoder.error("deprecated"), new ListCodec<>(Identifier.CODEC, 0, 65535).map((x) -> {
@@ -114,6 +123,13 @@ public class PlayerCollarsMod implements ModInitializer {
 			Registries.DATA_COMPONENT_TYPE,
 			Identifier.of(MOD_ID, "can_interact_component"),
 			ComponentType.<List<Either<TagKey<Block>, RegistryKey<Block>>>>builder().codec(CAN_INTERACT_COMPONENT_CODEC).build());
+
+	private static final Codec<List<Either<TagKey<Block>, RegistryKey<Block>>>> CAN_BREAK_COMPONENT_CODEC = new ListCodec<>(
+			new EitherCodec<>(TagKey.codec(RegistryKeys.BLOCK), RegistryKey.createCodec(RegistryKeys.BLOCK)), 0, 1024);
+	public static final ComponentType<List<Either<TagKey<Block>, RegistryKey<Block>>>> CAN_BREAK_COMPONENT_TYPE = Registry.register(
+			Registries.DATA_COMPONENT_TYPE,
+			Identifier.of(MOD_ID, "can_break_component"),
+			ComponentType.<List<Either<TagKey<Block>, RegistryKey<Block>>>>builder().codec(CAN_BREAK_COMPONENT_CODEC).build());
 
 	private static final Codec<List<Either<TagKey<Item>, RegistryKey<Item>>>> HELD_ITEMS_COMPONENT_CODEC = new ListCodec<>(
 			new EitherCodec<>(TagKey.codec(RegistryKeys.ITEM), RegistryKey.createCodec(RegistryKeys.ITEM)), 0, 65535);
@@ -140,11 +156,16 @@ public class PlayerCollarsMod implements ModInitializer {
 
 	public static final DogBedBlock[] DOG_BEDS = new DogBedBlock[DyeColor.values().length];
 	public static final BedItem[] DOG_BED_ITEMS = new BedItem[DyeColor.values().length];
+
 	public static final TagKey<Item> COLLAR_TAG = TagKey.of(RegistryKeys.ITEM, Identifier.of("c", "collars"));
+	public static final TagKey<Block> PET_BED_BLOCK_TAG = TagKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, "pet_bed"));
+	public static final TagKey<Block> PET_BOWL_BLOCK_TAG = TagKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, "pet_bowl"));
+	public static final TagKey<Block> PET_BLOCK_TAG = TagKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, "for_pet_use"));
 
 	public static final DyeColor[] PAWS_DYE_COLORS = new DyeColor[]{DyeColor.WHITE, DyeColor.LIGHT_GRAY,
 			DyeColor.GRAY, DyeColor.BLACK, DyeColor.BLUE, DyeColor.RED, DyeColor.PURPLE};
 	public static final PawsItem[] PAWS_ITEMS = new PawsItem[PAWS_DYE_COLORS.length];
+	public static final TagKey<Block> PAWS_ALLOW_BREAK = TagKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, "paws_allow_break"));
 	public static final TagKey<Block> PAWS_ALLOW_INTERACT = TagKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, "paws_allow_interact"));
 	public static final TagKey<Item> PAWS_TAG = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID, "paws"));
 	public static final FootPawsItem[] FOOT_PAWS_ITEMS = new FootPawsItem[PAWS_DYE_COLORS.length];
@@ -154,8 +175,11 @@ public class PlayerCollarsMod implements ModInitializer {
 	public static final Item[] DOG_BOWL_ITEMS = new Item[DyeColor.values().length];
 	public static final BlockEntityType<DogBowlBlock.DogBowlBlockEntity> DOG_BOWL_BLOCK_ENTITY;
 	public static final ItemGroup GROUP;
-	public static final ExtendedScreenHandlerType<PawsConfigScreenHandler<Block>, List<Either<TagKey<Block>, RegistryKey<Block>>>> PAWS_BLOCK_CONFIG_SCREEN_HANDLER = new ExtendedScreenHandlerType<>(
+	public static final ExtendedScreenHandlerType<PawsConfigScreenHandler<Block>, List<Either<TagKey<Block>, RegistryKey<Block>>>> PAWS_BLOCK_INTERACTION_CONFIG_SCREEN_HANDLER = new ExtendedScreenHandlerType<>(
 			PawsConfigScreenHandler.PawsBlockConfigScreenHandler::new, PacketCodecs.codec(CAN_INTERACT_COMPONENT_CODEC)
+	);
+	public static final ExtendedScreenHandlerType<PawsConfigScreenHandler<Block>, List<Either<TagKey<Block>, RegistryKey<Block>>>> PAWS_BLOCK_BREAK_CONFIG_SCREEN_HANDLER = new ExtendedScreenHandlerType<>(
+			PawsConfigScreenHandler.PawsBlockBreakConfigScreenHandler::new, PacketCodecs.codec(CAN_BREAK_COMPONENT_CODEC)
 	);
 	public static final ExtendedScreenHandlerType<PawsConfigScreenHandler<Item>, List<Either<TagKey<Item>, RegistryKey<Item>>>> PAWS_ITEM_CONFIG_SCREEN_HANDLER = new ExtendedScreenHandlerType<>(
 			PawsConfigScreenHandler.PawsItemConfigScreenHandler::new, PacketCodecs.codec(HELD_ITEMS_COMPONENT_CODEC)
@@ -197,16 +221,16 @@ public class PlayerCollarsMod implements ModInitializer {
                             entries.add(INVISIBLE_FENCE_BLOCK_ITEM);
                         })).build());
 
-		Registry.register(Registries.SCREEN_HANDLER, Identifier.of(MOD_ID, "paws_block_config"), PAWS_BLOCK_CONFIG_SCREEN_HANDLER);
+		Registry.register(Registries.SCREEN_HANDLER, Identifier.of(MOD_ID, "paws_block_break_config"), PAWS_BLOCK_BREAK_CONFIG_SCREEN_HANDLER);
+		Registry.register(Registries.SCREEN_HANDLER, Identifier.of(MOD_ID, "paws_block_config"), PAWS_BLOCK_INTERACTION_CONFIG_SCREEN_HANDLER);
 		Registry.register(Registries.SCREEN_HANDLER, Identifier.of(MOD_ID, "paws_item_config"), PAWS_ITEM_CONFIG_SCREEN_HANDLER);
 	}
 
-	public static ItemStack filterStacksByOwner(Iterable<SlotEntryReference> stacks, UUID plr, UUID entity) {
+	public static ItemStack filterStacksByOwner(Iterable<SlotEntryReference> stacks, UUID ownerUuid, UUID entity) {
 		for (SlotEntryReference p : stacks) {
 			ItemStack is = p.stack();
 			OwnerComponent owner = is.get(OWNER_COMPONENT_TYPE);
-			if (owner != null && owner.uuid().equals(plr) &&
-					(owner.owned().isEmpty() || owner.owned().get().equals(entity))) {
+			if (owner != null && owner.isOwnedBy(ownerUuid) && owner.isValidForPet(entity)) {
 				return is;
 			}
 		}
@@ -235,19 +259,93 @@ public class PlayerCollarsMod implements ModInitializer {
 			for (Leashable l : list) {
 				if (!(l instanceof LeashProxyEntity le)) continue;
 				LivingEntity leashTarget = le.getLeashTarget();
-				AccessoriesCapability cap = AccessoriesCapability.get(leashTarget);
-				if (cap == null) continue;
-				for (SlotEntryReference sr : cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG))) {
-					OwnerComponent oc = sr.stack().get(OWNER_COMPONENT_TYPE);
-					if (oc == null || !oc.owned().orElseGet(leashTarget::getUuid).equals(leashTarget.getUuid())) continue;
-					if (!player.getUuid().equals(oc.uuid())) {
-						player.sendMessage(Text.translatable("message.playercollars.no_break_fence_other", le.getLeashTarget().getName()).formatted(Formatting.RED), true);
-						return true;
-					}
+				if (doesPetBelongToSomeoneElse(leashTarget, player)) {
+					player.sendMessage(Text.translatable("message.playercollars.no_break_fence_other", le.getLeashTarget().getName()).formatted(Formatting.RED), true);
+					return true;
 				}
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Find all item slots containing collars currently equipped by the player.
+	 */
+	public static @NotNull List<SlotEntryReference> getEquippedCollars(@NotNull LivingEntity player) {
+		AccessoriesCapability cap = AccessoriesCapability.get(player);
+		if (cap == null) return Collections.emptyList();
+
+		return cap.getEquipped(x -> x.isIn(PlayerCollarsMod.COLLAR_TAG));
+	}
+
+	/**
+	 * Get the {@link ItemStack} describing the collar worn by the player which is owned by the given owner.
+	 * @return owned collar if present, or {@code null}
+	 */
+	public static @Nullable ItemStack getOwnedCollar(@NotNull LivingEntity player, @NotNull Entity owner) {
+		List<SlotEntryReference> equippedCollars = getEquippedCollars(player);
+		return PlayerCollarsMod.filterStacksByOwner(equippedCollars, owner.getUuid(), player.getUuid());
+	}
+
+	/**
+	 * Check if the player is a pet in the abstract.
+	 * Pets are subject to pet rules (currently just the inability to pass through or manipulate invisible fences).
+	 */
+	public static boolean isPet(@NotNull LivingEntity entity) {
+		return !getEquippedCollars(entity).isEmpty();
+	}
+
+	/**
+	 * Check what level of ownership a given potential owner has over the player.
+	 */
+	public static @NotNull OwnershipLevel getOwnershipLevel(@NotNull LivingEntity player, @NotNull Entity owner) {
+		return getOwnershipLevel(player, getOwnedCollar(player, owner));
+	}
+
+	/**
+	 * Check what level of ownership the given collar represents on the player.
+	 */
+	public static @NotNull OwnershipLevel getOwnershipLevel(@NotNull LivingEntity player, @Nullable ItemStack collarStack) {
+		if (collarStack == null) return OwnershipLevel.NOT_OWNED;
+
+		OwnerComponent ownerComponent = collarStack.get(OWNER_COMPONENT_TYPE);
+		if (ownerComponent == null || !ownerComponent.isValidForPet(player.getUuid())) return OwnershipLevel.NOT_OWNED;
+		if (ownerComponent.isOwnedByContract()) return OwnershipLevel.OWNED_SIGNED;
+		return OwnershipLevel.OWNED;
+	}
+
+	/**
+	 * Check if the player is owned by someone else.
+	 * @return {@code true} if the player is an owned pet, but not owned by the given owner.
+	 */
+	public static boolean doesPetBelongToSomeoneElse(@NotNull LivingEntity player, @NotNull Entity owner) {
+		boolean ownedBySomeoneElse = false;
+		for (SlotEntryReference collar : getEquippedCollars(player)) {
+			OwnerComponent ownership = collar.stack().get(OWNER_COMPONENT_TYPE);
+			if (ownership == null) continue;
+			if (!ownership.isValidForPet(player.getUuid())) continue;
+			if (ownership.isOwnedBy(owner.getUuid())) return false; // We have a claim to ownership
+			ownedBySomeoneElse = true;
+		}
+		return ownedBySomeoneElse;
+	}
+
+	public static boolean renamePlayer(@NotNull LivingEntity player, @NotNull Entity owner, @NotNull Text text) {
+		ItemStack ownedCollar = getOwnedCollar(player, owner);
+		if (!getOwnershipLevel(player, ownedCollar).isOwned()) return false;
+
+		ownedCollar.set(NAME_TAG_COMPONENT_TYPE, text);
+		return true;
+	}
+
+	public static @Nullable Text getPlayerCustomName(@NotNull LivingEntity player) {
+		for (var collar : PlayerCollarsMod.getEquippedCollars(player)) {
+			var nameComponent = collar.stack().get(PlayerCollarsMod.NAME_TAG_COMPONENT_TYPE);
+			if (nameComponent != null) {
+				return nameComponent;
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -258,10 +356,13 @@ public class PlayerCollarsMod implements ModInitializer {
 		ServerPlayNetworking.registerGlobalReceiver(PacketUpdateCollar.ID, PacketUpdateCollar::handle);
 		PayloadTypeRegistry.playC2S().register(PacketStampDeed.ID, PacketStampDeed.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(PacketStampDeed.ID, PacketStampDeed::handle);
+		PayloadTypeRegistry.playC2S().register(PacketSetGhostItem.ID, PacketSetGhostItem.CODEC);
+		ServerPlayNetworking.registerGlobalReceiver(PacketSetGhostItem.ID, PacketSetGhostItem::handle);
 		PayloadTypeRegistry.playC2S().register(PacketOpenPawsConfig.ID, PacketOpenPawsConfig.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(PacketOpenPawsConfig.ID, PacketOpenPawsConfig::handle);
 
 		PayloadTypeRegistry.playS2C().register(PacketLookAtLerped.ID, PacketLookAtLerped.CODEC);
+		PayloadTypeRegistry.playS2C().register(PacketUpdatePawsConfig.ID, PacketUpdatePawsConfig.CODEC);
 		AccessoryRegistry.register(COLLAR_ITEM, COLLAR_ITEM);
         AccessoryRegistry.register(TAGLESS_COLLAR_ITEM, COLLAR_ITEM);
 
@@ -299,28 +400,24 @@ public class PlayerCollarsMod implements ModInitializer {
 			if (player.isSpectator()) return ActionResult.PASS;
 
 			ServerWorld sworld = (ServerWorld) world;
-			AccessoriesCapability cap = AccessoriesCapability.get(player);
-			if (cap != null) {
-				for (SlotEntryReference sr : cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG))) {
-					OwnerComponent owner = sr.stack().get(OWNER_COMPONENT_TYPE);
-					if (owner != null && owner.uuid().equals(entity.getUuid())) {
-						// Collared players are allowed to attack owners, but have 75% damage returned to them
-						player.sendMessage(Text.translatable("message.playercollars.no_attack_owner").formatted(Formatting.RED), true);
+			if (getOwnershipLevel(player, entity).isOwned()) {
+				// Collared players are allowed to attack owners, but have 75% damage returned to them
+				player.sendMessage(Text.translatable("message.playercollars.no_attack_owner").formatted(Formatting.RED), true);
 
-						if (!sworld.getGameRules().getBoolean(ALLOW_ATTACK_OWNER)) {
-							return ActionResult.FAIL;
-						}
-
-						double f = player.getAttributeValue(EntityAttributes.ATTACK_DAMAGE);
-						f = (f - 1) * 0.75 + 1;
-						player.damage(sworld, player.getDamageSources().playerAttack(player), (float) Math.ceil(f));
-						return ActionResult.PASS;
-					}
+				if (!sworld.getGameRules().getBoolean(ALLOW_ATTACK_OWNER)) {
+					return ActionResult.FAIL;
 				}
+
+				double f = player.getAttributeValue(EntityAttributes.ATTACK_DAMAGE);
+				f = (f - 1) * 0.75 + 1;
+				player.damage(sworld, player.getDamageSources().playerAttack(player), (float) Math.ceil(f));
+				return ActionResult.PASS;
 			}
 
 			if (entity instanceof LeashKnotEntity ke && blockLeashKnotBreak(sworld, player, ke)) return ActionResult.FAIL;
 			return ActionResult.PASS;
 		});
+
+		PawsEventHandler.registerPawsEvents();
 	}
 }

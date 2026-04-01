@@ -32,6 +32,9 @@
     ],
     "fabric-datagen": [
       "org.jlortiz.playercollars.datagen.DatagenEntrypoint"
+    ],
+    "rei_client": [
+      "org.jlortiz.playercollars.integration.PlayerCollarsReiIntegration"
     ]
   },
   "mixins": [

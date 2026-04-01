@@ -29,14 +29,18 @@ public class PawsSelectScreen extends Screen {
         int x = this.width / 2;
         int y = this.height / 2;
 
-        this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.playercollars.paw_configurator.block.open"), (btn) -> {
-            ClientPlayNetworking.send(new PacketOpenPawsConfig(plr, false));
+        this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.playercollars.paw_configurator.block_break.open"), (btn) -> {
+            ClientPlayNetworking.send(new PacketOpenPawsConfig(plr, PacketOpenPawsConfig.PawsScreenType.BLOCK_BREAK));
             close();
         }).dimensions(x - 80, y, 160, 20).build());
-        this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.playercollars.paw_configurator.item.open"), (btn) -> {
-            ClientPlayNetworking.send(new PacketOpenPawsConfig(plr, true));
+        this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.playercollars.paw_configurator.block.open"), (btn) -> {
+            ClientPlayNetworking.send(new PacketOpenPawsConfig(plr, PacketOpenPawsConfig.PawsScreenType.BLOCK_INTERACT));
             close();
         }).dimensions(x - 80, y + 22, 160, 20).build());
+        this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.playercollars.paw_configurator.item.open"), (btn) -> {
+            ClientPlayNetworking.send(new PacketOpenPawsConfig(plr, PacketOpenPawsConfig.PawsScreenType.ITEM_HOLD));
+            close();
+        }).dimensions(x - 80, y + 44, 160, 20).build());
     }
 
     @Override

@@ -85,7 +85,12 @@ public class DatagenEntrypoint implements DataGeneratorEntrypoint {
 
         @Override
         protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
-            getOrCreateTagBuilder(BlockTags.BEDS).add(PlayerCollarsMod.DOG_BEDS);
+            getOrCreateTagBuilder(PlayerCollarsMod.PET_BED_BLOCK_TAG).add(PlayerCollarsMod.DOG_BEDS);
+            getOrCreateTagBuilder(PlayerCollarsMod.PET_BOWL_BLOCK_TAG).add(PlayerCollarsMod.DOG_BOWLS);
+            getOrCreateTagBuilder(PlayerCollarsMod.PET_BLOCK_TAG).addTag(PlayerCollarsMod.PET_BED_BLOCK_TAG)
+                    .addTag(PlayerCollarsMod.PET_BOWL_BLOCK_TAG);
+
+            getOrCreateTagBuilder(BlockTags.BEDS).addTag(PlayerCollarsMod.PET_BED_BLOCK_TAG);
 //            getOrCreateTagBuilder(PlayerCollarsMod.PAWS_ALLOW_INTERACT).addTag(BlockTags.BUTTONS)
 //                    .add(Blocks.LEVER).addTag(BlockTags.CROPS).addTag(BlockTags.BEDS)
 //                    .addTag(BlockTags.GEODE_INVALID_BLOCKS).addTag(BlockTags.CAULDRONS);

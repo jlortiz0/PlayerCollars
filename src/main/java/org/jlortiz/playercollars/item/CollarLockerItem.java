@@ -22,6 +22,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import org.jlortiz.playercollars.OwnershipLevel;
 import org.jlortiz.playercollars.PlayerCollarsMod;
 
 import java.util.List;
@@ -34,16 +35,17 @@ public class CollarLockerItem extends Item {
 
     @Override
     public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
-        if (!(entity instanceof PlayerEntity player) || user.getWorld().isClient) return ActionResult.PASS;
-        AccessoriesCapability cap = AccessoriesCapability.get(player);
+        if (!(entity instanceof PlayerEntity targetPlayer) || user.getWorld().isClient) return ActionResult.PASS;
+        AccessoriesCapability cap = AccessoriesCapability.get(targetPlayer);
         if (cap == null) return ActionResult.PASS;
 
-        ItemStack collarStack = PlayerCollarsMod.filterStacksByOwner(cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG)), user.getUuid(), player.getUuid());
-        if (collarStack == null) {
+        ItemStack collarStack = PlayerCollarsMod.getOwnedCollar(targetPlayer, user);
+        OwnershipLevel ownership = PlayerCollarsMod.getOwnershipLevel(targetPlayer, collarStack);
+        if (!ownership.isOwned()) {
             user.sendMessage(Text.translatable("item.playercollars.collar_locker.no_set_non_owner").formatted(Formatting.RED), true);
             return ActionResult.FAIL;
         }
-        if (collarStack.get(PlayerCollarsMod.OWNER_COMPONENT_TYPE).owned().isEmpty()) {
+        if (!ownership.isOwnedByContract()) {
             user.sendMessage(Text.translatable("item.playercollars.collar_locker.no_set_non_deed").formatted(Formatting.RED), true);
             return ActionResult.FAIL;
         }
@@ -72,9 +74,9 @@ public class CollarLockerItem extends Item {
                 else ench.remove((e) -> e.value().effects().contains(EnchantmentEffectComponentTypes.PREVENT_ARMOR_CHANGE));
             });
         }
-        player.sendMessage(Text.translatable(shouldLock ? "item.playercollars.collar_locker.locked" : "item.playercollars.collar_locker.unlocked"), true);
+        targetPlayer.sendMessage(Text.translatable(shouldLock ? "item.playercollars.collar_locker.locked" : "item.playercollars.collar_locker.unlocked"), true);
         user.sendMessage(Text.translatable(shouldLock ? "item.playercollars.collar_locker.locked" : "item.playercollars.collar_locker.unlocked"), true);
-        player.getWorld().playSound(null, entity.getX(), entity.getY(), entity.getZ(), shouldLock ? SoundEvents.ITEM_ARMOR_EQUIP_WOLF.value() : SoundEvents.ITEM_ARMOR_UNEQUIP_WOLF, SoundCategory.PLAYERS);
+        targetPlayer.getWorld().playSound(null, entity.getX(), entity.getY(), entity.getZ(), shouldLock ? SoundEvents.ITEM_ARMOR_EQUIP_WOLF.value() : SoundEvents.ITEM_ARMOR_UNEQUIP_WOLF, SoundCategory.PLAYERS);
 
         return ActionResult.SUCCESS;
     }
