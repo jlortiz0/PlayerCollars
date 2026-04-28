@@ -108,8 +108,19 @@ public class InvisibleFenceBlock extends FenceBlock {
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
         super.randomDisplayTick(state, world, pos, random);
-        if (state.get(POWERED) && random.nextFloat() < 0.25)
+        if (state.get(POWERED) && random.nextFloat() < 0.25) {
+
+            // 🙈 Musia's Magic Client Check! Is the person watching the screen a pet?
+            net.minecraft.client.MinecraftClient client = net.minecraft.client.MinecraftClient.getInstance();
+            if (client.player != null) {
+                AccessoriesCapability cap = AccessoriesCapability.get(client.player);
+                if (cap != null && !cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG)).isEmpty()) {
+                    return; // Stop right here! Do not draw the particles!
+                }
+            }
+
             ParticleUtil.spawnParticlesAround(world, pos, 1, 0.5, 0.5, true, DustParticleEffect.DEFAULT);
+        }
     }
 
     @Override
@@ -127,5 +138,17 @@ public class InvisibleFenceBlock extends FenceBlock {
                         : "block.playercollars.invisible_fence.toggle_off")
                 .formatted(Formatting.GREEN), true);
         return ActionResult.SUCCESS;
+    }
+
+    @Override
+    public float calcBlockBreakingDelta(BlockState state, PlayerEntity player, BlockView world, BlockPos pos) {
+        AccessoriesCapability cap = AccessoriesCapability.get(player);
+
+        // ✨ If they are wearing a collar, they cannot break it at all!
+        if (cap != null && !cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG)).isEmpty()) {
+            return 0.0f;
+        }
+
+        return super.calcBlockBreakingDelta(state, player, world, pos);
     }
 }

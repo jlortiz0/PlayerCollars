@@ -1,0 +1,23 @@
+{
+  "description": {
+    "translate": "enchantment.playercollars.laser_reach"
+  },
+  "exclusive_set": [],
+  "supported_items": "playercollars:laser_pointer",
+  "primary_items": "playercollars:laser_pointer",
+  "weight": 5,
+  "max_level": 3,
+  "min_cost": {
+    "base": 10,
+    "per_level_above_first": 10
+  },
+  "max_cost": {
+    "base": 50,
+    "per_level_above_first": 10
+  },
+  "anvil_cost": 4,
+  "slots": [
+    "mainhand",
+    "offhand"
+  ]
+}

@@ -39,6 +39,7 @@
   "block.playercollars.yellow_dog_bowl": "Yellow Dog Bowl",
   "enchantment.playercollars.clicker": "Audible",
   "enchantment.playercollars.clicker_walk": "Beckon",
+  "enchantment.playercollars.laser_reach": "Laser Reach",
   "enchantment.playercollars.regeneration": "Healing",
   "enchantment.playercollars.short_leash": "Tight Leash",
   "enchantment.playercollars.thorns": "Spiked",
@@ -148,5 +149,8 @@
   "message.playercollars.no_ride_entity": "Can't ride this entity!",
   "sound.playercollars.clicker_off": "Clicker clicks off",
   "sound.playercollars.clicker_on": "Clicker clicks on",
-  "tag.block.playercollars.paws_allow_interact": "Usable with Paws"
+  "tag.block.playercollars.paws_allow_interact": "Usable with Paws",
+  "item.playercollars.grooming_brush": "Magic Grooming Brush",
+  "item.playercollars.laser_pointer": "Laser Pointer",
+  "item.playercollars.reward_treat_pouch": "Reward Treat Pouch"
 }

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "e": "minecraft:emerald",
+    "g": "minecraft:glass_pane",
+    "i": "#c:ingots/iron"
+  },
+  "pattern": [
+    " g ",
+    " e ",
+    " i "
+  ],
+  "result": {
+    "count": 1,
+    "id": "playercollars:laser_pointer"
+  }
+}

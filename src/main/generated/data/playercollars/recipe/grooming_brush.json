@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "c": "minecraft:copper_ingot",
+    "d": "minecraft:white_dye",
+    "w": "minecraft:wheat"
+  },
+  "pattern": [
+    " wd",
+    " c "
+  ],
+  "result": {
+    "count": 1,
+    "id": "playercollars:grooming_brush"
+  }
+}

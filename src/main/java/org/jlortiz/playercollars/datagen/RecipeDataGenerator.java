@@ -76,6 +76,23 @@ public class RecipeDataGenerator extends FabricRecipeProvider {
                         .input('s', Items.STICK)
                         .criterion(hasItem(Items.GOLD_INGOT), conditionsFromTag(ConventionalItemTags.GOLD_INGOTS))
                         .offerTo(exporter);
+                createShaped(RecipeCategory.TOOLS, PlayerCollarsMod.GROOMING_BRUSH_ITEM)
+                        .pattern(" wd")
+                        .pattern(" c ")
+                        .input('w', Items.WHEAT)
+                        .input('c', Items.COPPER_INGOT)
+                        .input('d', Items.WHITE_DYE)
+                        .criterion(hasItem(Items.COPPER_INGOT), conditionsFromTag(ConventionalItemTags.COPPER_INGOTS))
+                        .offerTo(exporter);
+                createShaped(RecipeCategory.TOOLS, PlayerCollarsMod.LASER_POINTER_ITEM)
+                        .pattern(" g ")
+                        .pattern(" e ")
+                        .pattern(" i ")
+                        .input('g', Items.GLASS_PANE)
+                        .input('e', Items.EMERALD)
+                        .input('i', ConventionalItemTags.IRON_INGOTS)
+                        .criterion(hasItem(Items.EMERALD), conditionsFromItem(Items.EMERALD))
+                        .offerTo(exporter);
                 for (DyeColor c : DyeColor.values()) {
                     generateBed(exporter, PlayerCollarsMod.DOG_BED_ITEMS[c.ordinal()], DatagenEntrypoint.WOOLS[c.ordinal()]);
                     generateBowl(exporter, PlayerCollarsMod.DOG_BOWL_ITEMS[c.ordinal()], DatagenEntrypoint.TERRACOTTAS[c.ordinal()]);

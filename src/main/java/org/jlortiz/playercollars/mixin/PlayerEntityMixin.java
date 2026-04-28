@@ -41,14 +41,14 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 
     @Redirect(method = "getBlockBreakingSpeed", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;getBlockBreakingSpeed(Lnet/minecraft/block/BlockState;)F"), require=0)
     private float getBlockBreakingSpeed(PlayerInventory instance, BlockState block) {
-        float ret = instance.getBlockBreakingSpeed(block);
-        AccessoriesCapability cap = AccessoriesCapability.get(this);
-        if (cap == null) return ret;
-        if (cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.PAWS_TAG)).isEmpty()) return ret;
-        if (TagUtil.isIn(BlockTags.SHOVEL_MINEABLE, block.getBlock())) {
-            return ToolMaterial.IRON.speed();
-        }
-        return (ret - 1) * 0.125f + 1;
+        return instance.getBlockBreakingSpeed(block);
+      //  AccessoriesCapability cap = AccessoriesCapability.get(this);
+     //   if (cap == null) return ret;
+      //  if (cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.PAWS_TAG)).isEmpty()) return ret;
+    //    if (TagUtil.isIn(BlockTags.SHOVEL_MINEABLE, block.getBlock())) {
+       //     return ToolMaterial.IRON.speed();
+      //  }
+      //  return (ret - 1) * 0.125f + 1;
     }
 
     @Redirect(method="attack", at= @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;getAttributeValue(Lnet/minecraft/registry/entry/RegistryEntry;)D", ordinal=0), require=0)
@@ -83,11 +83,29 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 
     @Redirect(method="updatePose", at= @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;setPose(Lnet/minecraft/entity/EntityPose;)V"))
     private void playercollars$forceCrawl(PlayerEntity instance, EntityPose entityPose) {
+        // Inside your updatePose Redirect!
+        EntityPose magicalNewPose = entityPose;
+
         if (!instance.getAbilities().flying && (entityPose == EntityPose.CROUCHING || entityPose == EntityPose.STANDING)) {
             AccessoriesCapability cap = AccessoriesCapability.get(this);
-            if (cap != null && !cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.FOOT_PAWS_TAG)).isEmpty())
-                entityPose = EntityPose.SWIMMING;
+
+            if (cap != null) {
+                // Loop through the pet's collars to see if we toggled the magic switch! 🐾
+                for (io.wispforest.accessories.api.slot.SlotEntryReference sr : cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG))) {
+                    if (sr.stack().getOrDefault(PlayerCollarsMod.FORCED_CRAWL_COMPONENT_TYPE, false)) {
+                        magicalNewPose = EntityPose.SWIMMING;
+                        break;
+                    }
+                }
+            }
         }
-        instance.setPose(entityPose);
+
+        instance.setPose(magicalNewPose);
+       // if (!instance.getAbilities().flying && (entityPose == EntityPose.CROUCHING || entityPose == EntityPose.STANDING)) {
+       //     AccessoriesCapability cap = AccessoriesCapability.get(this);
+        //    if (cap != null && !cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.FOOT_PAWS_TAG)).isEmpty())
+      //          entityPose = EntityPose.SWIMMING;
+      //  }
+      //  instance.setPose(entityPose);
     }
 }

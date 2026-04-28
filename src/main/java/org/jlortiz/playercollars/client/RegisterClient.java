@@ -31,5 +31,6 @@ public class RegisterClient implements ClientModInitializer {
         WorldRenderEvents.END.register(RotationLerpHandler::turnTowardsClick);
         HandledScreens.register(PlayerCollarsMod.PAWS_BLOCK_CONFIG_SCREEN_HANDLER, PawsConfigScreen<Block>::new);
         HandledScreens.register(PlayerCollarsMod.PAWS_ITEM_CONFIG_SCREEN_HANDLER, PawsConfigScreen<Item>::new);
+        LaserRenderer.register();
     }
 }

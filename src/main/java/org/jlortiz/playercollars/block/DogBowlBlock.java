@@ -1,5 +1,6 @@
 package org.jlortiz.playercollars.block;
 
+import io.wispforest.accessories.api.AccessoriesCapability;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.DataComponentTypes;
@@ -18,10 +19,8 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
+import net.minecraft.text.Text;
+import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -88,9 +87,20 @@ public class DogBowlBlock extends Block implements BlockEntityProvider {
         return (level < 0 || level > 3) ? SHAPE_BASE : SHAPE[level];
     }
 
+    @Override
     protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         if (stack.isEmpty()) return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
         if (!(world.getBlockEntity(pos) instanceof DogBowlBlockEntity be)) return ActionResult.FAIL;
+
+        // ✨ Musia's Magic Check: Is a pet trying to fill the bowl?
+        AccessoriesCapability cap = AccessoriesCapability.get(player);
+        if (cap != null && !cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG)).isEmpty()) {
+            if (!world.isClient) {
+                player.sendMessage(Text.literal("Naughty pet! Only your owner can feed you!").formatted(Formatting.RED), true);
+            }
+            return ActionResult.FAIL;
+        }
+
         if (stack.isOf(Items.MILK_BUCKET) && be.getCount() == 0) {
             be.insert(stack);
             state = state.with(MILK, true);

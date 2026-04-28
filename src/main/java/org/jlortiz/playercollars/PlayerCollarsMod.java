@@ -12,6 +12,7 @@ import io.wispforest.accessories.api.slot.SlotEntryReference;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -22,10 +23,12 @@ import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.component.ComponentType;
+import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.Leashable;
 import net.minecraft.entity.LivingEntity;
@@ -37,6 +40,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -46,7 +50,9 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.*;
 import net.minecraft.util.dynamic.Codecs;
@@ -69,6 +75,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
 
+import net.fabricmc.fabric.api.event.player.UseEntityCallback;
+import net.minecraft.util.ActionResult;
+import net.minecraft.item.ItemStack;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+
 public class PlayerCollarsMod implements ModInitializer {
 	public static final String MOD_ID = "playercollars";
     public static final CollarItem COLLAR_ITEM = Registry.register(Registries.ITEM, CollarItem.REGISTRY_KEY, new CollarItem(false));
@@ -83,6 +95,16 @@ public class PlayerCollarsMod implements ModInitializer {
     public static final PawSetupItem PAW_CONFIGURATION_ITEM = Registry.register(Registries.ITEM, PawSetupItem.REGISTRY_KEY, new PawSetupItem());
     public static final CollarLockerItem COLLAR_LOCKER_ITEM = Registry.register(Registries.ITEM, CollarLockerItem.REGISTRY_KEY, new CollarLockerItem());
 	public static final SpatulaItem SPATULA_ITEM = Registry.register(Registries.ITEM, Identifier.of(MOD_ID, "golden_spatula"), new SpatulaItem());
+	public static final GroomingBrushItem GROOMING_BRUSH_ITEM = Registry.register(
+			Registries.ITEM,
+			Identifier.of(MOD_ID, "grooming_brush"),
+			new GroomingBrushItem(new Item.Settings().registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID, "grooming_brush"))))
+	);
+	public static final LaserPointerItem LASER_POINTER_ITEM = Registry.register(
+			Registries.ITEM,
+			Identifier.of(MOD_ID, "laser_pointer"),
+			new LaserPointerItem(new Item.Settings().maxCount(1).registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID, "laser_pointer"))))
+	);
 
 	public static final SoundEvent CLICKER_ON = Registry.register(Registries.SOUND_EVENT, Identifier.of(MOD_ID, "clicker_on"),
 			SoundEvent.of(Identifier.of(MOD_ID, "clicker_on")));
@@ -99,6 +121,19 @@ public class PlayerCollarsMod implements ModInitializer {
 			Registries.DATA_COMPONENT_TYPE,
 			Identifier.of(MOD_ID, "owner_component"),
 			ComponentType.<OwnerComponent>builder().codec(OWNER_COMPONENT_CODEC).build());
+	public static final ComponentType<Boolean> FORCED_CRAWL_COMPONENT_TYPE = Registry.register(
+			Registries.DATA_COMPONENT_TYPE,
+			Identifier.of(MOD_ID, "forced_crawl_component"),
+			ComponentType.<Boolean>builder().codec(Codec.BOOL).build());
+	public static final ComponentType<Boolean> DIET_CONTROL_COMPONENT_TYPE = Registry.register(
+			Registries.DATA_COMPONENT_TYPE,
+			Identifier.of(MOD_ID, "diet_control_component"),
+			ComponentType.<Boolean>builder().codec(Codec.BOOL).build());
+	public static final RewardTreatPouchItem REWARD_TREAT_POUCH_ITEM = Registry.register(
+			Registries.ITEM,
+			Identifier.of(MOD_ID, "reward_treat_pouch"),
+			new RewardTreatPouchItem(new Item.Settings().maxDamage(64).registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID, "reward_treat_pouch"))))
+	);
 
 	private static final Codec<List<Either<TagKey<Block>, RegistryKey<Block>>>> CAN_INTERACT_COMPONENT_CODEC = Codec.withAlternative(
 			new ListCodec<>(new EitherCodec<>(TagKey.codec(RegistryKeys.BLOCK), RegistryKey.createCodec(RegistryKeys.BLOCK)), 0, 1024),
@@ -294,6 +329,44 @@ public class PlayerCollarsMod implements ModInitializer {
 			return true;
 		});
 
+		UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
+			if (!world.isClient && entity instanceof PlayerEntity pet) {
+				ItemStack stack = player.getStackInHand(hand);
+
+				if (stack.contains(DataComponentTypes.FOOD)) {
+					// ✨ Magic Cooldown: Prevents spamming when holding right-click!
+					if (player.getItemCooldownManager().isCoolingDown(stack)) return ActionResult.PASS;
+
+					AccessoriesCapability cap = AccessoriesCapability.get(pet);
+					if (cap != null) {
+						ItemStack collar = PlayerCollarsMod.filterStacksByOwner(cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG)), player.getUuid(), pet.getUuid());
+
+						if (collar != null) {
+							FoodComponent food = stack.get(DataComponentTypes.FOOD);
+
+							// ✨ Check if the pet is actually hungry (or if it's a special food that can always be eaten)
+							if (pet.getHungerManager().isNotFull() || food.canAlwaysEat()) {
+								pet.getHungerManager().eat(food);
+
+								// Set a 10-tick (half-second) cooldown for the owner
+								player.getItemCooldownManager().set(stack, 10);
+
+								world.playSound(null, pet.getBlockPos(), SoundEvents.ENTITY_GENERIC_EAT.value(), SoundCategory.PLAYERS, 1.0f, 1.0f);
+								((ServerWorld) world).spawnParticles(ParticleTypes.HEART, pet.getX(), pet.getY() + 1.0, pet.getZ(), 3, 0.3, 0.3, 0.3, 0.0);
+
+								if (!player.isCreative()) stack.decrement(1);
+								return ActionResult.SUCCESS;
+							} else {
+								player.sendMessage(Text.literal("Your pet's tummy is already full!").formatted(Formatting.GREEN), true);
+								return ActionResult.FAIL;
+							}
+						}
+					}
+				}
+			}
+			return ActionResult.PASS;
+		});
+
 		AttackEntityCallback.EVENT.register((PlayerEntity player, World world, Hand var3, Entity entity, @Nullable EntityHitResult var5) -> {
 			if (world.isClient) return ActionResult.PASS;
 			if (player.isSpectator()) return ActionResult.PASS;
@@ -320,6 +393,26 @@ public class PlayerCollarsMod implements ModInitializer {
 			}
 
 			if (entity instanceof LeashKnotEntity ke && blockLeashKnotBreak(sworld, player, ke)) return ActionResult.FAIL;
+			return ActionResult.PASS;
+		});
+
+		UseItemCallback.EVENT.register((player, world, hand) -> {
+			ItemStack stack = player.getStackInHand(hand);
+
+			if (stack.contains(DataComponentTypes.FOOD)) {
+				AccessoriesCapability cap = AccessoriesCapability.get(player);
+				if (cap != null) {
+					for (var sr : cap.getEquipped((x) -> x.isIn(PlayerCollarsMod.COLLAR_TAG))) {
+						if (sr.stack().getOrDefault(PlayerCollarsMod.DIET_CONTROL_COMPONENT_TYPE, false)) {
+							if (!world.isClient) {
+								player.sendMessage(Text.literal("You can only eat from your bowl or be hand-fed!").formatted(Formatting.RED), true);
+							}
+							// This firmly stops the item from being used!
+							return ActionResult.FAIL;
+						}
+					}
+				}
+			}
 			return ActionResult.PASS;
 		});
 	}
